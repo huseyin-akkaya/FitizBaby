@@ -70,14 +70,49 @@ function HeroSection() {
           </p>
 
           {/* Kategori kısa yollarının bulunduğu alan */}
-          <div className="mt-6 flex gap-3">
+          <div className="mt-6 flex gap-3 justify-center">
 
             {/* Kahvaltılık kategorisi ve logosu */}
-            <button className="bg-white px-4 py-3 rounded-xl shadow-sm flex items-center gap-2">
+            <button className="bg-white px-4 py-3 rounded-xl shadow-sm flex items-center gap-2 cursor-pointer transition hover:shadow-md hover:-translate-y-0.5">
               <span className="text-lg">
                 🥣
               </span>
               Kahvaltılık
+            </button>
+            {/*Süt Ürünleri kategorisi ve logosu */}
+            <button className="bg-white px-4 py-3 rounded-xl shadow-sm flex items-center gap-2 cursor-pointer transition hover:shadow-md hover:-translate-y-0.5">
+                <span className="text-lg">
+                    🥛
+                </span>
+                Süt Ürünleri
+            </button>
+            {/*Et & Tavuk kategorisi ve logosu */}
+            <button className="bg-white px-4 py-3 rounded-xl shadow-sm flex items-center gap-2 cursor-pointer transition hover:shadow-md hover:-translate-y-0.5">
+              <span className="text-lg">
+                🍗
+              </span>
+              Et & Tavuk
+            </button>
+            {/*Atıştırmalık kategorisi ve logosu */}
+            <button className="bg-white px-4 py-3 rounded-xl shadow-sm flex items-center gap-2 cursor-pointer transition hover:shadow-md hover:-translate-y-0.5">
+              <span className="text-lg">
+                🍫
+              </span>
+              Atıştırmalık
+            </button>
+            {/*İçecek kategorisi ve logosu */}
+            <button className="bg-white px-4 py-3 rounded-xl shadow-sm flex items-center gap-2 cursor-pointer transition hover:shadow-md hover:-translate-y-0.5">
+              <span className="text-lg">
+                🥤
+              </span>
+              İçecekler
+            </button>
+            {/*Tüm Kategoriler ve logosu*/}
+            <button className="border border-zinc-300 bg-white px-4 py-3 rounded-xl flex items-center gap-2 cursor-pointer transition hover:border-green-500 hover:text-green-600">
+              <span className="text-lg">
+                ⠿
+              </span>
+              Tüm Kategoriler
             </button>
 
           </div>
