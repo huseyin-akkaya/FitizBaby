@@ -1,7 +1,7 @@
 function HeroSection() {
   return (
     // Hero bölümünün tamamı
-    <section className="bg-zinc-100">
+    <section className="bg-white">
 
       {/* Hero içeriğini tam ekran genişliğinde tutan ana kapsayıcı */}
       <div className="w-full">
@@ -11,13 +11,14 @@ function HeroSection() {
           <img
             src="/images/hero-cartoon.png"
             alt="FitizBaby karikatürü"
-            className="block w-full h-auto"
+            className="block w-full h-[260px] sm:h-[340px] lg:h-auto object-cover object-top"
           />
         </div>
 
+      <div className="relative z-10 -mt-6 rounded-t-3xl bg-white pt-6 shadow-[0_-8px_20px_rgba(0,0,0,0.04)]">
         {/* Arama kutusu ve kategorileri ortalayan kapsayıcı */}
-        {/* -mt-7 sayesinde alan karikatürün biraz üzerine çıkıyor */}
-        <div className="max-w-5xl mx-auto px-6 -mt-7 relative z-10">
+
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
 
           {/* Arama kutusunun dış görünümü */}
           <div className="bg-white rounded-xl shadow-lg flex focus-within:ring-2 focus-within:ring-green-500 transition">
@@ -70,45 +71,45 @@ function HeroSection() {
           </p>
 
           {/* Kategori kısa yollarının bulunduğu alan */}
-          <div className="mt-6 flex gap-3 justify-center">
+          <div className="mt-6 flex flex-wrap justify-center gap-2 sm:gap-3">
 
             {/* Kahvaltılık kategorisi ve logosu */}
-            <button className="bg-white px-4 py-3 rounded-xl shadow-sm flex items-center gap-2 cursor-pointer transition hover:shadow-md hover:-translate-y-0.5">
+            <button className="bg-white px-4 py-3 rounded-xl shadow-sm flex items-center gap-2 cursor-pointer transition hover:shadow-md hover:-translate-y-0.5 whitespace-nowrap">
               <span className="text-lg">
                 🥣
               </span>
               Kahvaltılık
             </button>
             {/*Süt Ürünleri kategorisi ve logosu */}
-            <button className="bg-white px-4 py-3 rounded-xl shadow-sm flex items-center gap-2 cursor-pointer transition hover:shadow-md hover:-translate-y-0.5">
+            <button className="bg-white px-4 py-3 rounded-xl shadow-sm flex items-center gap-2 cursor-pointer transition hover:shadow-md hover:-translate-y-0.5 whitespace-nowrap">
                 <span className="text-lg">
                     🥛
                 </span>
                 Süt Ürünleri
             </button>
             {/*Et & Tavuk kategorisi ve logosu */}
-            <button className="bg-white px-4 py-3 rounded-xl shadow-sm flex items-center gap-2 cursor-pointer transition hover:shadow-md hover:-translate-y-0.5">
+            <button className="bg-white px-4 py-3 rounded-xl shadow-sm flex items-center gap-2 cursor-pointer transition hover:shadow-md hover:-translate-y-0.5 whitespace-nowrap">
               <span className="text-lg">
                 🍗
               </span>
               Et & Tavuk
             </button>
             {/*Atıştırmalık kategorisi ve logosu */}
-            <button className="bg-white px-4 py-3 rounded-xl shadow-sm flex items-center gap-2 cursor-pointer transition hover:shadow-md hover:-translate-y-0.5">
+            <button className="bg-white px-4 py-3 rounded-xl shadow-sm flex items-center gap-2 cursor-pointer transition hover:shadow-md hover:-translate-y-0.5 whitespace-nowrap">
               <span className="text-lg">
                 🍫
               </span>
               Atıştırmalık
             </button>
             {/*İçecek kategorisi ve logosu */}
-            <button className="bg-white px-4 py-3 rounded-xl shadow-sm flex items-center gap-2 cursor-pointer transition hover:shadow-md hover:-translate-y-0.5">
+            <button className="bg-white px-4 py-3 rounded-xl shadow-sm flex items-center gap-2 cursor-pointer transition hover:shadow-md hover:-translate-y-0.5 whitespace-nowrap">
               <span className="text-lg">
                 🥤
               </span>
               İçecekler
             </button>
             {/*Tüm Kategoriler ve logosu*/}
-            <button className="border border-zinc-300 bg-white px-4 py-3 rounded-xl flex items-center gap-2 cursor-pointer transition hover:border-green-500 hover:text-green-600">
+            <button className="border border-zinc-300 bg-white px-4 py-3 rounded-xl flex items-center gap-2 cursor-pointer transition hover:border-green-500 hover:text-green-600 whitespace-nowrap">
               <span className="text-lg">
                 ⠿
               </span>
@@ -118,6 +119,8 @@ function HeroSection() {
           </div>
 
         </div>
+
+      </div>
 
       </div>
 

@@ -1,4 +1,7 @@
+import {useState} from "react";
+
 function Navbar() {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
 
     return (
         // Sayfanın üst kısmındaki ana navigasyon alanı
@@ -94,7 +97,7 @@ function Navbar() {
                 </div>
 
                 {/* Navbar'ın ortasında bulunan sayfa bağlantıları */}
-                <div className="flex flex-1 justify-center gap-8 text-sm font-medium whitespace-nowrap">
+                <div className="hidden lg:flex flex-1 justify-center gap-8 text-sm font-medium whitespace-nowrap">
 
                     {/* Ürünler sayfası bağlantısı */}
                     <a href="#" className="transition hover:text-green-400">
@@ -132,7 +135,7 @@ function Navbar() {
                 </div>
 
                 {/* Navbar'ın sağ tarafındaki kullanıcı işlemleri */}
-                <div className="flex gap-3 shrink-0">
+                <div className="hidden lg:flex gap-3 shrink-0">
 
                     {/* Kullanıcı giriş butonu */}
                     <button className="bg-zinc-800 px-4 py-2 rounded-lg text-sm font-medium transition hover:bg-zinc-700 cursor-pointer">
@@ -145,8 +148,115 @@ function Navbar() {
                     </button>
 
                 </div>
+                {/* Mobil veya küçük ekran cihazlar için hamburger menü butonu */}
+                <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="lg:hidden p-2 rounded-lg cursor-pointer transition hover:bg-zinc-800">
+                     {isMenuOpen ? (
+                        <svg viewBox="0 0 24 24" className="w-6 h-6">
+                            <line
+                                x1="5"
+                                y1="5"
+                                x2="19"
+                                y2="19"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                            />
+
+                            <line
+                                x1="19"
+                                y1="5"
+                                x2="5"
+                                y2="19"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                            />
+
+                        </svg>
+                        ) : (
+                            <svg viewBox="0 0 24 24" className="w-6 h-6">
+                        <line
+                            x1="4"
+                            y1="6"
+                            x2="20"
+                            y2="6"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                        />
+                        <line
+                            x1="4"
+                            y1="12"
+                            x2="20"
+                            y2="12"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                        />
+                        <line
+                            x1="4"
+                            y1="18"
+                            x2="20"
+                            y2="18"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                        />
+                      
+                    </svg>)}
+
+                    
+                </button>
 
             </div>
+            {/* Mobil menü açıldığında gösterilecek içerik */}
+             <div
+                className={`lg:hidden overflow-hidden border-t border-zinc-800 bg-zinc-950 px-6 transition-all duration-200 ease-out ${
+                    isMenuOpen
+                    ? "max-h-96 py-4 opacity-100"
+                    : "max-h-0 py-0 opacity-0"
+                }`}
+                >
+                   
+                    {/* Mobil menüdeki sayfa bağlantıları */}
+                    <div className="flex flex-col gap-4">
+                        <a href='#' className="transition hover:text-green-400">
+                            Ürünler
+                        </a>
+                        <a href='#' className="transition hover:text-green-400">
+                            Kategoriler
+                        </a>
+                        <a href='#' className="transition hover:text-green-400">
+                            Karşılaştır
+                        </a>
+                        <a href='#' className="transition hover:text-green-400">
+                            Beslenme Planım
+                        </a>
+                        <a
+                            href="#"
+                            className="flex items-center gap-2 transition hover:text-green-400"
+                            >
+                            AI Asistan
+
+                            <span className="rounded-md bg-green-500 px-2 py-0.5 text-xs font-semibold">
+                                Yeni
+                            </span>
+                        </a>
+                        
+                    </div>
+                    {/* Mobil menüdeki kullanıcı işlemleri */}
+                    <div className="mt-2 flex gap-3 border-t border-zinc-800 pt-4">
+                        <button className="flex-1 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium transition hover:bg-zinc-700">
+                            Giriş Yap
+                        </button>
+                        <button className="flex-1 rounded-lg bg-green-500 px-4 py-2 text-sm font-medium transition hover:bg-green-600 ">
+                            Kayıt Ol
+                        </button>
+                    </div>
+                        
+                </div>
+                
+            
 
         </nav>
     )
