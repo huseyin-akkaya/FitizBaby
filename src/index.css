@@ -10,3 +10,13 @@
     transform: translateY(0);
   }
 }
+/* Number inputlardaki tarayıcıya ait artırma/azaltma oklarını kaldırır */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}

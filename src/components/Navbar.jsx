@@ -1,4 +1,5 @@
 import {useState} from "react";
+import {Link} from "react-router-dom";
 
 function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -100,9 +101,9 @@ function Navbar() {
                 <div className="hidden lg:flex flex-1 justify-center gap-8 text-sm font-medium whitespace-nowrap">
 
                     {/* Ürünler sayfası bağlantısı */}
-                    <a href="#" className="transition hover:text-green-400">
+                    <Link to="/products" className="transition hover:text-green-400">
                         Ürünler
-                    </a>
+                    </Link>
 
                     {/* Kategoriler sayfası bağlantısı */}
                     <a href="#" className="transition hover:text-green-400">
@@ -220,10 +221,10 @@ function Navbar() {
                    
                     {/* Mobil menüdeki sayfa bağlantıları */}
                     <div className="flex flex-col gap-4">
-                        <a href='#' className="transition hover:text-green-400">
+                        <Link to="/products" onClick={() => setIsMenuOpen(false)} className="transition hover:text-green-400">
                             Ürünler
-                        </a>
-                        <a href='#' className="transition hover:text-green-400">
+                        </Link>
+                        <a to="/categories" className="transition hover:text-green-400">
                             Kategoriler
                         </a>
                         <a href='#' className="transition hover:text-green-400">
