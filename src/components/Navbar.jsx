@@ -106,23 +106,18 @@ function Navbar() {
                     </Link>
 
                     {/* Kategoriler sayfası bağlantısı */}
-                    <a href="#" className="transition hover:text-green-400">
-                        Kategoriler
-                    </a>
+                    <Link to="/products" className="transition hover:text-green-400">Kategoriler</Link>
 
                     {/* Ürün karşılaştırma sayfası bağlantısı */}
-                    <a href="#" className="transition hover:text-green-400">
-                        Karşılaştır
-                    </a>
+                    <Link to="/compare" className="transition hover:text-green-400">Karşılaştır</Link>
 
                     {/* Kullanıcının beslenme planına ulaşacağı bağlantı */}
-                    <a href="#" className="transition hover:text-green-400">
-                        Beslenme Planım
-                    </a>
+                    <Link to="/nutrition-plan" className="transition hover:text-green-400">Beslenme Planım
+                    </Link>
 
                     {/* Yapay zekâ asistanı bağlantısı */}
-                    <a
-                        href="#"
+                    <Link
+                        to="/assistant"
                         className="flex items-center gap-2 transition hover:text-green-400"
                     >
                         AI Asistan
@@ -131,7 +126,7 @@ function Navbar() {
                         <span className="bg-green-500 px-2 py-0.5 text-xs rounded-md font-semibold">
                             Yeni
                         </span>
-                    </a>
+                    </Link>
 
                 </div>
 
@@ -150,7 +145,7 @@ function Navbar() {
 
                 </div>
                 {/* Mobil veya küçük ekran cihazlar için hamburger menü butonu */}
-                <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="lg:hidden p-2 rounded-lg cursor-pointer transition hover:bg-zinc-800">
+                <button aria-label="Menüyü aç veya kapat" aria-expanded={isMenuOpen} onClick={() => setIsMenuOpen(!isMenuOpen)} className="lg:hidden p-2 rounded-lg cursor-pointer transition hover:bg-zinc-800">
                      {isMenuOpen ? (
                         <svg viewBox="0 0 24 24" className="w-6 h-6">
                             <line
@@ -224,17 +219,14 @@ function Navbar() {
                         <Link to="/products" onClick={() => setIsMenuOpen(false)} className="transition hover:text-green-400">
                             Ürünler
                         </Link>
-                        <a to="/categories" className="transition hover:text-green-400">
-                            Kategoriler
-                        </a>
-                        <a href='#' className="transition hover:text-green-400">
-                            Karşılaştır
-                        </a>
-                        <a href='#' className="transition hover:text-green-400">
+                        <Link to="/products" className="transition hover:text-green-400" onClick={() => setIsMenuOpen(false)}>Kategoriler</Link>
+                        <Link to="/compare" className="transition hover:text-green-400" onClick={() => setIsMenuOpen(false)}>Karşılaştır</Link>
+                        <Link to="/nutrition-plan" onClick={() => setIsMenuOpen(false)} className="transition hover:text-green-400">
                             Beslenme Planım
-                        </a>
-                        <a
-                            href="#"
+                        </Link>
+                        <Link
+                            to="/assistant"
+                            onClick={() => setIsMenuOpen(false)}
                             className="flex items-center gap-2 transition hover:text-green-400"
                             >
                             AI Asistan
@@ -242,7 +234,7 @@ function Navbar() {
                             <span className="rounded-md bg-green-500 px-2 py-0.5 text-xs font-semibold">
                                 Yeni
                             </span>
-                        </a>
+                        </Link>
                         
                     </div>
                     {/* Mobil menüdeki kullanıcı işlemleri */}

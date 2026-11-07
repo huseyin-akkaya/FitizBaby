@@ -1,6 +1,13 @@
-function FeatureSection() {
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import GoalProductFinder from "./GoalProductFinder";
+import SmartCompareModal from "./SmartCompareModal";
 
+function FeatureSection() {
+const [isSmartCompareOpen, setIsSmartCompareOpen] = useState(false);
+const [isGoalFinderOpen, setIsGoalFinderOpen] = useState(false);
 return (
+    <>
     <section className="bg-white py-10">
         <div className="max-w-7xl mx-auto px-6">
             {/*kartların zemininin hazırlanması*/}
@@ -43,16 +50,17 @@ return (
                    </div>
                    <div className="flex flex-1 flex-col min-w-0"><h3 className="text-lg font-semibold min-h-[56px]">Akıllı Karşılaştır</h3>
                      <p className="mt-2 text-sm text-zinc-600">
-                        Ürünleri yan yana karşılaştır, ihtiyacına en uygun olanı bul.
+                        Aynı gruptan iki ürünü seç; senin için önemli olan tek ölçütte hangisinin öne çıktığını gör.
                     </p>
                         {/*Kartın alt kısmında bulunan butonun oluşturulması*/}
-                        <a
-                            href="#"
-                            className="mt-auto pt-4 inline-flex items-center gap-2 text-sm font-medium text-green-600 transition hover:text-green-700"
+                        <button
+                            type="button"
+                            onClick={() => setIsSmartCompareOpen(true)}
+                            className="mt-auto cursor-pointer pt-4 inline-flex items-center gap-2 text-sm font-medium text-green-600 transition hover:text-green-700"
                         >
-                            Karşılaştırmaya Başla
+                            İki ürünü hızlı karşılaştır
                             <span>→</span>
-                        </a></div>
+                        </button></div>
                     </div>
                     
                 </div>
@@ -159,16 +167,17 @@ return (
                         <div className="flex flex-1 flex-col min-w-0">
                             <h3 className="text-lg font-semibold min-h-[56px]">Hedeflerine Uygun Seç</h3>
                             <p className="mt-2 text-sm text-zinc-600">
-                                  Şeker mi düşük olsun? Protein mi yüksek? Sen seç, biz sıralayalım.
+                                  Bir kategori ve besin önceliği seç; ürünleri uygun referans ölçülerinde keşfet.
                             </p>
                             {/*Kartın alt kısmında bulunan butonun oluşturulması*/}
-                            <a
-                                href="#"
-                                className="mt-auto pt-4 inline-flex items-center gap-2 text-sm font-medium text-violet-600 transition hover:text-violet-700"
+                            <button
+                                type="button"
+                                onClick={() => setIsGoalFinderOpen(true)}
+                                className="mt-auto cursor-pointer pt-4 inline-flex items-center gap-2 text-sm font-medium text-violet-600 transition hover:text-violet-700"
                             >
-                                Hedef Belirle
+                                Hedefine göre ürün bul
                                 <span>→</span>
-                            </a>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -219,13 +228,13 @@ return (
                                 Günlük aldığın makroları takip et, hedeflerine ne kadar yaklaştığını gör.
                             </p>
                             {/*Kartın alt kısmında bulunan butonun oluşturulması*/}
-                            <a
-                                href="#"
-                                className="mt-auto pt-4 inline-flex items-center gap-2 text-sm font-medium text-amber-600 transition hover:text-amber-700"
+                            <Link
+                                to="/macro-tracker"
+                                className="mt-auto inline-flex cursor-pointer items-center gap-2 pt-4 text-sm font-medium text-amber-600 transition hover:text-amber-700"
                             >
                                 Takibe Başla
                                 <span>→</span>
-                            </a>
+                            </Link>
                         </div>
                     </div>
                 </div>
@@ -351,13 +360,13 @@ return (
                                  Hedefine göre öneriler al, günlük menünü planla ve ürünleri daha doğru seç.
                             </p>
                             {/*Kartın alt kısmında bulunan butonun oluşturulması*/}
-                            <a
-                                href="#"
+                            <Link
+                                to="/assistant"
                                 className="mt-auto pt-4 inline-flex items-center gap-2 text-sm font-medium text-blue-600 transition hover:text-blue-700"
                             >
                                 Asistanı Aç
                                 <span>→</span>
-                            </a>
+                            </Link>
                         </div>
                     </div>
                 </div>
@@ -365,10 +374,10 @@ return (
             </div>
 
         </div>
-
     </section>
-)
-
-
+    {isSmartCompareOpen && <SmartCompareModal onClose={() => setIsSmartCompareOpen(false)} />}
+    {isGoalFinderOpen && <GoalProductFinder onClose={() => setIsGoalFinderOpen(false)} />}
+    </>
+);
 }
 export default FeatureSection

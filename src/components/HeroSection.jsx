@@ -1,4 +1,17 @@
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { homeCategoryShortcuts } from "../data/productCategories";
+
 function HeroSection() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate();
+
+  const handleSearch = (event) => {
+    event.preventDefault();
+    const query = searchTerm.trim();
+    navigate(query ? `/products?search=${encodeURIComponent(query)}` : "/products");
+  };
+
   return (
     // Hero bölümünün tamamı
     <section className="bg-white">
@@ -21,17 +34,20 @@ function HeroSection() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
 
           {/* Arama kutusunun dış görünümü */}
-          <div className="bg-white rounded-xl shadow-lg flex focus-within:ring-2 focus-within:ring-green-500 transition">
+          <form onSubmit={handleSearch} role="search" className="bg-white rounded-xl shadow-lg flex focus-within:ring-2 focus-within:ring-green-500 transition">
 
             {/* Kullanıcının ürün, marka veya kategori yazacağı alan */}
             <input
               type="text"
               placeholder="Ürün, marka veya kategori ara..."
+              aria-label="Ürün, marka veya kategori ara"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
               className="flex-1 px-5 py-4 outline-none bg-transparent"
             />
 
             {/* Arama butonu */}
-            <button className="bg-green-500 text-white px-6 rounded-r-xl font-medium cursor-pointer transition hover:bg-green-600 flex items-center justify-center">
+            <button type="submit" aria-label="Ara" className="bg-green-500 text-white px-6 rounded-r-xl font-medium cursor-pointer transition hover:bg-green-600 flex items-center justify-center">
 
               {/* Arama kutusundaki büyüteç ikonu */}
               <svg
@@ -63,58 +79,29 @@ function HeroSection() {
               </svg>
             </button>
 
-          </div>
+          </form>
 
           {/* Kullanıcıya arama için örnek ürünler gösteren yardımcı yazı */}
           <p className="mt-2 px-1 text-sm font-light text-zinc-500">
-            Örnek: Yulaf, Süt, Hindi göğsü, Lor peyniri...
+            Örnek: Yulaf Ezmesi, Pınar, Süt Ürünleri...
           </p>
 
           {/* Kategori kısa yollarının bulunduğu alan */}
           <div className="mt-6 flex flex-wrap justify-center gap-2 sm:gap-3">
-
-            {/* Kahvaltılık kategorisi ve logosu */}
-            <button className="bg-white px-4 py-3 rounded-xl shadow-sm flex items-center gap-2 cursor-pointer transition hover:shadow-md hover:-translate-y-0.5 whitespace-nowrap">
-              <span className="text-lg">
-                🥣
-              </span>
-              Kahvaltılık
-            </button>
-            {/*Süt Ürünleri kategorisi ve logosu */}
-            <button className="bg-white px-4 py-3 rounded-xl shadow-sm flex items-center gap-2 cursor-pointer transition hover:shadow-md hover:-translate-y-0.5 whitespace-nowrap">
-                <span className="text-lg">
-                    🥛
-                </span>
-                Süt Ürünleri
-            </button>
-            {/*Et & Tavuk kategorisi ve logosu */}
-            <button className="bg-white px-4 py-3 rounded-xl shadow-sm flex items-center gap-2 cursor-pointer transition hover:shadow-md hover:-translate-y-0.5 whitespace-nowrap">
-              <span className="text-lg">
-                🍗
-              </span>
-              Et & Tavuk
-            </button>
-            {/*Atıştırmalık kategorisi ve logosu */}
-            <button className="bg-white px-4 py-3 rounded-xl shadow-sm flex items-center gap-2 cursor-pointer transition hover:shadow-md hover:-translate-y-0.5 whitespace-nowrap">
-              <span className="text-lg">
-                🍫
-              </span>
-              Atıştırmalık
-            </button>
-            {/*İçecek kategorisi ve logosu */}
-            <button className="bg-white px-4 py-3 rounded-xl shadow-sm flex items-center gap-2 cursor-pointer transition hover:shadow-md hover:-translate-y-0.5 whitespace-nowrap">
-              <span className="text-lg">
-                🥤
-              </span>
-              İçecekler
-            </button>
-            {/*Tüm Kategoriler ve logosu*/}
-            <button className="border border-zinc-300 bg-white px-4 py-3 rounded-xl flex items-center gap-2 cursor-pointer transition hover:border-green-500 hover:text-green-600 whitespace-nowrap">
-              <span className="text-lg">
-                ⠿
-              </span>
+            {homeCategoryShortcuts.map(({ name, icon }) => (
+              <Link
+                key={name}
+                to={`/products?category=${encodeURIComponent(name)}`}
+                className="flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-xl bg-white px-4 py-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
+              >
+                <span className="text-lg" aria-hidden="true">{icon}</span>
+                {name}
+              </Link>
+            ))}
+            <Link to="/products" className="flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-xl border border-zinc-300 bg-white px-4 py-3 transition hover:border-green-500 hover:text-green-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500">
+              <span className="text-lg" aria-hidden="true">⠿</span>
               Tüm Kategoriler
-            </button>
+            </Link>
 
           </div>
 
