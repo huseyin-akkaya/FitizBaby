@@ -26,3 +26,6 @@ Görseller aşağıda belirtilen ürün veya üretici sayfalarından indirildi. 
 | `senpilic-gogus-bonfile.webp` | Şenpiliç Göğüs Bonfile | [Gizova ürün sayfası](https://gizova.com/senpilic-bonfile-paket-800-g-1-kg) |
 | `apikoglu-dana-kavurma-100g.jpg` | Apikoğlu Dana Kavurma 100 g | [Apikoğlu resmî ürün sayfası](https://www.apikoglu.com.tr/yuvarlak-dilimli-dana-kavurma-100-gr) |
 | `namet-dana-kavurma.png` | Namet Dana Kavurma | [Namet resmî ürün sayfası](https://www.namet.com.tr/dana-kavurma-kg) |
+
+7 Kasım 2026 kurtarma notu: Yukarıdaki kayıtlar tarihsel görsel kaynaklarıdır. Güncel besin değerleri src/data/products.js içinde ayrıca tutulur. Doritos için artık doritos-nacho.jpg kullanılır; gerçek 130 g ambalaj görseli https://images.migrosone.com/hemen/product/05080160/05080160_1-bcfc8c-1650x1650.jpg adresinden alındı (ürün sayfası: https://www.migros.com.tr/hemen/doritos-nacho-peynirli-misir-cipsi-super-boy-130-g-p-4d8460). Eski illüstrasyon korunmuştur ama katalogda kullanılmaz.
+

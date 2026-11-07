@@ -28,3 +28,11 @@
 
 ## Yeniden kaybetmemek için
 Her çalışma sonunda git status, ardından ilgili dosyalar için git add ve git commit kullan. Uzak yedek için branch'i kontrol ederek git push -u origin HEAD çalıştır. Bu işlemde push yapılmadı.
+
+## Doğrulama
+- npm run build ve npm run lint başarılı.
+- Gerçek Chromium tarayıcısında 23 ürün ve tüm katalog görselleri; arama, marka / protein filtresi, filtre sıfırlama, liste görünümü, favori kalıcılığı, detay / bulunamadı, 3 / 4 ürün karşılaştırma, farklı birim uyarısı, beraberlik ve eksik veri sınandı.
+- BMR örneği (erkek, 30 yaş, 180 cm, 80 kg) 1780 kcal olarak doğrulandı. 3 / 4 / 5 öğün, alternatif tarif, manuel hedef / dengeleme, yeniden yüklemede kalıcılık ve bozuk kayıt kurtarma başarılı.
+- 390 px mobil genişlikte ana sayfa, katalog, karşılaştırma ve beslenme planı; yatay liste ve mobil plan bağlantısı sınandı. Çalışma zamanı hatası yok.
+- İlk yerel commit: 4427234. Uzak sunucuya push yapılmadı.
+
