@@ -98,7 +98,7 @@ function Navbar() {
                 </div>
 
                 {/* Navbar'ın ortasında bulunan sayfa bağlantıları */}
-                <div className="hidden lg:flex flex-1 justify-center gap-8 text-sm font-medium whitespace-nowrap">
+                <div className="hidden xl:flex flex-1 justify-center gap-8 text-sm font-medium whitespace-nowrap">
 
                     {/* Ürünler sayfası bağlantısı */}
                     <Link to="/products" className="transition hover:text-green-400">
@@ -106,7 +106,7 @@ function Navbar() {
                     </Link>
 
                     {/* Kategoriler sayfası bağlantısı */}
-                    <Link to="/products" className="transition hover:text-green-400">Kategoriler</Link>
+                    <Link to="/categories" className="transition hover:text-green-400">Kategoriler</Link>
 
                     {/* Ürün karşılaştırma sayfası bağlantısı */}
                     <Link to="/compare" className="transition hover:text-green-400">Karşılaştır</Link>
@@ -122,16 +122,16 @@ function Navbar() {
                     >
                         AI Asistan
 
-                        {/* AI Asistan özelliğinin yeni olduğunu belirten rozet */}
+                        {/* AI Asistan özelliğinin geliştirme aşamasını belirten rozet */}
                         <span className="bg-green-500 px-2 py-0.5 text-xs rounded-md font-semibold">
-                            Yeni
-                        </span>
+                            Geliştirme aşamasında
+</span>
                     </Link>
 
                 </div>
 
                 {/* Navbar'ın sağ tarafındaki kullanıcı işlemleri */}
-                <div className="hidden lg:flex gap-3 shrink-0">
+                <div className="hidden xl:flex gap-3 shrink-0">
 
                     {/* Kullanıcı giriş butonu */}
                     <button className="bg-zinc-800 px-4 py-2 rounded-lg text-sm font-medium transition hover:bg-zinc-700 cursor-pointer">
@@ -145,7 +145,7 @@ function Navbar() {
 
                 </div>
                 {/* Mobil veya küçük ekran cihazlar için hamburger menü butonu */}
-                <button aria-label="Menüyü aç veya kapat" aria-expanded={isMenuOpen} onClick={() => setIsMenuOpen(!isMenuOpen)} className="lg:hidden p-2 rounded-lg cursor-pointer transition hover:bg-zinc-800">
+                <button aria-label="Menüyü aç veya kapat" aria-expanded={isMenuOpen} onClick={() => setIsMenuOpen(!isMenuOpen)} className="xl:hidden p-2 rounded-lg cursor-pointer transition hover:bg-zinc-800">
                      {isMenuOpen ? (
                         <svg viewBox="0 0 24 24" className="w-6 h-6">
                             <line
@@ -207,7 +207,7 @@ function Navbar() {
             </div>
             {/* Mobil menü açıldığında gösterilecek içerik */}
              <div
-                className={`lg:hidden overflow-hidden border-t border-zinc-800 bg-zinc-950 px-6 transition-all duration-200 ease-out ${
+                className={`xl:hidden overflow-hidden border-t border-zinc-800 bg-zinc-950 px-6 transition-all duration-200 ease-out ${
                     isMenuOpen
                     ? "max-h-96 py-4 opacity-100"
                     : "max-h-0 py-0 opacity-0"
@@ -219,7 +219,7 @@ function Navbar() {
                         <Link to="/products" onClick={() => setIsMenuOpen(false)} className="transition hover:text-green-400">
                             Ürünler
                         </Link>
-                        <Link to="/products" className="transition hover:text-green-400" onClick={() => setIsMenuOpen(false)}>Kategoriler</Link>
+                        <Link to="/categories" className="transition hover:text-green-400" onClick={() => setIsMenuOpen(false)}>Kategoriler</Link>
                         <Link to="/compare" className="transition hover:text-green-400" onClick={() => setIsMenuOpen(false)}>Karşılaştır</Link>
                         <Link to="/nutrition-plan" onClick={() => setIsMenuOpen(false)} className="transition hover:text-green-400">
                             Beslenme Planım
@@ -232,8 +232,8 @@ function Navbar() {
                             AI Asistan
 
                             <span className="rounded-md bg-green-500 px-2 py-0.5 text-xs font-semibold">
-                                Yeni
-                            </span>
+                                Geliştirme aşamasında
+</span>
                         </Link>
                         
                     </div>

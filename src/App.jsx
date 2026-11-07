@@ -3,6 +3,7 @@ import HeroSection from './components/HeroSection'
 import FeatureSection from './components/FeatureSection'
 import{Routes, Route} from "react-router-dom";
 import Products from "./pages/Products";
+import Categories from "./pages/Categories";
 import NutritionAssistant from "./pages/NutritionAssistant";
 import ProductDetail from "./pages/ProductDetail";
 import Compare from "./pages/Compare";
@@ -18,6 +19,7 @@ function App() {
       <Routes>
         <Route path="/" element={<><HeroSection /><FeatureSection /></>}/>
         <Route path="/products" element={<Products />}/>
+        <Route path="/categories" element={<Categories />}/>
         <Route path="/products/:id" element={<ProductDetail />}/>
         <Route path="/assistant" element={<NutritionAssistant />}/>
         <Route path="/compare" element={<Compare />}/>
