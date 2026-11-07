@@ -1,4 +1,4 @@
-import { products as catalog } from '../data/products';
+import { products as catalog } from '../data/catalogStore';
 export const COMPARE_STORAGE_KEY = "fitizbaby.compareProductIds";
 
 export const comparisonCriteria = [

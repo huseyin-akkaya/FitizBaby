@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { products } from "../data/products";
+import { useProducts } from "../hooks/useProducts";
 import { getProductCategories, productBelongsToCategory } from "../data/productCategories";
 import { saveComparedIds } from "../utils/comparison";
 
@@ -16,6 +16,7 @@ const criteria = [
 const numberFormat = new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 2 });
 
 function SmartCompareModal({ onClose }) {
+  const products = useProducts();
   useEffect(() => {
     const closeOnEscape = (event) => {
       if (event.key === "Escape") onClose();
@@ -36,7 +37,7 @@ function SmartCompareModal({ onClose }) {
     return [...grouped.values()]
       .filter((group) => group.products.length > 1)
       .sort((a, b) => a.category.localeCompare(b.category, "tr") || a.serving.localeCompare(b.serving, "tr"));
-  }, []);
+  }, [products]);
 
   const [groupKey, setGroupKey] = useState(groups[0]?.key ?? "");
   const [firstId, setFirstId] = useState("");

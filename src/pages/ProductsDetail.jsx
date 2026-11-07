@@ -1,7 +1,8 @@
 import { Link, useParams } from "react-router-dom";
-import { products } from "../data/products";
+import { useProducts } from "../hooks/useProducts";
 
 function ProductsDetail() {
+  const products = useProducts();
   const { id } = useParams();
   const product = products.find((item) => item.id === Number(id));
 

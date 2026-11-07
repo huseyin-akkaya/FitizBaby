@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { products } from "../data/products";
+import { useProducts } from "../hooks/useProducts";
 import { getProductCategories, productBelongsToCategory } from "../data/productCategories";
 
 const goals = [
@@ -15,7 +15,8 @@ const goals = [
 const numberFormat = new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 2 });
 
 function GoalProductFinder({ onClose }) {
-  const categories = useMemo(() => ["Tümü", ...getProductCategories(products)], []);
+  const products = useProducts();
+  const categories = useMemo(() => ["Tümü", ...getProductCategories(products)], [products]);
   const [selectedCategory, setSelectedCategory] = useState("Protein Kaynakları");
   const [goalKey, setGoalKey] = useState("protein");
   const scopedProducts = products.filter((product) => productBelongsToCategory(product, selectedCategory));

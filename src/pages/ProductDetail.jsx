@@ -1,5 +1,6 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { getProductById } from "../data/products";
+import { useProducts } from "../hooks/useProducts";
+import ProductHealth from "../components/ProductHealth";
 import { useFavorites } from "../hooks/useFavorites";
 
 const nutrients = [
@@ -17,7 +18,8 @@ const nutrients = [
 function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const product = getProductById(id);
+  const products = useProducts();
+  const product = products.find(item => String(item.id) === String(id));
   const { favoriteIds, toggleFavorite } = useFavorites();
 
   if (!product) {
@@ -71,10 +73,10 @@ function ProductDetail() {
               {product.nutritionNote && <p className="mt-3 text-sm text-amber-800">{product.nutritionNote}</p>}
               {product.nutritionSource ? (
                 <p className="mt-4 text-xs leading-5 text-zinc-500">
-                  Bu ürünün besin değerleri <a href={product.nutritionSource.url} target="_blank" rel="noreferrer" className="font-semibold text-green-700 underline underline-offset-2">{product.nutritionSource.label}</a> sayfasından alınmıştır. Ürün ambalajındaki güncel değerleri kontrol edin.
+                  {product.userProvided ? "Kullanıcının belirttiği besin kaynağı: " : "Bu ürünün besin değerlerinin kaynağı: "}<a href={product.nutritionSource.url} target="_blank" rel="noreferrer" className="font-semibold text-green-700 underline underline-offset-2">{product.nutritionSource.label}</a> · Ürün ambalajındaki güncel değerleri kontrol edin.
                 </p>
               ) : (
-                <p className="mt-4 text-xs leading-5 text-zinc-400">Bu katalogdaki besin değerleri örnek amaçlıdır, ürün etiketinden doğrulanmamıştır. Gerçek tüketim bilgisi için ambalajı kontrol edin.</p>
+                <p className="mt-4 text-xs leading-5 text-zinc-400">Bu ürün için bağımsız doğrulanmış besin kaynağı yok. Gerçek tüketim bilgisi için ambalajı kontrol edin.</p>
               )}
             </section>
             <section className="mt-8 rounded-2xl border border-zinc-200 bg-white p-5 sm:p-6" aria-labelledby="ingredients-title">
@@ -83,9 +85,9 @@ function ProductDetail() {
                   <h2 id="ingredients-title" className="text-lg font-bold text-zinc-900">İçindekiler</h2>
                   <p className="mt-1 text-xs text-zinc-500">Üretici veya ürün etiketi kaynağındaki sırayla</p>
                 </div>
-                <a href={product.ingredientSource.url} target="_blank" rel="noreferrer" className="text-sm font-semibold text-green-700 underline decoration-green-200 underline-offset-4 hover:text-green-800">
+                {product.ingredientSource.url ? <a href={product.ingredientSource.url} target="_blank" rel="noreferrer" className="text-sm font-semibold text-green-700 underline decoration-green-200 underline-offset-4 hover:text-green-800">
                   Kaynak: {product.ingredientSource.label}
-                </a>
+                </a> : <span className="text-xs text-zinc-500">Kaynak bağlantısı eklenmedi</span>}
               </div>
               <ol className="mt-4 space-y-2">
                 {product.ingredients.map((ingredient, index) => (
@@ -140,6 +142,7 @@ function ProductDetail() {
               <p className="mt-4 text-xs leading-5 text-zinc-500">İçerikler ürün çeşidine veya ambalaj yenilemesine göre değişebilir. Alerjiniz veya hassasiyetiniz varsa tüketmeden önce elinizdeki paketin etiketini kontrol edin.</p>
               <p className="mt-2 text-[11px] text-zinc-400">Kaynak son kontrol: {product.ingredientSource.checkedAt}</p>
             </section>
+            <ProductHealth product={product} />
             <Link to="/products" className="mt-8 inline-flex w-fit items-center gap-2 rounded-xl bg-green-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-green-700">Ürün kataloğuna dön <span aria-hidden="true">→</span></Link>
           </div>
         </article>

@@ -1,4 +1,4 @@
-import { products } from "../data/products";
+import { products } from "../data/catalogStore";
 
 // Keep the UI independent from the provider; replace this function with an API call later.
 export async function getNutritionAssistantReply(message, context) {

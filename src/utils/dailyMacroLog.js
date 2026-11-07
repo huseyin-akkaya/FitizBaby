@@ -1,4 +1,4 @@
-import { products } from "../data/products";
+import { products } from "../data/catalogStore";
 
 export const DAILY_MACRO_TARGETS_KEY = "fitizbaby.daily-macro-targets.v1";
 export const dailyMacroLogKey = (dayKey) => `fitizbaby.daily-macro-log.${dayKey}.v1`;

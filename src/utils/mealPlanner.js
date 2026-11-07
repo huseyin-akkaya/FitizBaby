@@ -1,4 +1,4 @@
-import { products } from "../data/products";
+import { products } from "../data/catalogStore";
 import { mealRecipes, mealSlotTemplates, recipeIngredients } from "../data/mealRecipes";
 
 export const STORAGE_KEY = "fitizbaby-nutrition-plan-v1";

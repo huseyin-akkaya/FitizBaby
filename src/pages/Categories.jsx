@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
-import { products } from "../data/products";
+import { useProducts } from "../hooks/useProducts";
 import { getCategoryIcon, getProductCategories, productBelongsToCategory } from "../data/productCategories";
 
 function Categories() {
+  const products = useProducts();
   return <main className="min-h-screen bg-zinc-50 px-4 py-10 sm:px-6">
     <div className="mx-auto max-w-7xl">
       <header className="mb-8">

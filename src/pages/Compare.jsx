@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { products } from "../data/products";
+import { useProducts } from "../hooks/useProducts";
 import { getProductCategories, getProductCategoryNames, productBelongsToCategory } from "../data/productCategories";
 import { COMPARE_STORAGE_KEY, getComparisonResult, readComparedIds } from "../utils/comparison";
 
@@ -15,17 +15,18 @@ const sweetenerPattern = /tatlandırıcı|sukraloz|steviol|aspartam|asesülfam|s
 const palmPattern = /palm yağı|palmiye yağı/i;
 
 function Compare() {
+  const products = useProducts();
   const [selectedIds, setSelectedIds] = useState(readComparedIds);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("Tümü");
-  const selected = useMemo(() => selectedIds.map((id) => products.find((product) => String(product.id) === String(id))).filter(Boolean), [selectedIds]);
-  const categories = useMemo(() => ["Tümü", ...getProductCategories(products)], []);
+  const selected = useMemo(() => selectedIds.map((id) => products.find((product) => String(product.id) === String(id))).filter(Boolean), [products, selectedIds]);
+  const categories = useMemo(() => ["Tümü", ...getProductCategories(products)], [products]);
   const filteredProducts = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase("tr");
     return products.filter((product) => !selectedIds.some((id) => String(id) === String(product.id))
       && productBelongsToCategory(product, category)
       && `${product.name} ${product.brand} ${getProductCategoryNames(product).join(" ")}`.toLocaleLowerCase("tr").includes(normalized));
-  }, [query, category, selectedIds]);
+  }, [products, query, category, selectedIds]);
   const result = useMemo(() => getComparisonResult(selected), [selected]);
   const sameServing = selected.length > 1 && selected.every((product) => product.serving === selected[0].serving);
   const mixedCategories = new Set(selected.map((product) => product.category)).size > 1;
@@ -56,6 +57,7 @@ function Compare() {
         {selected.length === 4 && <p className="mt-4 text-sm text-zinc-500">Dört ürün seçildi. Başka bir ürün eklemek için önce birini kaldır.</p>}
       </section>
 
+      {selected.some(product => product.userProvided) && <p className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">Karşılaştırmada kullanıcı tarafından eklenen ürün var. Bu ürünün etiket verileri bağımsız doğrulanmadı; sonuç girilen bilgilere dayanır.</p>}
       {mixedCategories && <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900"><strong>Kategori uyarısı:</strong> Farklı kategorilerdeki ürünleri karşılaştırıyorsun. Besin ve içerik bilgileri yan yana gösterilir; sonuç kendi başına kişisel beslenme hedefine göre seçim anlamına gelmez.</div>}
       {selected.length === 1 && <div className="mt-6 rounded-2xl border border-dashed border-zinc-300 bg-white p-8 text-center"><h2 className="font-semibold text-zinc-900">Karşılaştırmak için bir ürün daha ekle</h2><p className="mt-1 text-sm text-zinc-500">Arama alanından ikinci ürünü seçtiğinde tablolar ve sonuç burada görünür.</p></div>}
       {selected.length === 0 && <div className="mt-6 rounded-2xl border border-dashed border-zinc-300 bg-white p-8 text-center"><h2 className="font-semibold text-zinc-900">Karşılaştırma henüz başlamadı</h2><p className="mt-1 text-sm text-zinc-500">Ürün ara veya ürün kataloğundan karşılaştırma listene ürün ekle.</p></div>}

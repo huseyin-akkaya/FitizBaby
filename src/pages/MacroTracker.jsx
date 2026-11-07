@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { products } from "../data/products";
+import { products } from "../data/catalogStore";
+import { useProducts } from "../hooks/useProducts";
 import { getProductCategoryNames } from "../data/productCategories";
 
 const TARGETS_STORAGE_KEY = "fitizbaby.daily-macro-targets.v1";
@@ -149,6 +150,7 @@ function MealSection({ meal, entries, totals, onAdd, onChangeEntry, onChangeMode
 }
 
 function MacroTracker() {
+  useProducts();
   const [dayKey] = useState(localDayKey);
   const dailyStorageKey = `fitizbaby.daily-macro-log.${dayKey}.v1`;
   const [targets, setTargets] = useState(readTargets);
@@ -156,8 +158,8 @@ function MacroTracker() {
   const mealsRef = useRef(meals);
   const [storageWarning, setStorageWarning] = useState("");
   const dateLabel = useMemo(() => new Intl.DateTimeFormat("tr-TR", { dateStyle: "full" }).format(new Date(`${dayKey}T12:00:00`)), [dayKey]);
-  const productTotals = useMemo(() => summarizeEntries(Object.values(meals).flat()), [meals]);
-  const mealTotals = useMemo(() => Object.fromEntries(mealTypes.map(({ key }) => [key, summarizeEntries(meals[key])])), [meals]);
+  const productTotals = summarizeEntries(Object.values(meals).flat());
+  const mealTotals = Object.fromEntries(mealTypes.map(({ key }) => [key, summarizeEntries(meals[key])]));
 
   const saveToStorage = (storageKey, value) => {
     try {
