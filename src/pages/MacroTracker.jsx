@@ -39,16 +39,16 @@ function readMeals(storageKey) {
   try {
     const saved = JSON.parse(localStorage.getItem(storageKey) ?? "null");
     return Object.fromEntries(mealTypes.map(({ key }) => [key, Array.isArray(saved?.[key])
-      ? saved[key].filter((entry) => products.some((product) => String(product.id) === String(entry.productId)))
+      ? saved[key].filter((entry) => entry && ['string', 'number'].includes(typeof entry.productId))
         .map((entry) => {
           const product = products.find((item) => String(item.id) === String(entry.productId));
-          const serving = parseServing(product.serving);
+          const serving = parseServing(product?.serving);
           if (entry.mode === "custom" || entry.mode === "package") {
             return {
               productId: entry.productId,
               mode: entry.mode,
               amount: entry.amount == null ? "" : String(entry.amount),
-              packageSize: entry.packageSize == null ? String(product.packageSize ?? "") : String(entry.packageSize),
+              packageSize: entry.packageSize == null ? String(product?.packageSize ?? "") : String(entry.packageSize),
               packageCount: entry.packageCount == null ? 1 : String(entry.packageCount),
             };
           }
@@ -60,7 +60,7 @@ function readMeals(storageKey) {
             productId: entry.productId,
             mode: "custom",
             amount: String(serving ? serving.amount * oldQuantity : oldQuantity * 100),
-            packageSize: String(product.packageSize ?? ""),
+            packageSize: String(product?.packageSize ?? ""),
             packageCount: 1,
           };
         }).filter(Boolean)
@@ -124,8 +124,8 @@ function MealSection({ meal, entries, totals, onAdd, onChangeEntry, onChangeMode
 
     <div className="mt-4 space-y-2.5">{entries.map((entry) => {
       const product = products.find((item) => String(item.id) === String(entry.productId));
-      if (!product) return null;
-      const serving = parseServing(product.serving);
+      if (!product) return <p key={entry.productId} className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900">Bu ürün etkin katalogda bulunmuyor. Öğün kaydı korunuyor; toplam hesaplamasına katılmıyor.</p>;
+      const serving = parseServing(product?.serving);
       const unit = serving?.unit ?? "g";
       const consumedAmount = getConsumedAmount(entry);
       const packageMode = entry.mode === "package";
@@ -193,10 +193,10 @@ function MacroTracker() {
       ? current[mealKey].map((entry) => {
         if (String(entry.productId) !== String(productId)) return entry;
         if (entry.mode === "package") return { ...entry, packageCount: Math.min(100, Number(entry.packageCount || 0) + 1) };
-        const serving = parseServing(product.serving);
+        const serving = parseServing(product?.serving);
         return { ...entry, amount: String(Math.min(100000, (Number(entry.amount) || 0) + (serving?.amount ?? 100))) };
       })
-      : [...current[mealKey], { productId, mode: "custom", amount: "100", packageSize: String(product.packageSize ?? ""), packageCount: 1 }];
+      : [...current[mealKey], { productId, mode: "custom", amount: "100", packageSize: String(product?.packageSize ?? ""), packageCount: 1 }];
     return { ...current, [mealKey]: nextEntries };
   });
   const changeEntry = (mealKey, productId, field, rawValue) => {

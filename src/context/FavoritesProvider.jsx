@@ -49,11 +49,13 @@ export default function FavoritesProvider({ children }) {
   useEffect(() => {
     const sync = () => { const ids = readLocal(); if (ids) setLocalIds(ids); };
     const refresh = () => reload();
+    const productChange = () => { reload(); channel.current?.postMessage('changed'); };
     window.addEventListener('storage', sync);
     window.addEventListener(EVENT, sync);
+    window.addEventListener('fitizbaby:favorites-refresh', productChange);
     window.addEventListener('focus', refresh);
     if (typeof BroadcastChannel !== 'undefined') { channel.current = new BroadcastChannel('fitizbaby-favorites'); channel.current.onmessage = refresh; }
-    return () => { window.removeEventListener('storage', sync); window.removeEventListener(EVENT, sync); window.removeEventListener('focus', refresh); channel.current?.close(); channel.current = null; };
+    return () => { window.removeEventListener('storage', sync); window.removeEventListener(EVENT, sync); window.removeEventListener('fitizbaby:favorites-refresh', productChange); window.removeEventListener('focus', refresh); channel.current?.close(); channel.current = null; };
   }, [reload]);
 
   async function save(data, importing = false) {

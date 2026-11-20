@@ -1,6 +1,8 @@
-import { useSyncExternalStore } from 'react';
-import { subscribeProducts, getProductsSnapshot } from '../data/catalogStore';
-
-export function useProducts() {
-  return useSyncExternalStore(subscribeProducts, getProductsSnapshot, getProductsSnapshot);
+import { useContext } from 'react';
+import { ProductContext } from '../context/productContext';
+export function useProductCatalog() {
+  const value = useContext(ProductContext);
+  if (!value) throw new Error('Ürün sağlayıcısı bulunamadı.');
+  return value;
 }
+export function useProducts() { return useProductCatalog().products; }

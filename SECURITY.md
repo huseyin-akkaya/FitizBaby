@@ -9,7 +9,7 @@ Bu sürüm yerel geliştirme içindir. Güvenlik önlemleri ve testler bulunmas�
 - 32 bayt rastgele oturum belirteci HttpOnly/SameSite=Lax çerezde; PostgreSQL'de SHA-256 özeti tutulur. Üretimde Secure, __Host- ve HTTPS zorunludur. Girişte yeni oturum üretilir; çıkışta sunucu kaydı iptal edilir.
 - 30 dakika hareketsizlik, 7 gün mutlak ömür, kişi başına en fazla 5 oturum. Hesap ekranı sunucunun doğruladığı oturuma bağlıdır.
 - Değişiklik isteklerinde açık Origin listesi, cross-site istek reddi ve JSON zorunluluğu uygulanır. Genel API sınırı 15 dakikada 300, hesap denemesi sınırı 15 dakikada 10/IP; aynı anda en fazla 4 parola hash/doğrulama işlemi çalışır.
-- Gövde 16 KB ile sınırlı; Zod sunucu doğrulaması bilinmeyen alanları reddeder. Role=admin gibi istemci alanları kabul edilmez. SQL değerleri parametrelidir.
+- Hesap/favori gövdeleri 16 KB ile sınırlı; ürün yüklemeleri oturum denetiminden sonra en fazla 900 KB kabul eder; Zod sunucu doğrulaması bilinmeyen alanları reddeder. Role=admin gibi istemci alanları kabul edilmez. SQL değerleri parametrelidir.
 - API rolünde yönetim/şema oluşturma yetkisi yoktur. Kullanıcı rolünü veya oturum bitişini değiştirme izinleri de verilmez. Şema değişiklikleri ayrı sahibin bağlantısıyla yapılır.
 - Helmet başlıkları, no-store hesap yanıtları ve ayrıntı/bağlantı bilgisi sızdırmayan hata yanıtları bulunur. Loglar hata gövdesi/parola yerine istek kimliği içerir.
 
@@ -17,7 +17,15 @@ Bu sürüm yerel geliştirme içindir. Güvenlik önlemleri ve testler bulunmas�
 
 Favori sorguları her zaman doğrulanmış oturumun user_id değeriyle sınırlandırılır. İstemci gövdesindeki userId/başka alanlar reddedilir. X-FitizBaby-Account başlığı yalnızca hesap değişikliğini tespit eder; yetki sağlamaz. Kaydetme/aktarım işlemi kullanıcı satırı kilidiyle tek transaction içinde tamamlanır, tekrar aktarım kopya oluşturmaz. API rolü favori sahibini UPDATE edemez. Bu sürümde veritabanı satır güvenliği (RLS) yoktur; yalıtım sunucu sorguları ve iki hesaplı testlerle sağlanır.
 
-Misafir favorileri tarayıcıdadır. Hesaba aktarım kendiliğinden yapılmaz, kaynak silinmez. Özel ürünlerin yalnızca kimlikleri favori kaydına alınır; içerikleri henüz hesaba bağlı değildir. Hesap bilgisi değiştiğinde arayüz eski hesaba ait favorileri gizler ve bekleyen istemci isteklerini iptal eder. Sunucuya ulaşmış işlem iptalden önce tamamlanmış olabilir; sunucu oturumu ve hesap eşleşmesi yine kontrol edilir.
+Misafir favorileri tarayıcıdadır. Hesaba aktarım kendiliğinden yapılmaz, kaynak silinmez. Favori aktarımı yalnızca kimlik taşır; özel ürün içeriği ayrı ürün aktarımıyla hesaba bağlanır. Hesap bilgisi değiştiğinde arayüz eski hesaba ait favorileri gizler ve bekleyen istemci isteklerini iptal eder. Sunucuya ulaşmış işlem iptalden önce tamamlanmış olabilir; sunucu oturumu ve hesap eşleşmesi yine kontrol edilir.
+
+## Ürünler ve görseller
+
+Ürün işlemlerinde sahiplik oturumdan alınır; tüm sorgular user_id ile sınırlandırılır. Gövdeye userId eklenemez, API rolü ürün id/user_id alanlarını değiştiremez. Düzenleme ve silmede revision eşleşmesi zorunludur. Silme içerik/görseli temizler; tekrar aktarımı önlemek için ürün kimliği, hesap ilişkisi ve zaman kaydı tutulur. Başka hesaba ait görsel URL'si aynı tarayıcıda yeni oturumla kullanılırsa account tutarlılık kontrolü reddeder. Görseller HttpOnly oturum denetimi ve no-store/nosniff başlıklarıyla sunulur; genel dosya dizinine yazılmaz.
+
+Sharp gerçek çözümleme yapar, PNG/JPEG/WebP biçimini doğrular, ek görsel bilgilerini temizleyip WebP üretir. SVG, bozuk/uyumsuz biçim, 600 KB veya 16 milyon piksel üzeri giriş reddedilir. Dış URL'den görsel indirilmez (sunucudan dış isteğe neden olmaz). Çözümleme eşzamanlılığı iki; ürün sayısı hesap başına 100 etkin/500 toplam kimliktir. Yerel prototipte görseller bytea tutulur. Üretimde toplam hesap/depolama kotası, antivirüs gereksinimleri, izleme ve özel nesne depolaması ayrıca değerlendirilmelidir.
+
+Hesap geçişinde ön yüz önceki hesabın katalog verilerini/formlarını/asistan mesajlarını temizler. Tarayıcıdan aktarım açık düğmeyle başlar; kaynak veriyi silmez. Kısmi aktarım geri alınmaz, tekrar güvenlidir. Tarayıcıdaki profil/plan/günlük kayıtlar henüz hesaba bağlı olmadığı için bu kayıtlar paylaşılan cihazda özel sayılmaz.
 
 ## Gizli dosyalar
 
@@ -29,7 +37,7 @@ Misafir favorileri tarayıcıdadır. Hesaba aktarım kendiliğinden yapılmaz, k
 
 - E-posta doğrulama, parola sıfırlama, MFA ve hesap kurtarma yok. Kayıtta yinelenen e-posta 409 yanıtı döner; e-posta sahipliği henüz doğrulanmaz. Bu sebeple halka açık kayıt için tamamlanmış akış sayılmaz.
 - İstek sınırları tek süreç belleğindedir; üretimde birden fazla sunucuya uygun ortak sınırlama ve kalıcı izleme gerekir.
-- Özel ürün içerikleri ve beslenme verileri henüz kullanıcı hesabına bağlı değildir; aynı tarayıcıdaki yerel kayıtlar paylaşılır. Bu kayıtlar yerel geliştirme verisidir; çok kullanıcılı gizli veri depolaması olarak değerlendirilmemelidir.
+- Misafir ürünleri ve beslenme verileri henüz kullanıcı hesabına bağlı değildir; aynı tarayıcıdaki yerel kayıtlar paylaşılır. Bu kayıtlar yerel geliştirme verisidir; çok kullanıcılı gizli veri depolaması olarak değerlendirilmemelidir.
 - Gerçek AI, e-posta sağlayıcısı, bulut dağıtımı ve üretim yedeklemesi bu aşamada kurulmadı.
 
 ## Üretim öncesi

@@ -5,6 +5,7 @@ import { env } from './config.js';
 import { pool } from './db/pool.js';
 import { createAuthRouter } from './routes/auth.js';
 import { createFavoritesRouter } from './routes/favorites.js';
+import { createProductsRouter } from './routes/products.js';
 import { createLimits, requireAllowedOrigin } from './middleware/security.js';
 
 export function createApp(database = pool) {
@@ -14,7 +15,9 @@ export function createApp(database = pool) {
   if (env.TRUST_PROXY === 'true') app.set('trust proxy', 1);
   app.use(helmet());
   app.use('/api', (_req, res, next) => { res.set('Cache-Control', 'no-store'); res.locals.requestId = randomUUID(); next(); });
-  app.use('/api', limits.api, requireAllowedOrigin, express.json({ limit: '16kb', strict: true }));
+  app.use('/api', limits.api, requireAllowedOrigin);
+  app.use('/api/v1/products', createProductsRouter(database));
+  app.use('/api', express.json({ limit: '16kb', strict: true }));
   app.get('/api/health', async (_req, res) => {
     if (!database) return res.status(503).json({ status: 'degraded', database: 'not_configured' });
     try { await database.query('SELECT 1'); return res.json({ status: 'ok', database: 'connected' }); }

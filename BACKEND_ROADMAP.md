@@ -22,13 +22,21 @@ Kullanıcının kendi PostgreSQL kurulumunun tamamlanması için kendi terminali
 
 Favoriler oturumdaki kullanıcıya göre PostgreSQL'de saklanır. Başka hesapların kayıtları listelenemez veya değiştirilemez. Hesap değişmişse eski sekmenin yazma isteği reddedilir. Tarayıcı favorileri yalnızca Hesabım ekranındaki açık aktarım düğmesiyle birleştirilir; tekrar aktarım kopya oluşturmaz, yerel kayıt silinmez. Sunucu yanıtı alınmadan başarılı kayıt gösterilmez. Sekmeler arası değişiklik bildirimi ve pencereye dönüşte yenileme vardır; farklı cihazlar için sayfa yenileme gerekir.
 
-Özel ürünlerin yalnızca favori kimliği aktarılır; ürün içeriği ve görseli henüz aktarılmaz. Özel ürün başka tarayıcıda bulunmayabilir. Favori başına yalnızca ürün kimliği saklanır; en fazla 1000 favori kabul edilir ve istek gövdesinin 16 KB sınırı sürer. Büyük aktarım bu sınırı aşarsa hiçbir kayıt değiştirilmeden reddedilir.
+Favori aktarımı yalnızca ürün kimliğini taşır; özel ürünün içeriği 2b aşamasındaki ayrı aktarım düğmesiyle taşınır. Favori başına yalnızca ürün kimliği saklanır; en fazla 1000 favori kabul edilir ve istek gövdesinin 16 KB sınırı sürer. Büyük aktarım bu sınırı aşarsa hiçbir kayıt değiştirilmeden reddedilir.
+
+## Aşama 2b: Hesaba bağlı ürünler
+
+Özel ürünler ve doğrulanıp yeniden kodlanan görseller PostgreSQL'de oturum sahibine göre saklanır. Başka kullanıcı ürününü listeleme, detay/görsel açma, düzenleme ve silme reddedilir. Düzenleme ve silme revision ile kontrol edilir; eski sekme yeni veriyi ezemez. Silme kullanıcıdan onay ister, içerik ve görseli kaldırır, yalnızca tekrar aktarımı engelleyen kimlik/zaman kaydı kalır. Yalnızca ilgili hesabın favorisi temizlenir. Hazır katalog değişmez.
+
+Misafir ürünleri korunur ve kendiliğinden hesaba alınmaz. Açık aktarım tek tek ve tekrar güvenli ilerler; kısmi hatada başarılı kayıtlar kalır, kalanlar yeniden denenebilir. Aktarım var olan ürünleri ezmez ve silinmişleri diriltmez. Hesap geçişinde canlı katalog, formlar, karşılaştırma seçimi ve asistan mesajları önceki hesaptan temizlenir. Misafir karşılaştırma seçimi ayrı korunur. Günlük kayıttaki bulunamayan ürünler silinmez; bu aşamada toplamları güncel kataloğa bağlıdır, tarihsel besin anlık görüntüleri henüz yoktur.
+
+Hesap başına 100 etkin/500 geçmiş kimlik; görsel girişinde 600 KB/16 milyon piksel, sunucuda en fazla iki eşzamanlı çözümleme ve 800×800 WebP çıktı sınırı vardır. Ürün JSON'u yalnızca oturum doğrulandıktan sonra 900 KB sınırıyla ayrıştırılır; diğer API gövdeleri 16 KB kalır. Veritabanında görsel saklama yerel prototip içindir; üretim depolama/izleme gereksinimleri ayrıca ele alınmalı.
 
 ## Sonraki aşama: Diğer hesaba bağlı veriler
 
-Özel ürün içerikleri, profil, beslenme planı ve günlük kayıtlar henüz hesaplara bağlanmadı. Mevcut localStorage kayıtları korunacak; açık kullanıcı seçimi ve tekrarlı içe alımda çoğaltmayı önleyen düzen kurulacak. Her işlemde sunucunun oturumdan aldığı kullanıcı kimliği esas alınacak; istemcinin gönderdiği userId yetki sayılmayacak.
+Profil, beslenme planı ve günlük kayıtlar henüz hesaplara bağlanmadı. Mevcut localStorage kayıtları korunacak; açık kullanıcı seçimi ve tekrarlı içe alımda çoğaltmayı önleyen düzen kurulacak. Her işlemde sunucunun oturumdan aldığı kullanıcı kimliği esas alınacak; istemcinin gönderdiği userId yetki sayılmayacak.
 
-Ardından kendi ürününü düzenleme/silme, ortak katalog için moderasyon ve uygun görsel depolama ele alınacak. Paylaşılan cihazda farklı hesapların birbirinin kayıtlarını görmemesi bu aşamanın kabul koşuludur.
+Ardından ortak katalog için moderasyon ve üretime uygun görsel depolama ele alınacak. Paylaşılan cihazda farklı hesapların birbirinin kayıtlarını görmemesi bu aşamanın kabul koşuludur.
 
 ## Yayımlamadan önce
 

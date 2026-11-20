@@ -43,7 +43,7 @@ try {
   await migrate(plan.ownerUrl, plan.app);
   await migrate(plan.ownerUrl, plan.app); // Repeat should safely skip applied migrations.
   const env = { NODE_ENV: 'test', DATABASE_URL: plan.appUrl, FITIZBABY_TEST_DATABASE_URL: plan.appUrl, FRONTEND_ORIGINS: 'http://localhost:8080,http://127.0.0.1:8080', API_HOST: '127.0.0.1', API_PORT: '3001', TRUST_PROXY: 'false' };
-  await run(process.execPath, ['--test', '--test-concurrency=1', 'server/tests/auth.test.js'], { ...env, FITIZBABY_TEST_OWNER_URL: plan.ownerUrl });
+  await run(process.execPath, ['--test', '--test-concurrency=1', 'server/tests/auth.test.js', 'server/tests/products.test.js'], { ...env, FITIZBABY_TEST_OWNER_URL: plan.ownerUrl });
   await run(process.execPath, ['--test', 'server/tests/production.test.js'], { ...env, NODE_ENV: 'production', FRONTEND_ORIGINS: 'https://localhost', TRUST_PROXY: 'true' });
   const browserTest = argument('--browser-test');
   if (browserTest) {

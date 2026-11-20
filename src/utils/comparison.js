@@ -1,5 +1,8 @@
+import { getProductsSnapshot } from '../data/catalogStore';
 import { products as catalog } from '../data/catalogStore';
 export const COMPARE_STORAGE_KEY = "fitizbaby.compareProductIds";
+
+const storageKey = () => { const scope = getProductsSnapshot().scope; return scope === 'guest' || scope === 'pending' ? COMPARE_STORAGE_KEY : COMPARE_STORAGE_KEY + '.account.' + scope; };
 
 export const comparisonCriteria = [
   { key: "protein", label: "Protein", unit: "g", direction: "high", weight: 1 },
@@ -10,7 +13,7 @@ export const comparisonCriteria = [
 
 export function readComparedIds() {
   try {
-    const parsed = JSON.parse(localStorage.getItem(COMPARE_STORAGE_KEY) || "[]");
+    const parsed = JSON.parse(localStorage.getItem(storageKey()) || "[]");
     return Array.isArray(parsed) ? [...new Set(parsed.filter(id => typeof id === "number" || typeof id === "string").map(id => catalog.find(product => String(product.id) === String(id))?.id).filter(id => id != null))].slice(0, 4) : [];
   } catch {
     return [];
@@ -18,7 +21,7 @@ export function readComparedIds() {
 }
 
 export function saveComparedIds(ids) {
-  try { localStorage.setItem(COMPARE_STORAGE_KEY, JSON.stringify(ids)); } catch { /* Storage unavailable. */ }
+  try { localStorage.setItem(storageKey(), JSON.stringify(ids)); } catch { /* Storage unavailable. */ }
 }
 
 export function getComparisonResult(products) {

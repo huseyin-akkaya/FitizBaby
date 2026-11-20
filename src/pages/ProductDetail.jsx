@@ -1,5 +1,7 @@
+import ManageProduct from "../components/ManageProduct";
+import ProductStorageStatus from "../components/ProductStorageStatus";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { useProducts } from "../hooks/useProducts";
+import { useProductCatalog, useProducts } from "../hooks/useProducts";
 import ProductHealth from "../components/ProductHealth";
 import { useFavorites } from "../hooks/useFavorites";
 import FavoritesStatus from "../components/FavoritesStatus";
@@ -20,8 +22,11 @@ function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const products = useProducts();
+  const catalog = useProductCatalog();
   const product = products.find(item => String(item.id) === String(id));
   const { favoriteIds, toggleFavorite, loading: favoritesLoading, busy: favoritesBusy } = useFavorites();
+
+  if (!product && !catalog.ready) return <main className="mx-auto max-w-xl p-8"><h1 className="text-2xl font-bold">Ürün bilgisi yüklenemedi</h1><div className="mt-4"><ProductStorageStatus /></div><Link to="/products" className="text-green-700 underline">Ürünlere dön</Link></main>;
 
   if (!product) {
     return (
@@ -43,7 +48,7 @@ function ProductDetail() {
         <button type="button" onClick={() => navigate(-1)} className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-zinc-500 transition hover:text-green-700">
           <span aria-hidden="true">←</span> Geri dön
         </button>
-        <FavoritesStatus />
+        <ProductStorageStatus /><FavoritesStatus /><ManageProduct product={product} />
         <article className="grid overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm lg:grid-cols-2 lg:items-start">
           <div className={`flex min-h-80 items-center justify-center bg-gradient-to-br p-8 sm:min-h-[480px] sm:p-12 ${product.accent}`}>
             <img src={product.image} alt={product.imageAlt ?? product.name} className="h-72 w-72 max-w-full object-contain sm:h-96 sm:w-96" />

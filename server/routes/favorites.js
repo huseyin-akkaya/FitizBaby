@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { lookupUser } from './auth.js';
+import { requireAccount } from '../middleware/account.js';
 import { products } from '../../src/data/products.js';
 
 const catalogIds = new Set(products.map(product => String(product.id)));
@@ -12,16 +12,7 @@ const read = async (client, userId) => (await client.query('SELECT product_id FR
 
 export function createFavoritesRouter(database) {
   const router = Router();
-  router.use(async (req, res, next) => {
-    const user = await lookupUser(database, req, res);
-    if (res.headersSent) return;
-    if (!user) return res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Favorilerin için yeniden giriş yapmalısın.' } });
-    // A stale tab must not accidentally write into a newly selected account.
-    // This header is a consistency guard, never a source of authorization.
-    if (req.get('X-FitizBaby-Account') !== user.id) return res.status(409).json({ error: { code: 'ACCOUNT_CHANGED', message: 'Etkin hesap değişti. Sayfayı yenileyip yeniden dene.' } });
-    res.locals.userId = user.id;
-    next();
-  });
+  router.use(requireAccount(database));
   router.get('/', async (_req, res) => res.json({ userId: res.locals.userId, productIds: await read(database, res.locals.userId) }));
   async function mutate(req, res, importing) {
     const parsed = (importing ? importSchema : changeSchema).safeParse(req.body);
@@ -34,6 +25,10 @@ export function createFavoritesRouter(database) {
       await client.query('BEGIN');
       // Serialize the limit check and imports for the same account.
       await client.query('SELECT id FROM users WHERE id = $1 FOR UPDATE', [userId]);
+      if (!importing && input.favorite && input.productId.startsWith('custom-')) {
+        const owned = await client.query('SELECT id FROM user_products WHERE user_id = $1 AND id = $2 AND deleted_at IS NULL', [userId, input.productId]);
+        if (!owned.rowCount) { await client.query('ROLLBACK'); return badInput(res); }
+      }
       const existing = await read(client, userId);
       if (new Set([...existing, ...additions]).size > 1000) {
         await client.query('ROLLBACK');

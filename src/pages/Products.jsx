@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import RangeSlider from "../components/RangeSlider";
 import AddProductForm from "../components/AddProductForm";
+import ProductStorageStatus from "../components/ProductStorageStatus";
+import { useProductCatalog } from "../hooks/useProducts";
 import { useProducts } from "../hooks/useProducts";
 import { getProductCategories, getProductCategoryNames, productBelongsToCategory } from "../data/productCategories";
 import { useFavorites } from "../hooks/useFavorites";
@@ -13,6 +15,7 @@ const Heart = ({ filled = false }) => <svg viewBox="0 0 24 24" className="h-5 w-
 
 function Products() {
   const products = useProducts();
+  const catalog = useProductCatalog();
   const categories = ["Tümü", ...getProductCategories(products)];
   const [addingProduct, setAddingProduct] = useState(false);
   const [success, setSuccess] = useState("");
@@ -106,12 +109,12 @@ function Products() {
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:py-10">
       <div className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div><p className="mb-2 text-sm font-semibold text-green-700">{selectedCategory === "Tümü" ? "BESLENME ÜRÜNLERİ" : "KATEGORİYE GÖRE KEŞFET"}</p><h1 className="text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl">{selectedCategory === "Tümü" ? "Ürünleri keşfet" : selectedCategory}</h1><p className="mt-2 max-w-xl text-sm leading-6 text-zinc-500">Besin değerlerini incele, hedeflerine uygun seçenekleri kolayca bul.</p></div>
-        <div className="flex flex-wrap gap-2"><button type="button" onClick={() => { setAddingProduct(true); setSuccess(""); }} aria-expanded={addingProduct} aria-controls="add-product" className="rounded-xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-green-700">+ Ürün ekle</button><button type="button" onClick={() => setFavoritesOnly((value) => !value)} className={`inline-flex w-fit items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition ${favoritesOnly ? "border-rose-200 bg-rose-50 text-rose-600" : "border-zinc-200 bg-white text-zinc-700 hover:border-rose-200 hover:text-rose-600"}`}><Heart filled={favoritesOnly} /> Favorilerim <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs">{favoriteIds.length}</span></button></div>
+        <div className="flex flex-wrap gap-2"><button type="button" disabled={!catalog.ready || catalog.busy} onClick={() => { setAddingProduct(true); setSuccess(""); }} aria-expanded={addingProduct} aria-controls="add-product" className="rounded-xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-green-700">+ Ürün ekle</button><button type="button" onClick={() => setFavoritesOnly((value) => !value)} className={`inline-flex w-fit items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition ${favoritesOnly ? "border-rose-200 bg-rose-50 text-rose-600" : "border-zinc-200 bg-white text-zinc-700 hover:border-rose-200 hover:text-rose-600"}`}><Heart filled={favoritesOnly} /> Favorilerim <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs">{favoriteIds.length}</span></button></div>
       </div>
 
-      <FavoritesStatus />
+      <ProductStorageStatus /><FavoritesStatus />
       {success && <p role="status" className="mb-5 rounded-xl bg-green-50 p-4 text-sm text-green-900">{success}</p>}
-      {addingProduct && <AddProductForm onCancel={() => setAddingProduct(false)} onAdded={() => { setAddingProduct(false); clearFilters(); setSuccess('Ürün kaydedildi. Bu tarayıcıdaki kataloğa eklendi; detayını açabilir ve karşılaştırabilirsin.'); }} />}
+      {addingProduct && <AddProductForm onCancel={() => setAddingProduct(false)} onAdded={() => { setAddingProduct(false); clearFilters(); setSuccess(catalog.account ? 'Ürün hesabına kaydedildi. Detayını açabilir, düzenleyebilir ve karşılaştırabilirsin.' : 'Ürün bu tarayıcıya kaydedildi. Hesabım ekranından ayrıca aktarabilirsin.'); }} />}
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[270px_minmax(0,1fr)]">
         <aside className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
           <div className="mb-5 flex items-center justify-between"><h2 className="text-base font-bold text-zinc-900">Filtreler</h2>{hasFilters && <button onClick={clearFilters} className="text-xs font-semibold text-green-700 hover:text-green-800">Temizle</button>}</div>

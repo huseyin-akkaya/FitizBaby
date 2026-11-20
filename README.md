@@ -17,30 +17,31 @@ Proje geliştirme aşamasındadır. Kaynak kod [FitizBaby GitHub deposunda](http
 - Günlük makro takip ekranında ürünleri öğünlere ekleme, miktarlarını değiştirme, öğün kayıtlarından çıkarma ve toplamları izleme.
 - Küçük ekranlara uyarlanan sayfa düzenleri ve mobil menü.
 
-**Ürün düzenleme ve silme hakkında:** Bu depodaki mevcut katalog arayüzünde ürün ekleme doğrulanmıştır; katalog ürünlerini düzenleme ve silme akışları henüz bulunmamaktadır. Ürünü karşılaştırmadan veya günlük öğün kaydından çıkarmak, katalogdan silmekle aynı işlem değildir.
+**Ürün düzenleme ve silme:** Giriş yapan kullanıcı kendi ürünlerini ürün detayından düzenleyip onaylayarak silebilir. Hazır katalogdaki ürünler değiştirilemez. Misafir ürünlerini düzenlemek için önce Hesabım ekranından aktarmak gerekir. Silinen ürün tekrar aktarımda geri gelmez; tarayıcıdaki kaynak kopya korunur. Günlük takip henüz güncel katalog değerlerini kullandığı için ürün düzenlemeleri eski öğün toplamlarına yansıyabilir; silinen/bulunamayan ürünlerin öğün kayıtları korunur, değerleri toplama katılmaz.
 
 ## Veriler Nasıl Saklanıyor?
 
-Hazır ürün kataloğu proje dosyalarında bulunur. Kullanıcının eklediği ürünler, misafir favorileri, karşılaştırma seçimi, beslenme planı ve günlük takip kayıtları kullanılan tarayıcının `localStorage` alanında saklanır. Giriş yapan kullanıcının hesap favorileri PostgreSQL veritabanındadır.
+Hazır ürün kataloğu proje dosyalarında bulunur. Misafir olarak eklenen ürünler ve favoriler, karşılaştırma seçimi, beslenme planı ve günlük takip kayıtları tarayıcının `localStorage` alanında saklanır. Giriş yaparak eklenen veya açıkça aktarılan ürünler ve hesap favorileri PostgreSQL veritabanındadır. Hesaptaki ürünler başka kullanıcılara açık değildir; ortak katalogdan ayrı tutulur.
 
 - Site veya tarayıcı kapatılıp açıldığında kayıtlar normal koşullarda korunur.
-- Yerel kayıtlar farklı tarayıcılar arasında senkronize edilmez. Hesap favorilerine aynı hesapla başka tarayıcıdan erişilebilir.
+- Yerel kayıtlar farklı tarayıcılar arasında senkronize edilmez. Hesap ürünlerine ve favorilerine aynı hesapla başka tarayıcıdan erişilebilir.
 - Kayıt alanı site adresine bağlıdır; alan adı, protokol veya port değişirse farklı bir kayıt alanı kullanılır.
-- Site verilerinin temizlenmesi yerel kayıtları silebilir. Hesap favorileri sunucuda kalır; diğer yerel kayıtlar için otomatik yedekleme yoktur.
+- Site verilerinin temizlenmesi yerel kayıtları silebilir. Hesap ürünleri ve favorileri sunucuda kalır; diğer yerel kayıtlar için otomatik yedekleme yoktur.
 
 ## Geliştirme Aşamasındaki Bölümler
 
 - **Yapay zekâ asistanı:** Kısmen çalışan bir prototiptir. Mevcut kod, mesajdaki anahtar kelimeleri ve katalog eşleşmelerini kullanarak hazır yanıtlar üretir; harici bir yapay zekâ modeli veya API bağlantısı bulunmaz. Geliştirmesi tamamlanmamıştır.
 - **Beslenme planı:** Kalori ve makro hesaplama, hedefleri özelleştirme, üç/dört/beş öğün seçimi ve örnek tarif alternatifleri vardır. Bölümün geliştirmesi tamamlanmamıştır. Hesaplanan ihtiyaçlar ve tarif değerleri yaklaşık tahminlerdir.
 - **Kullanıcı girişi ve kayıt:** Express/PostgreSQL tabanlı yerel hesap ve oturum akışı eklendi. Veritabanı kurulumu sonrasında kayıt, giriş, hesap ekranı ve çıkış kullanılabilir. E-posta doğrulama, parola sıfırlama ve üretime açılma hazırlıkları henüz tamamlanmadı.
-- **Katalog yönetimi:** Ürün düzenleme ve katalogdan silme işlemleri tamamlanacak işler arasındadır.
-- **Sunucu ve yayımlama:** Hesap ve oturum sunucusu yerel geliştirme için hazırlandı. Ürün/plan verilerinin hesaba bağlanması ve bunların cihazlar arası senkronizasyonu, e-posta doğrulama, parola kurtarma ve sitenin yayımlanması sonraki aşamalardır.
+- **Katalog yönetimi:** Kendi hesap ürününü ekleme/düzenleme/silme ve tarayıcıdan aktarım çalışır. Herkese açık ortak katalog için moderasyon henüz yoktur.
+- **Sunucu ve yayımlama:** Hesap ve oturum sunucusu yerel geliştirme için hazırlandı. Profil, beslenme planı ve günlük kayıtların hesaba bağlanması, e-posta doğrulama, parola kurtarma ve sitenin yayımlanması sonraki aşamalardır.
 
 ## Kullanılan Teknolojiler
 
 - **JavaScript ve JSX:** Uygulama kodları.
 - **React 19 ve React DOM:** Bileşenler ve arayüz durumu.
 - **Express 5, PostgreSQL ve pg:** API, hesap ve oturum kayıtları.
+- **Sharp:** Ürün görsellerini sunucuda doğrulama, küçültme ve yeniden kodlama.
 - **Argon2id:** Parola hash işlemi.
 - **Helmet, express-rate-limit ve Zod:** HTTP başlıkları, istek sınırlama ve sunucu doğrulaması.
 - **Vite 8:** Yerel geliştirme ve üretim derlemesi.
@@ -50,7 +51,7 @@ Hazır ürün kataloğu proje dosyalarında bulunur. Kullanıcının eklediği �
 - **ESLint:** Kod denetimi.
 - **Git ve GitHub:** Sürüm takibi ve kaynak kod paylaşımı.
 
-Ön yüze Express API ve PostgreSQL hesap/oturum altyapısı eklendi. Kurulum adımları aşağıdadır. Hesap favorileri veritabanına taşındı. Özel ürün içerikleri, planlar ve günlük kayıtlar localStorage kullanmaya devam eder.
+Ön yüze Express API ve PostgreSQL hesap/oturum altyapısı eklendi. Kurulum adımları aşağıdadır. Hesap ürünleri ve favoriler veritabanındadır. Misafir ürünleri, profil, planlar ve günlük kayıtlar localStorage kullanmaya devam eder.
 
 ## Kurulum ve Çalıştırma
 
@@ -89,7 +90,13 @@ Derleme veya yerel önizleme, sitenin internette yayımlandığı anlamına gelm
 
 Giriş yapan kullanıcının favorileri PostgreSQL'de kendi hesabına kaydedilir. Misafir favorileri tarayıcıda kalır. Hesabım ekranındaki aktarım düğmesi bu kayıtları hesap favorileriyle birleştirir; yerel kayıtları silmez ve tekrar aktarım kopya oluşturmaz. Diğer cihazda güncel liste için sayfayı yenileyin.
 
-Özel ürünlerin içeriği, profil, beslenme planı ve günlük kayıtlar henüz hesaba bağlı değildir. Özel ürün favorisinin kimliği aktarılabilir; ürün içeriği diğer tarayıcıda bulunmayabilir. Mevcut kurulumu güncellemek için `npm run db:migrate` çalıştırın; kurulum komutunu tekrar çalıştırmayın.
+Profil, beslenme planı ve günlük kayıtlar henüz hesaba bağlı değildir. Özel ürünün favorisiyle birlikte içeriğini de Hesabım ekranından aktarmak gerekir; yalnızca favori kimliğini aktarmak ürün içeriğini taşımaz. Mevcut kurulumu güncellemek için `npm run db:migrate` çalıştırın; kurulum komutunu tekrar çalıştırmayın.
+
+## Hesaba Bağlı Ürünler
+
+Hesabım ekranında “Tarayıcı ürünlerini hesabıma aktar” seçeneği vardır. Aktarım tek tek ilerler; kısmen tamamlanırsa başarılı kayıtlar kalır ve hata gösterilir. Yeniden aktarım kopya oluşturmaz, hesapta düzenlenen ürünü ezmez ve silinen ürünü geri getirmez. Kaynak tarayıcı kayıtları silinmez. Aynı hesabın sekmeleri arasında değişiklik bildirimi ve pencereye dönüşte yenileme vardır; başka cihazda güncel liste için sayfayı yenileyin.
+
+Hesap başına 100 etkin ürün ve silinen kimliklerle birlikte 500 ürün sınırı vardır. Görseller PNG/JPEG/WebP, en fazla 600 KB ve 16 milyon piksel olabilir. Sunucu görseli gerçekten açıp en fazla 800×800 WebP olarak yeniden oluşturur; ek görsel bilgilerini temizler. Yerel geliştirmede görseller veritabanında, hesap denetimli adresten sunulur. Harici görsel URL'leri hesaba aktarılmaz; eski kayıtta böyle bir URL varsa aktarım hata gösterir ve kaynağı korur. Ortak kataloğa yayın ve bulut görsel depolaması henüz yoktur.
 
 ## Yerel Backend Kurulumu
 
