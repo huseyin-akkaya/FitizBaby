@@ -32,14 +32,17 @@ Hazır ürün kataloğu proje dosyalarında bulunur. Kullanıcının eklediği �
 
 - **Yapay zekâ asistanı:** Kısmen çalışan bir prototiptir. Mevcut kod, mesajdaki anahtar kelimeleri ve katalog eşleşmelerini kullanarak hazır yanıtlar üretir; harici bir yapay zekâ modeli veya API bağlantısı bulunmaz. Geliştirmesi tamamlanmamıştır.
 - **Beslenme planı:** Kalori ve makro hesaplama, hedefleri özelleştirme, üç/dört/beş öğün seçimi ve örnek tarif alternatifleri vardır. Bölümün geliştirmesi tamamlanmamıştır. Hesaplanan ihtiyaçlar ve tarif değerleri yaklaşık tahminlerdir.
-- **Kullanıcı girişi ve kayıt:** Menüde giriş ve kayıt düğmeleri vardır; çalışan bir hesap oluşturma veya oturum açma akışı henüz bulunmaz.
+- **Kullanıcı girişi ve kayıt:** Express/PostgreSQL tabanlı yerel hesap ve oturum akışı eklendi. Veritabanı kurulumu sonrasında kayıt, giriş, hesap ekranı ve çıkış kullanılabilir. E-posta doğrulama, parola sıfırlama ve üretime açılma hazırlıkları henüz tamamlanmadı.
 - **Katalog yönetimi:** Ürün düzenleme ve katalogdan silme işlemleri tamamlanacak işler arasındadır.
-- **Sunucu ve yayımlama:** Hesap tabanlı veri saklama, cihazlar arası senkronizasyon ve sitenin yayımlanması henüz tamamlanmamıştır.
+- **Sunucu ve yayımlama:** Hesap ve oturum sunucusu yerel geliştirme için hazırlandı. Ürün/plan verilerinin hesaba bağlanması, cihazlar arası senkronizasyon, e-posta doğrulama, parola kurtarma ve sitenin yayımlanması sonraki aşamalardır.
 
 ## Kullanılan Teknolojiler
 
 - **JavaScript ve JSX:** Uygulama kodları.
 - **React 19 ve React DOM:** Bileşenler ve arayüz durumu.
+- **Express 5, PostgreSQL ve pg:** API, hesap ve oturum kayıtları.
+- **Argon2id:** Parola hash işlemi.
+- **Helmet, express-rate-limit ve Zod:** HTTP başlıkları, istek sınırlama ve sunucu doğrulaması.
 - **Vite 8:** Yerel geliştirme ve üretim derlemesi.
 - **Tailwind CSS 4:** Stil ve farklı ekran boyutlarına uyum.
 - **React Router DOM 7:** Sayfalar arası yönlendirme.
@@ -47,7 +50,7 @@ Hazır ürün kataloğu proje dosyalarında bulunur. Kullanıcının eklediği �
 - **ESLint:** Kod denetimi.
 - **Git ve GitHub:** Sürüm takibi ve kaynak kod paylaşımı.
 
-Mevcut uygulama bir ön yüz projesidir; çalışan bir sunucu/veritabanı bağlantısı içermez.
+Ön yüze Express API ve PostgreSQL hesap/oturum altyapısı eklendi. Kurulum adımları aşağıdadır. Ürünler, favoriler, planlar ve günlük kayıtlar henüz kullanıcı hesabına taşınmadı; bu veriler localStorage kullanmaya devam eder.
 
 ## Kurulum ve Çalıştırma
 
@@ -81,6 +84,35 @@ npm run lint
 ```
 
 Derleme veya yerel önizleme, sitenin internette yayımlandığı anlamına gelmez.
+
+## Yerel Backend Kurulumu
+
+PostgreSQL kurulu ve çalışır durumda olmalıdır. Mevcut veritabanlarını değiştirmeden yalnızca FitizBaby için ayrı kurulum yapılır.
+
+1. Proje klasöründe bağımlılıkları yükleyin: `npm ci --ignore-scripts`.
+2. Kendi terminalinizde `npm run setup:db` çalıştırın. Yönetici adını girin (varsayılan `postgres`), ardından PostgreSQL parolanızı ekranda görünmeden yazın.
+3. Komut, localhost:5432 üzerinde yeni `fitizbaby_dev` veritabanını, ayrı şema sahibi ve sınırlı API rollerini oluşturur. Hedefler veya ayar dosyaları zaten varsa üzerine yazmadan durur.
+4. Bir terminalde `npm run dev:server`, diğerinde `npm run dev` çalıştırın. Uygulama `http://localhost:8080` adresindedir. Ön yüz `/api` isteklerini localhost:3001'e aktarır.
+
+Yönetici parolası dosyaya kaydedilmez. Üretilen sınırlı bağlantı bilgileri `.env`, şema sahibi bilgileri `.env.migration` dosyasındadır. İkisi de Git dışında tutulur. Windows'ta bu dosyalar oluşturulurken erişimleri mevcut kullanıcı, SYSTEM ve yöneticilerle sınırlandırılır. Gerçek bağlantı bilgilerini paylaşmayın.
+
+Sonraki şema güncellemeleri için `npm run db:migrate` kullanılır. Önceki şema dosyaları değiştirilmez; yeni sürüm dosyası eklenir. Kayıt/giriş için parola en az 15, en fazla 128 karakter olmalıdır. Oturum 30 dakika hareketsizlikte veya en fazla 7 gün sonunda kapanır.
+
+API yalnızca yerel bilgisayarı dinler. Bu aşama yayımlanmış üretim sistemi değildir; [güvenlik sınırları](SECURITY.md) ve [backend ilerleme planı](BACKEND_ROADMAP.md) ayrıca açıklanmıştır.
+
+Sunucu kontrolleri:
+
+```bash
+npm run test:server
+```
+
+Bu komutun veritabanı testleri, ayrı test bağlantısı olmadan atlanır. Tam PostgreSQL testi, kurulu PostgreSQL'in bin diziniyle çalıştırılır; mevcut hizmeti kullanmak yerine parolalı, yalnızca localhost'ta dinleyen geçici bir test örneği oluşturur:
+
+```powershell
+npm run test:integration -- --pg-bin "D:\postgare\bin"
+```
+
+PostgreSQL başka konumdaysa dizini değiştirin. Test örneği sonunda durdurulur; test dosyaları sistemin geçici klasöründe kalır. Kişisel kullanıcı veritabanına test kaydı eklenmez.
 
 ## Geliştirme Süreci ve Yapay Zekâ Desteği
 

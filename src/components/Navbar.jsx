@@ -1,5 +1,6 @@
 import {useState} from "react";
 import {Link} from "react-router-dom";
+import AuthActions from "./AuthActions";
 
 function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -131,19 +132,7 @@ function Navbar() {
                 </div>
 
                 {/* Navbar'ın sağ tarafındaki kullanıcı işlemleri */}
-                <div className="hidden xl:flex gap-3 shrink-0">
-
-                    {/* Kullanıcı giriş butonu */}
-                    <button className="bg-zinc-800 px-4 py-2 rounded-lg text-sm font-medium transition hover:bg-zinc-700 cursor-pointer">
-                        Giriş Yap
-                    </button>
-
-                    {/* Yeni kullanıcı kayıt butonu */}
-                    <button className="bg-green-500 px-4 py-2 rounded-lg text-sm font-medium transition hover:bg-green-600 hover:shadow-md cursor-pointer shadow-sm">
-                        Kayıt Ol
-                    </button>
-
-                </div>
+                <div className="hidden xl:flex shrink-0"><AuthActions /></div>
                 {/* Mobil veya küçük ekran cihazlar için hamburger menü butonu */}
                 <button aria-label="Menüyü aç veya kapat" aria-expanded={isMenuOpen} onClick={() => setIsMenuOpen(!isMenuOpen)} className="xl:hidden p-2 rounded-lg cursor-pointer transition hover:bg-zinc-800">
                      {isMenuOpen ? (
@@ -238,14 +227,7 @@ function Navbar() {
                         
                     </div>
                     {/* Mobil menüdeki kullanıcı işlemleri */}
-                    <div className="mt-2 flex gap-3 border-t border-zinc-800 pt-4">
-                        <button className="flex-1 rounded-lg bg-zinc-800 px-4 py-2 text-sm font-medium transition hover:bg-zinc-700">
-                            Giriş Yap
-                        </button>
-                        <button className="flex-1 rounded-lg bg-green-500 px-4 py-2 text-sm font-medium transition hover:bg-green-600 ">
-                            Kayıt Ol
-                        </button>
-                    </div>
+                    <div className="mt-2 border-t border-zinc-800 pt-4"><AuthActions onNavigate={() => setIsMenuOpen(false)} /></div>
                         
                 </div>
                 

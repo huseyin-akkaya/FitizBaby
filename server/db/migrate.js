@@ -1,0 +1,50 @@
+import dotenv from 'dotenv';
+import { createHash } from 'node:crypto';
+import { readdir, readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
+import { createPool } from './pool.js';
+
+export async function migrate(connectionString, appRole) {
+  if (!connectionString || !/^[a-z_][a-z0-9_]{0,62}$/.test(appRole || '')) throw new Error('Migration bağlantısı veya uygulama rolü eksik.');
+  const pool = createPool(connectionString);
+  const client = await pool.connect();
+  try {
+    await client.query('SELECT pg_advisory_lock(843115044)');
+    await client.query('CREATE TABLE IF NOT EXISTS schema_migrations (name TEXT PRIMARY KEY, checksum CHAR(64) NOT NULL, applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW())');
+    const directory = new URL('./migrations/', import.meta.url);
+    for (const name of (await readdir(directory)).filter(file => file.endsWith('.sql')).sort()) {
+      const sql = await readFile(new URL(name, directory), 'utf8');
+      const checksum = createHash('sha256').update(sql).digest('hex');
+      const previous = await client.query('SELECT checksum FROM schema_migrations WHERE name = $1', [name]);
+      if (previous.rows[0]) {
+        if (previous.rows[0].checksum !== checksum) throw new Error('Uygulanmış migration değiştirildi; yeni migration ekle.');
+        continue;
+      }
+      await client.query('BEGIN');
+      try {
+        await client.query(sql);
+        await client.query('INSERT INTO schema_migrations (name, checksum) VALUES ($1, $2)', [name, checksum]);
+        await client.query('COMMIT');
+      } catch (error) { await client.query('ROLLBACK'); throw error; }
+    }
+    // Fixed table allowlist: runtime cannot change the schema or migration history.
+    const role = '"' + appRole + '"';
+    await client.query('BEGIN');
+    try {
+      await client.query('REVOKE ALL ON users, user_sessions FROM ' + role);
+      await client.query('GRANT SELECT (id, display_name, email, password_hash, role), INSERT (display_name, email, password_hash), UPDATE (last_login_at) ON users TO ' + role);
+      await client.query('GRANT SELECT, DELETE ON user_sessions TO ' + role);
+      await client.query('GRANT INSERT (user_id, token_hash, expires_at), UPDATE (last_seen_at) ON user_sessions TO ' + role);
+      await client.query('COMMIT');
+    } catch (error) { await client.query('ROLLBACK'); throw error; }
+  } finally {
+    await client.query('SELECT pg_advisory_unlock(843115044)').catch(() => {});
+    client.release(); await pool.end();
+  }
+}
+if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
+  dotenv.config({ path: '.env.migration', quiet: true });
+  try { await migrate(process.env.MIGRATION_DATABASE_URL, new URL(process.env.DATABASE_URL).username); console.info('Veritabanı şeması hazır.'); }
+  catch { console.error('Migration tamamlanamadı. Bağlantıyı ve şema dosyalarını kontrol et.'); process.exitCode = 1; }
+}
