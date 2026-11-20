@@ -5,12 +5,13 @@ import App from './App.jsx'
 import AuthProvider from './context/AuthProvider.jsx'
 import FavoritesProvider from './context/FavoritesProvider.jsx'
 import ProductProvider from './context/ProductProvider.jsx'
+import PersonalProvider from './context/PersonalProvider.jsx'
 import {BrowserRouter} from "react-router-dom";
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
-      <AuthProvider><FavoritesProvider><ProductProvider><App /></ProductProvider></FavoritesProvider></AuthProvider>
+      <AuthProvider><FavoritesProvider><ProductProvider><PersonalProvider><App /></PersonalProvider></ProductProvider></FavoritesProvider></AuthProvider>
     </BrowserRouter>
   </StrictMode>,
 )

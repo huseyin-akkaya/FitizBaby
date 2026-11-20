@@ -1,3 +1,6 @@
+import { captureNutrition, entryProduct } from '../utils/mealSnapshots';
+import { personalStorage } from '../data/personalStorage';
+import { PersonalGate, PersonalSavePanel } from '../components/PersonalDocuments';
 import { useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { products } from "../data/catalogStore";
@@ -28,7 +31,7 @@ function localDayKey() {
 
 function readTargets() {
   try {
-    const saved = JSON.parse(localStorage.getItem(TARGETS_STORAGE_KEY) ?? "null");
+    const saved = JSON.parse(personalStorage.getItem(TARGETS_STORAGE_KEY) ?? "null");
     return Object.fromEntries(nutrients.map(({ key }) => [key, saved?.[key] == null ? "" : String(saved[key])]));
   } catch {
     return emptyTargets();
@@ -37,14 +40,16 @@ function readTargets() {
 
 function readMeals(storageKey) {
   try {
-    const saved = JSON.parse(localStorage.getItem(storageKey) ?? "null");
+    const saved = JSON.parse(personalStorage.getItem(storageKey) ?? "null");
     return Object.fromEntries(mealTypes.map(({ key }) => [key, Array.isArray(saved?.[key])
       ? saved[key].filter((entry) => entry && ['string', 'number'].includes(typeof entry.productId))
         .map((entry) => {
-          const product = products.find((item) => String(item.id) === String(entry.productId));
+          const product = entryProduct(entry, products);
           const serving = parseServing(product?.serving);
           if (entry.mode === "custom" || entry.mode === "package") {
             return {
+              id: entry.id || crypto.randomUUID(),
+              snapshot: entry.snapshot === undefined ? captureNutrition(product, 'catalog-at-import') : entry.snapshot,
               productId: entry.productId,
               mode: entry.mode,
               amount: entry.amount == null ? "" : String(entry.amount),
@@ -57,7 +62,9 @@ function readMeals(storageKey) {
           const oldQuantity = Number(entry.quantity);
           if (!Number.isFinite(oldQuantity) || oldQuantity <= 0) return null;
           return {
-            productId: entry.productId,
+            id: entry.id || crypto.randomUUID(),
+              snapshot: entry.snapshot === undefined ? captureNutrition(product, 'catalog-at-import') : entry.snapshot,
+              productId: entry.productId,
             mode: "custom",
             amount: String(serving ? serving.amount * oldQuantity : oldQuantity * 100),
             packageSize: String(product?.packageSize ?? ""),
@@ -90,8 +97,8 @@ function getNutritionMultiplier(entry, product) {
 function summarizeEntries(entries) {
   const totals = Object.fromEntries(nutrients.map(({ key }) => [key, { value: 0, missing: 0 }]));
   entries.forEach((entry) => {
-    const product = products.find((item) => String(item.id) === String(entry.productId));
-    if (!product) return;
+    const product = entryProduct(entry, products);
+    if (!product) { if(getConsumedAmount(entry)>0) nutrients.forEach(({key})=>{totals[key].missing+=1;}); return; }
     const multiplier = getNutritionMultiplier(entry, product);
     if (multiplier <= 0) return;
     nutrients.forEach(({ key }) => {
@@ -123,15 +130,15 @@ function MealSection({ meal, entries, totals, onAdd, onChangeEntry, onChangeMode
     </div>
 
     <div className="mt-4 space-y-2.5">{entries.map((entry) => {
-      const product = products.find((item) => String(item.id) === String(entry.productId));
-      if (!product) return <p key={entry.productId} className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900">Bu ürün etkin katalogda bulunmuyor. Öğün kaydı korunuyor; toplam hesaplamasına katılmıyor.</p>;
+      const product = entryProduct(entry, products);
+      if (!product) return <p key={entry.productId} className="rounded-xl bg-amber-50 p-3 text-sm text-amber-900">Bu ürünün kayıtlı besin değerleri bulunmuyor. Öğün miktarı korunuyor; günlük toplam eksik olabilir. <button type="button" onClick={() => onRemove(meal.key, entry.productId)} className="ml-2 underline">Bu kaydı öğünden kaldır</button></p>;
       const serving = parseServing(product?.serving);
       const unit = serving?.unit ?? "g";
       const consumedAmount = getConsumedAmount(entry);
       const packageMode = entry.mode === "package";
-      return <article key={product.id} className="rounded-xl border border-zinc-100 bg-zinc-50/70 p-3">
+      return <article key={entry.id || product.id} className="rounded-xl border border-zinc-100 bg-zinc-50/70 p-3">
         <div className="flex items-center gap-3"><img src={product.image} alt="" className="h-12 w-12 shrink-0 rounded-lg bg-white object-contain p-1" /><div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold text-zinc-900">{product.name}</p><p className="mt-0.5 text-xs text-zinc-500">{product.brand} · besin değerleri {product.serving} başına</p></div><button type="button" onClick={() => onRemove(meal.key, product.id)} aria-label={`${product.name} ürününü ${meal.label} öğününden kaldır`} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-lg text-zinc-400 transition hover:bg-rose-50 hover:text-rose-600">×</button></div>
-        <div className="mt-3 grid grid-cols-2 gap-2 rounded-xl bg-white p-1" aria-label={`${product.name} miktar seçeneği`}>
+        <p className="mt-2 text-xs text-zinc-500">{entry.snapshot?.source === 'catalog-at-entry' ? 'Öğüne eklenirken kaydedilen besin değerleri.' : 'Eski/tarayıcı kaydı: ilk aktarımda eldeki değerler kullanıldı; geçmiş etiketin kesin değeri değildir.'}</p><div className="mt-3 grid grid-cols-2 gap-2 rounded-xl bg-white p-1" aria-label={`${product.name} miktar seçeneği`}>
           <button type="button" aria-pressed={!packageMode} onClick={() => onChangeMode(meal.key, product.id, "custom")} className={`rounded-lg px-2 py-2 text-xs font-semibold transition ${!packageMode ? "bg-green-700 text-white shadow-sm" : "text-zinc-600 hover:bg-zinc-100"}`}>İstediğim miktar</button>
           <button type="button" aria-pressed={packageMode} onClick={() => onChangeMode(meal.key, product.id, "package")} className={`rounded-lg px-2 py-2 text-xs font-semibold transition ${packageMode ? "bg-green-700 text-white shadow-sm" : "text-zinc-600 hover:bg-zinc-100"}`}>Paket</button>
         </div>
@@ -149,9 +156,9 @@ function MealSection({ meal, entries, totals, onAdd, onChangeEntry, onChangeMode
   </section>;
 }
 
-function MacroTracker() {
+function MacroTracker({ selectedDay }) {
   useProducts();
-  const [dayKey] = useState(localDayKey);
+  const dayKey = selectedDay;
   const dailyStorageKey = `fitizbaby.daily-macro-log.${dayKey}.v1`;
   const [targets, setTargets] = useState(readTargets);
   const [meals, setMeals] = useState(() => readMeals(dailyStorageKey));
@@ -163,7 +170,7 @@ function MacroTracker() {
 
   const saveToStorage = (storageKey, value) => {
     try {
-      localStorage.setItem(storageKey, JSON.stringify(value));
+      personalStorage.setItem(storageKey, JSON.stringify(value));
       setStorageWarning("");
     } catch {
       setStorageWarning("Tarayıcı kayıt alanına erişilemiyor; bu sayfa açıkken yaptığın girişler kullanılabilir ancak kaydedilemeyebilir.");
@@ -196,7 +203,7 @@ function MacroTracker() {
         const serving = parseServing(product?.serving);
         return { ...entry, amount: String(Math.min(100000, (Number(entry.amount) || 0) + (serving?.amount ?? 100))) };
       })
-      : [...current[mealKey], { productId, mode: "custom", amount: "100", packageSize: String(product?.packageSize ?? ""), packageCount: 1 }];
+      : [...current[mealKey], { id:crypto.randomUUID(), snapshot:captureNutrition(product), productId, mode: "custom", amount: "100", packageSize: String(product?.packageSize ?? ""), packageCount: 1 }];
     return { ...current, [mealKey]: nextEntries };
   });
   const changeEntry = (mealKey, productId, field, rawValue) => {
@@ -217,7 +224,7 @@ function MacroTracker() {
     const excess = productTotals[nutrient.key].value - target;
     if (excess <= 0) return [];
     const contributor = Object.entries(meals).flatMap(([mealKey, entries]) => entries.map((entry) => {
-      const product = products.find((item) => String(item.id) === String(entry.productId));
+      const product = entryProduct(entry, products);
       const serving = parseServing(product?.serving);
       const consumedAmount = getConsumedAmount(entry);
       const amountPerUnit = serving && typeof product?.[nutrient.key] === "number" ? product[nutrient.key] / serving.amount : 0;
@@ -231,7 +238,7 @@ function MacroTracker() {
   });
 
   return <main className="min-h-screen bg-zinc-50/70 px-4 py-8 sm:px-6 sm:py-10">
-    <div className="mx-auto max-w-7xl">
+    <div className="mx-auto max-w-7xl"><PersonalSavePanel keys={['targets', 'day:' + selectedDay]} />
       <header className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><Link to="/" className="text-sm font-semibold text-green-800 hover:text-green-900">← Ana sayfa</Link><p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-amber-700">Günlük beslenme kaydı</p><h1 className="mt-1 text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl">Günlük Makro Takibi</h1><p className="mt-2 text-sm text-zinc-500">{dateLabel} · Hedeflerini isteğe bağlı gir; yediğin katalog ürünlerini öğünlere ekle.</p></div><div className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-xs leading-5 text-zinc-500 shadow-sm">Hesap gerekmez. Kayıtların bu tarayıcıda saklanır.</div></header>
 
       <div className="grid items-start gap-6 xl:grid-cols-[0.85fr_1.15fr]">
@@ -257,4 +264,4 @@ function MacroTracker() {
   </main>;
 }
 
-export default MacroTracker;
+export default function MacroTrackerPage(){const [selectedDay,setSelectedDay]=useState(localDayKey);return <><div className="mx-auto max-w-7xl px-4 pt-5"><label className="text-sm font-semibold">Kayıt tarihi <input aria-label="Kayıt tarihi" type="date" min="1900-01-01" max="2199-12-31" value={selectedDay} onChange={event=>{if(event.target.value)setSelectedDay(event.target.value);}} className="ml-3 rounded-lg border p-2" /></label></div><PersonalGate keys={['targets','day:'+selectedDay]}><MacroTracker selectedDay={selectedDay}/></PersonalGate></>;}

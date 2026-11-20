@@ -1,3 +1,5 @@
+import { captureNutrition, entryProduct } from './mealSnapshots';
+import { personalStorage } from '../data/personalStorage';
 import { products } from "../data/catalogStore";
 
 export const DAILY_MACRO_TARGETS_KEY = "fitizbaby.daily-macro-targets.v1";
@@ -28,25 +30,27 @@ function parseServing(serving) {
 }
 
 function normalizeMealEntry(entry) {
-  const product = products.find((item) => String(item.id) === String(entry.productId));
-  if (!product) return null;
-  const serving = parseServing(product.serving);
+  const product = entryProduct(entry, products);
+
+  const serving = parseServing(product?.serving);
   if (entry.mode === "custom" || entry.mode === "package") {
     return {
+      snapshot: entry.snapshot === undefined ? captureNutrition(product, 'catalog-at-import') : entry.snapshot,
       productId: entry.productId,
       mode: entry.mode,
       amount: entry.amount == null ? "" : String(entry.amount),
-      packageSize: entry.packageSize == null ? String(product.packageSize ?? "") : String(entry.packageSize),
+      packageSize: entry.packageSize == null ? String(product?.packageSize ?? "") : String(entry.packageSize),
       packageCount: entry.packageCount == null ? 1 : String(entry.packageCount),
     };
   }
   const oldQuantity = Number(entry.quantity);
   if (!Number.isFinite(oldQuantity) || oldQuantity <= 0) return null;
   return {
-    productId: entry.productId,
+    snapshot: entry.snapshot === undefined ? captureNutrition(product, 'catalog-at-import') : entry.snapshot,
+      productId: entry.productId,
     mode: "custom",
     amount: String(serving ? serving.amount * oldQuantity : oldQuantity * 100),
-    packageSize: String(product.packageSize ?? ""),
+    packageSize: String(product?.packageSize ?? ""),
     packageCount: 1,
   };
 }
@@ -64,8 +68,8 @@ function getNutritionMultiplier(entry, product) {
 function summarizeEntries(entries) {
   const totals = Object.fromEntries(nutrients.map(({ key }) => [key, { value: 0, missing: 0 }]));
   entries.forEach((entry) => {
-    const product = products.find((item) => String(item.id) === String(entry.productId));
-    if (!product) return;
+    const product = entryProduct(entry, products);
+    if (!product) { if(getConsumedAmount(entry)>0) nutrients.forEach(({key})=>{totals[key].missing+=1;}); return; }
     const multiplier = getNutritionMultiplier(entry, product);
     if (multiplier <= 0) return;
     nutrients.forEach(({ key }) => {
@@ -78,7 +82,7 @@ function summarizeEntries(entries) {
 
 function readJson(key) {
   try {
-    return JSON.parse(localStorage.getItem(key) ?? "null");
+    return JSON.parse(personalStorage.getItem(key) ?? "null");
   } catch {
     return null;
   }

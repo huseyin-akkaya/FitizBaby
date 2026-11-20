@@ -6,6 +6,7 @@ import { pool } from './db/pool.js';
 import { createAuthRouter } from './routes/auth.js';
 import { createFavoritesRouter } from './routes/favorites.js';
 import { createProductsRouter } from './routes/products.js';
+import { createNutritionRouter } from './routes/nutrition.js';
 import { createLimits, requireAllowedOrigin } from './middleware/security.js';
 
 export function createApp(database = pool) {
@@ -17,6 +18,7 @@ export function createApp(database = pool) {
   app.use('/api', (_req, res, next) => { res.set('Cache-Control', 'no-store'); res.locals.requestId = randomUUID(); next(); });
   app.use('/api', limits.api, requireAllowedOrigin);
   app.use('/api/v1/products', createProductsRouter(database));
+  app.use('/api/v1/nutrition', createNutritionRouter(database));
   app.use('/api', express.json({ limit: '16kb', strict: true }));
   app.get('/api/health', async (_req, res) => {
     if (!database) return res.status(503).json({ status: 'degraded', database: 'not_configured' });

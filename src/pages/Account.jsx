@@ -1,3 +1,4 @@
+import ImportNutrition from '../components/ImportNutrition';
 import ImportProducts from '../components/ImportProducts';
 import { Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
@@ -19,8 +20,8 @@ export default function Account() {
       {favorites.error && <p role="alert" className="mt-3 text-sm text-red-700">{favorites.error} <button type="button" onClick={favorites.retry} className="underline">Yeniden dene</button></p>}
       {favorites.notice && <p role="status" className="mt-3 text-sm text-green-900">{favorites.notice}</p>}
     </section>
-    <ImportProducts />
-    <p className="mt-6 rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-900">Hesabına aktarılmamış ürünler, profil, beslenme planı ve günlük kayıtlar hâlâ bu tarayıcıda saklanır; henüz hesaba bağlanmadı. Bu yerel kayıtlar aynı tarayıcıyı kullanan kişilerce görülebilir.</p>
+    <ImportProducts /><ImportNutrition />
+    <p className="mt-6 rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-900">Hesabına aktarılmamış misafir kayıtları bu tarayıcıda kalır. Giriş yapınca profil, plan ve günlük kayıtlar ayrı hesap alanından okunur; değişikliklerini ilgili sayfadaki kaydet düğmesiyle hesabına gönder. Bu yerel kayıtlar aynı tarayıcıyı kullanan kişilerce görülebilir.</p>
     <div className="mt-6 flex flex-wrap gap-3"><Link to="/nutrition-plan" className="rounded-xl bg-green-600 px-4 py-3 font-semibold text-white">Beslenme planım</Link><Link to="/products" className="rounded-xl border border-zinc-200 px-4 py-3 font-semibold">Ürünleri keşfet</Link></div>
   </section></main>;
 }

@@ -1,3 +1,6 @@
+import { saveDocuments } from '../data/personalStorage';
+import { personalStorage } from '../data/personalStorage';
+import { PersonalGate, PersonalSavePanel } from '../components/PersonalDocuments';
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { getNutritionAssistantReply } from "../services/nutritionAssistant";
@@ -8,7 +11,7 @@ const starters = ["Protein hedefime uygun bir öğün öner", "Pratik bir kahval
 
 function readProfile() {
   try {
-    return { ...defaults, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}") };
+    return { ...defaults, ...JSON.parse(personalStorage.getItem(STORAGE_KEY) || "{}") };
   } catch {
     return defaults;
   }
@@ -34,11 +37,10 @@ function NutritionAssistant() {
     setSaved(false);
   }
 
-  function saveProfile() {
+  async function saveProfile() {
     const normalized = Object.fromEntries(Object.entries(profile).map(([key, value]) => [key, key === "goal" ? value : Math.max(0, Number(value) || 0)]));
     setProfile(normalized);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
-    setSaved(true);
+    try { personalStorage.setItem(STORAGE_KEY, JSON.stringify(normalized)); await saveDocuments(['profile']); setSaved(true); } catch { setSaved(false); }
   }
 
   async function sendMessage(text = draft) {
@@ -59,7 +61,7 @@ function NutritionAssistant() {
 
   return (
     <main className="min-h-[calc(100vh-5rem)] bg-[#f7f9f6] px-4 py-8 sm:px-6 lg:py-12">
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-7xl"><PersonalSavePanel keys={['profile']} />
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
             <Link to="/" className="text-sm font-medium text-green-700 hover:text-green-800">← Ana sayfa</Link>
@@ -116,4 +118,4 @@ function NutritionAssistant() {
   );
 }
 
-export default NutritionAssistant;
+export default function NutritionAssistantPage(){return <PersonalGate keys={['profile']}><NutritionAssistant/></PersonalGate>;}

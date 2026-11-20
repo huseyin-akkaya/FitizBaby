@@ -28,15 +28,23 @@ Favori aktarımı yalnızca ürün kimliğini taşır; özel ürünün içeriği
 
 Özel ürünler ve doğrulanıp yeniden kodlanan görseller PostgreSQL'de oturum sahibine göre saklanır. Başka kullanıcı ürününü listeleme, detay/görsel açma, düzenleme ve silme reddedilir. Düzenleme ve silme revision ile kontrol edilir; eski sekme yeni veriyi ezemez. Silme kullanıcıdan onay ister, içerik ve görseli kaldırır, yalnızca tekrar aktarımı engelleyen kimlik/zaman kaydı kalır. Yalnızca ilgili hesabın favorisi temizlenir. Hazır katalog değişmez.
 
-Misafir ürünleri korunur ve kendiliğinden hesaba alınmaz. Açık aktarım tek tek ve tekrar güvenli ilerler; kısmi hatada başarılı kayıtlar kalır, kalanlar yeniden denenebilir. Aktarım var olan ürünleri ezmez ve silinmişleri diriltmez. Hesap geçişinde canlı katalog, formlar, karşılaştırma seçimi ve asistan mesajları önceki hesaptan temizlenir. Misafir karşılaştırma seçimi ayrı korunur. Günlük kayıttaki bulunamayan ürünler silinmez; bu aşamada toplamları güncel kataloğa bağlıdır, tarihsel besin anlık görüntüleri henüz yoktur.
+Misafir ürünleri korunur ve kendiliğinden hesaba alınmaz. Açık aktarım tek tek ve tekrar güvenli ilerler; kısmi hatada başarılı kayıtlar kalır, kalanlar yeniden denenebilir. Aktarım var olan ürünleri ezmez ve silinmişleri diriltmez. Hesap geçişinde canlı katalog, formlar, karşılaştırma seçimi ve asistan mesajları önceki hesaptan temizlenir. Misafir karşılaştırma seçimi ayrı korunur. Günlük kayıttaki bulunamayan ürünler silinmez; 2c aşamasında tarihsel besin kaydı desteği eklendi.
 
 Hesap başına 100 etkin/500 geçmiş kimlik; görsel girişinde 600 KB/16 milyon piksel, sunucuda en fazla iki eşzamanlı çözümleme ve 800×800 WebP çıktı sınırı vardır. Ürün JSON'u yalnızca oturum doğrulandıktan sonra 900 KB sınırıyla ayrıştırılır; diğer API gövdeleri 16 KB kalır. Veritabanında görsel saklama yerel prototip içindir; üretim depolama/izleme gereksinimleri ayrıca ele alınmalı.
 
-## Sonraki aşama: Diğer hesaba bağlı veriler
+## Aşama 2c: Profil, plan ve günlük kayıtlar
 
-Profil, beslenme planı ve günlük kayıtlar henüz hesaplara bağlanmadı. Mevcut localStorage kayıtları korunacak; açık kullanıcı seçimi ve tekrarlı içe alımda çoğaltmayı önleyen düzen kurulacak. Her işlemde sunucunun oturumdan aldığı kullanıcı kimliği esas alınacak; istemcinin gönderdiği userId yetki sayılmayacak.
+Asistan hedef profili, vücut bilgileri/beslenme planı, günlük hedefler ve tarihli öğün kayıtları oturum sahibine göre PostgreSQL'de saklanır. Tarayıcı kaynakları seçilerek aktarılır, silinmez; tekrar aktarım var olan hesap kaydını değiştirmez. Sıfırlanan plan/boşaltılan gün satırı korunur ve tekrar aktarım bu kaydı diriltmez. Hesap değişiminde kayıt önbelleği temizlenir ve bekleyen istekler iptal edilir.
 
-Ardından ortak katalog için moderasyon ve üretime uygun görsel depolama ele alınacak. Paylaşılan cihazda farklı hesapların birbirinin kayıtlarını görmemesi bu aşamanın kabul koşuludur.
+Beslenme sayfalarında taslak + açık kaydetme vardır. Çakışmada taslak korunur; sunucudan yeniden yükleme taslağı bırakma onayı ister. Kaydedilmemiş taslaklar sekme belleğindedir; sayfa kapanırsa kaybolabilir, ayrılma uyarısı vardır. Asistan, hesaplayıcı ve günlük takip hedefleri ayrı kalır. Gün seçimi ve geçmiş kayıtları açma desteklenir. İçe alım tek tek ilerler; kısmi hata açıkça bildirilir.
+
+Yeni günlük satırda sunucu kendi/ortak kataloğundan besin kaydını alır; istemcinin yeni satır için gönderdiği değerleri yetkili veri saymaz. Var olan satırın besin kaydı miktar değişince korunur. Ürün silme/düzenleme önceki öğünleri değiştirmez. Eski tarayıcı kaydı aktarılırken güncel katalog veya kullanıcı beyanı işaretlenir; bulunamayan değerler null kalır ve toplam eksik gösterilir. Misafirin ham kayıtları ilk yeni biçim yazımında aynı tarayıcıda ayrı anahtarla korunur.
+
+Kayıt başına revision, sunucuda sıkı doğrulama ve kullanıcı satırı kilidi vardır. Gün başına en fazla 100 satır, hesap başına 3660 gün; yalnızca oturum doğrulandıktan sonra 256 KB beslenme JSON sınırı uygulanır. Veri dışa aktarma, hesap silme/veri saklama politikası ve otomatik yedekleme henüz yoktur.
+
+## Sonraki aşama
+
+E-posta sahipliği doğrulama ve güvenli parola sıfırlama. Ardından hesap/veri dışa aktarma ve silme, veritabanı yedekleme/geri yükleme, ortak katalog moderasyonu ve üretim hazırlıkları ele alınmalı. Gerçek AI sağlayıcısı hâlâ bağlı değildir.
 
 ## Yayımlamadan önce
 

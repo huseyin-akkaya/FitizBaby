@@ -36,6 +36,8 @@ export async function migrate(connectionString, appRole) {
       await client.query('REVOKE ALL ON users, user_sessions FROM ' + role);
       await client.query('GRANT SELECT (id, display_name, email, password_hash, role), INSERT (display_name, email, password_hash), UPDATE (last_login_at) ON users TO ' + role);
       await client.query('GRANT SELECT, DELETE ON user_sessions TO ' + role);
+      await client.query('REVOKE ALL ON user_nutrition FROM ' + role);
+      await client.query('GRANT SELECT, INSERT (user_id, key, data), UPDATE (data, revision, updated_at) ON user_nutrition TO ' + role);
       await client.query('REVOKE ALL ON user_products FROM ' + role);
       await client.query('GRANT SELECT, INSERT (user_id, id, data, image), UPDATE (data, image, revision, updated_at, deleted_at) ON user_products TO ' + role);
       await client.query('REVOKE ALL ON user_favorites FROM ' + role);

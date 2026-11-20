@@ -1,3 +1,5 @@
+import { personalStorage } from '../data/personalStorage';
+import { PersonalGate, PersonalSavePanel } from '../components/PersonalDocuments';
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -19,7 +21,7 @@ const grams = (value) => `${numberFormat.format(Math.round(value))} g`;
 
 function readSavedState() {
   try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "null");
+    const saved = JSON.parse(personalStorage.getItem(STORAGE_KEY) ?? "null");
     if (!saved || typeof saved !== "object") return { profile: null, macros: null, mealCount: 3, plan: [] };
     const rawProfile = saved.profile && typeof saved.profile === "object" ? { ...emptyProfile, ...saved.profile } : null;
     const legacyActivity = { "1.2": "inactive", "1.375": "low", "1.55": "active", "1.725": "veryActive", "1.9": "veryActive" };
@@ -52,8 +54,12 @@ function NutritionPlan() {
   const cancelResetButtonRef = useRef(null);
   const wasResetDialogOpen = useRef(false);
 
+  const lastPersistedPlan = useRef(JSON.stringify(savedState));
   useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(savedState)); } catch { /* Storage may be disabled or full. */ }
+    const serialized = JSON.stringify(savedState);
+    if (lastPersistedPlan.current === serialized) return;
+    lastPersistedPlan.current = serialized;
+    try { personalStorage.setItem(STORAGE_KEY, JSON.stringify(savedState)); } catch { /* Storage may be disabled or full. */ }
   }, [savedState]);
 
   useEffect(() => {
@@ -133,7 +139,7 @@ function NutritionPlan() {
   }) }));
 
   return <main className="min-h-screen bg-zinc-50 px-4 py-8 sm:px-6 sm:py-10">
-    <div className="mx-auto max-w-7xl">
+    <div className="mx-auto max-w-7xl"><PersonalSavePanel keys={['plan']} />
       <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div><p className="mb-2 inline-flex items-center gap-2 rounded-full bg-green-50 px-3 py-1 text-xs font-semibold text-green-800"><span className="h-2 w-2 rounded-full bg-green-500" />Kişisel günlük plan</p><h1 className="text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl">Beslenme Planım</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-500 sm:text-base">Günlük hedeflerine göre temel gıdalarla hazırlanabilen tarifler oluştur; uygun FitizBaby ürünlerini yalnızca isteğe bağlı eşleşme olarak gör.</p></div>
         <div className="flex flex-wrap gap-2">{profile && macros && <button type="button" onClick={() => setSavedState((current) => ({ ...current, plan: createMealPlan(current.macros.calories, current.macros, current.mealCount, current.plan) }))} className="inline-flex items-center justify-center gap-2 self-start rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-700 shadow-sm transition hover:border-green-300 hover:text-green-800 sm:self-auto"><span aria-hidden="true">↻</span> Planı yenile</button>}<button ref={resetButtonRef} type="button" onClick={() => setIsResetDialogOpen(true)} className="inline-flex items-center justify-center gap-2 self-start rounded-xl border border-rose-200 bg-white px-4 py-2.5 text-sm font-semibold text-rose-700 shadow-sm transition hover:border-rose-300 hover:bg-rose-50 sm:self-auto"><span aria-hidden="true">↺</span> Sıfırla</button><Link to="/assistant" className="inline-flex items-center justify-center gap-2 self-start rounded-xl bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-green-700"><span aria-hidden="true">✦</span> Asistana sor</Link></div>
@@ -187,4 +193,4 @@ function NutritionPlan() {
   </main>;
 }
 
-export default NutritionPlan;
+export default function NutritionPlanPage(){return <PersonalGate keys={['plan']}><NutritionPlan/></PersonalGate>;}

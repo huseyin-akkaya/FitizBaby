@@ -1,0 +1,18 @@
+import { z } from 'zod';
+import { mealRecipes } from '../../src/data/mealRecipes.js';
+export const dateSchema = z.string().regex(/^(19|20|21)\d\d-\d\d-\d\d$/).refine(value => { const date = new Date(value + 'T12:00:00Z'); return Number.isFinite(date.getTime()) && date.toISOString().slice(0,10) === value; });
+export const keySchema = z.string().refine(value => ['profile','plan','targets'].includes(value) || value.startsWith('day:') && dateSchema.safeParse(value.slice(4)).success);
+const numeric = (max, min = 0) => z.union([z.number(), z.string().max(20).regex(/^(?:\d+(?:\.\d*)?|\.\d+)$/)]).transform(Number).pipe(z.number().finite().min(min).max(max));
+const optionalNumber = max => z.union([numeric(max), z.literal(''), z.null()]);
+const macros = z.object({ calories: numeric(10000), protein: numeric(1000), carbs: numeric(1000), fat: numeric(1000) }).strict();
+const bodyProfile = z.object({ age: numeric(100,19), sex: z.enum(['male','female']), height: numeric(230,120), weight: numeric(300,35), activity: z.enum(['inactive','low','active','veryActive']), goal: z.enum(['lose','maintain','gain']), bmi: z.union([numeric(80,10),z.literal('')]).optional().default('') }).strict();
+const recipeIds = new Set(mealRecipes.map(recipe => recipe.id));
+const mealPlan = z.object({ slotId: z.string().min(1).max(40), label: z.string().max(80), category: z.string().max(60), recipeId: z.string().refine(id => recipeIds.has(id)), portionScale: numeric(2,0.5), nutrition: macros.optional() }).strict();
+const profile = z.object({ goal: z.string().trim().min(1).max(120), calories: numeric(10000), protein: numeric(1000), carbs: numeric(1000), fat: numeric(1000) }).strict();
+const plan = z.object({ profile: bodyProfile.nullable(), macros: macros.nullable(), mealCount: z.union([z.literal(3),z.literal(4),z.literal(5)]), plan: z.array(mealPlan).max(5), calculationVersion: z.literal(3).optional().default(3) }).strict();
+const targets = z.object({ calories: optionalNumber(10000), protein: optionalNumber(1000), carbs: optionalNumber(1000), fat: optionalNumber(1000) }).strict();
+const productId = z.union([z.number().int().positive().max(999999999),z.string().regex(/^(?:[1-9]\d{0,8}|custom-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/)]);
+export const snapshotSchema = z.object({ id: productId, name: z.string().min(1).max(120), brand: z.string().max(120), serving: z.enum(['100 g','100 ml']), calories: numeric(1000).nullable(), protein: numeric(100).nullable(), carbs: numeric(100).nullable(), fat: numeric(100).nullable(), capturedAt: z.iso.datetime(), source: z.enum(['catalog-at-entry','catalog-at-import','browser-import']) }).strict();
+const entry = z.object({ id: z.uuid().optional(), productId, mode: z.enum(['custom','package']), amount: optionalNumber(100000).optional().default(''), packageSize: optionalNumber(100000).optional().default(''), packageCount: optionalNumber(100).optional().default(1), snapshot: snapshotSchema.nullable().optional() }).strict();
+const day = z.object({ breakfast: z.array(entry).max(100), lunch: z.array(entry).max(100), dinner: z.array(entry).max(100), snacks: z.array(entry).max(100) }).strict().refine(value => Object.values(value).flat().length <= 100 && Object.values(value).every(entries => new Set(entries.map(item => String(item.productId))).size === entries.length));
+export const getSchema = key => ({ profile, plan, targets })[key] || day;

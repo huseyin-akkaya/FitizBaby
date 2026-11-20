@@ -9,7 +9,7 @@ Bu sürüm yerel geliştirme içindir. Güvenlik önlemleri ve testler bulunmas�
 - 32 bayt rastgele oturum belirteci HttpOnly/SameSite=Lax çerezde; PostgreSQL'de SHA-256 özeti tutulur. Üretimde Secure, __Host- ve HTTPS zorunludur. Girişte yeni oturum üretilir; çıkışta sunucu kaydı iptal edilir.
 - 30 dakika hareketsizlik, 7 gün mutlak ömür, kişi başına en fazla 5 oturum. Hesap ekranı sunucunun doğruladığı oturuma bağlıdır.
 - Değişiklik isteklerinde açık Origin listesi, cross-site istek reddi ve JSON zorunluluğu uygulanır. Genel API sınırı 15 dakikada 300, hesap denemesi sınırı 15 dakikada 10/IP; aynı anda en fazla 4 parola hash/doğrulama işlemi çalışır.
-- Hesap/favori gövdeleri 16 KB ile sınırlı; ürün yüklemeleri oturum denetiminden sonra en fazla 900 KB kabul eder; Zod sunucu doğrulaması bilinmeyen alanları reddeder. Role=admin gibi istemci alanları kabul edilmez. SQL değerleri parametrelidir.
+- Hesap/favori gövdeleri 16 KB ile sınırlı; ürün yüklemeleri oturum denetiminden sonra en fazla 900 KB, beslenme kayıtları 256 KB kabul eder; Zod sunucu doğrulaması bilinmeyen alanları reddeder. Role=admin gibi istemci alanları kabul edilmez. SQL değerleri parametrelidir.
 - API rolünde yönetim/şema oluşturma yetkisi yoktur. Kullanıcı rolünü veya oturum bitişini değiştirme izinleri de verilmez. Şema değişiklikleri ayrı sahibin bağlantısıyla yapılır.
 - Helmet başlıkları, no-store hesap yanıtları ve ayrıntı/bağlantı bilgisi sızdırmayan hata yanıtları bulunur. Loglar hata gövdesi/parola yerine istek kimliği içerir.
 
@@ -25,7 +25,15 @@ Misafir favorileri tarayıcıdadır. Hesaba aktarım kendiliğinden yapılmaz, k
 
 Sharp gerçek çözümleme yapar, PNG/JPEG/WebP biçimini doğrular, ek görsel bilgilerini temizleyip WebP üretir. SVG, bozuk/uyumsuz biçim, 600 KB veya 16 milyon piksel üzeri giriş reddedilir. Dış URL'den görsel indirilmez (sunucudan dış isteğe neden olmaz). Çözümleme eşzamanlılığı iki; ürün sayısı hesap başına 100 etkin/500 toplam kimliktir. Yerel prototipte görseller bytea tutulur. Üretimde toplam hesap/depolama kotası, antivirüs gereksinimleri, izleme ve özel nesne depolaması ayrıca değerlendirilmelidir.
 
-Hesap geçişinde ön yüz önceki hesabın katalog verilerini/formlarını/asistan mesajlarını temizler. Tarayıcıdan aktarım açık düğmeyle başlar; kaynak veriyi silmez. Kısmi aktarım geri alınmaz, tekrar güvenlidir. Tarayıcıdaki profil/plan/günlük kayıtlar henüz hesaba bağlı olmadığı için bu kayıtlar paylaşılan cihazda özel sayılmaz.
+Hesap geçişinde ön yüz önceki hesabın katalog verilerini/formlarını/asistan mesajlarını temizler. Tarayıcıdan aktarım açık düğmeyle başlar; kaynak veriyi silmez. Kısmi aktarım geri alınmaz, tekrar güvenlidir. Aktarılmamış misafir profil/plan/günlük kayıtları paylaşılan cihazda özel sayılmaz. Hesap kayıtları ayrı alandan okunur.
+
+## Beslenme verilerinin yetkilendirilmesi
+
+Profil/plan/hedef/günlük kayıt sorgularının tamamı oturumun user_id değeriyle sınırlıdır. Anahtar/tarih ve iç içe alanlar Zod ile doğrulanır; userId gibi ek alanlar kabul edilmez. API rolü kayıt sahibini/anahtarını değiştiremez veya tablo satırını fiziksel olarak silemez. Günlük güncelleme revision ve kullanıcı satırı kilidiyle yapılır. Başka sekme güncellediyse eski taslak 409 ile reddedilir. İçe alım kaynakları silmez ve var olan hesap kaydını ezmez. Paylaşılan cihazda otomatik aktarım yapılmaz.
+
+Yeni öğünde besin kaydı sunucunun ortak kataloğu veya aynı kullanıcının özel ürünü üzerinden oluşturulur. Özel ürün okunurken satır kilidi alınır. Var olan satırın besin değerleri istemci tarafından değiştirilmez; sadece miktarı değişebilir. Eski tarayıcı kaydının değerleri doğrulanmış tarihsel etiket sayılmaz, kaynak türü işaretlenir. Eksik ürün değerleri uydurulmaz. Kişisel kayıt yanıtlarında no-store vardır; hesap verileri localStorage'a yazılmaz. Kaydedilmemiş taslaklar açık sekmenin belleğinde tutulur ve kapanışta kaybolabilir.
+
+Hesap değiştiğinde önbellek temizlenir; devam eden çok kayıtlı işlemler hesap/sürüm kontrolüyle durur. Sunucuya ulaşmış bir işlem iptalden önce eski hesapta tamamlanmış olabilir. Gün başına 100 öğün satırı, hesap başına 3660 gün ve oturum sonrası 256 KB gövde sınırı vardır. Bu sağlıkla ilişkili veriler için üretimde gizlilik, veri saklama/silme, dışa aktarma, veritabanı yedeği ve şifreleme gereksinimleri ayrıca tamamlanmalıdır. Bu sürümde uygulama düzeyinde veri şifreleme veya RLS yoktur; yalıtım sunucu yetkilendirmesine dayanır.
 
 ## Gizli dosyalar
 
@@ -37,7 +45,7 @@ Hesap geçişinde ön yüz önceki hesabın katalog verilerini/formlarını/asis
 
 - E-posta doğrulama, parola sıfırlama, MFA ve hesap kurtarma yok. Kayıtta yinelenen e-posta 409 yanıtı döner; e-posta sahipliği henüz doğrulanmaz. Bu sebeple halka açık kayıt için tamamlanmış akış sayılmaz.
 - İstek sınırları tek süreç belleğindedir; üretimde birden fazla sunucuya uygun ortak sınırlama ve kalıcı izleme gerekir.
-- Misafir ürünleri ve beslenme verileri henüz kullanıcı hesabına bağlı değildir; aynı tarayıcıdaki yerel kayıtlar paylaşılır. Bu kayıtlar yerel geliştirme verisidir; çok kullanıcılı gizli veri depolaması olarak değerlendirilmemelidir.
+- Aktarılmamış misafir kayıtları aynı tarayıcıyı kullanan kişilerce görülebilir. Bu kayıtlar yerel geliştirme verisidir; çok kullanıcılı gizli veri depolaması olarak değerlendirilmemelidir.
 - Gerçek AI, e-posta sağlayıcısı, bulut dağıtımı ve üretim yedeklemesi bu aşamada kurulmadı.
 
 ## Üretim öncesi
