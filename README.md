@@ -21,12 +21,12 @@ Proje geliştirme aşamasındadır. Kaynak kod [FitizBaby GitHub deposunda](http
 
 ## Veriler Nasıl Saklanıyor?
 
-Hazır ürün kataloğu proje dosyalarında bulunur. Kullanıcının eklediği ürünler, favoriler, karşılaştırma seçimi, beslenme planı ve günlük takip kayıtları ise kullanılan tarayıcının `localStorage` alanında saklanır.
+Hazır ürün kataloğu proje dosyalarında bulunur. Kullanıcının eklediği ürünler, misafir favorileri, karşılaştırma seçimi, beslenme planı ve günlük takip kayıtları kullanılan tarayıcının `localStorage` alanında saklanır. Giriş yapan kullanıcının hesap favorileri PostgreSQL veritabanındadır.
 
 - Site veya tarayıcı kapatılıp açıldığında kayıtlar normal koşullarda korunur.
-- Farklı tarayıcılar, profiller veya cihazlar arasında senkronizasyon yoktur.
+- Yerel kayıtlar farklı tarayıcılar arasında senkronize edilmez. Hesap favorilerine aynı hesapla başka tarayıcıdan erişilebilir.
 - Kayıt alanı site adresine bağlıdır; alan adı, protokol veya port değişirse farklı bir kayıt alanı kullanılır.
-- Site verilerinin temizlenmesi yerel kayıtları silebilir. Bu yapı sunucu tabanlı bir veritabanı veya yedekleme hizmeti değildir.
+- Site verilerinin temizlenmesi yerel kayıtları silebilir. Hesap favorileri sunucuda kalır; diğer yerel kayıtlar için otomatik yedekleme yoktur.
 
 ## Geliştirme Aşamasındaki Bölümler
 
@@ -34,7 +34,7 @@ Hazır ürün kataloğu proje dosyalarında bulunur. Kullanıcının eklediği �
 - **Beslenme planı:** Kalori ve makro hesaplama, hedefleri özelleştirme, üç/dört/beş öğün seçimi ve örnek tarif alternatifleri vardır. Bölümün geliştirmesi tamamlanmamıştır. Hesaplanan ihtiyaçlar ve tarif değerleri yaklaşık tahminlerdir.
 - **Kullanıcı girişi ve kayıt:** Express/PostgreSQL tabanlı yerel hesap ve oturum akışı eklendi. Veritabanı kurulumu sonrasında kayıt, giriş, hesap ekranı ve çıkış kullanılabilir. E-posta doğrulama, parola sıfırlama ve üretime açılma hazırlıkları henüz tamamlanmadı.
 - **Katalog yönetimi:** Ürün düzenleme ve katalogdan silme işlemleri tamamlanacak işler arasındadır.
-- **Sunucu ve yayımlama:** Hesap ve oturum sunucusu yerel geliştirme için hazırlandı. Ürün/plan verilerinin hesaba bağlanması, cihazlar arası senkronizasyon, e-posta doğrulama, parola kurtarma ve sitenin yayımlanması sonraki aşamalardır.
+- **Sunucu ve yayımlama:** Hesap ve oturum sunucusu yerel geliştirme için hazırlandı. Ürün/plan verilerinin hesaba bağlanması ve bunların cihazlar arası senkronizasyonu, e-posta doğrulama, parola kurtarma ve sitenin yayımlanması sonraki aşamalardır.
 
 ## Kullanılan Teknolojiler
 
@@ -50,7 +50,7 @@ Hazır ürün kataloğu proje dosyalarında bulunur. Kullanıcının eklediği �
 - **ESLint:** Kod denetimi.
 - **Git ve GitHub:** Sürüm takibi ve kaynak kod paylaşımı.
 
-Ön yüze Express API ve PostgreSQL hesap/oturum altyapısı eklendi. Kurulum adımları aşağıdadır. Ürünler, favoriler, planlar ve günlük kayıtlar henüz kullanıcı hesabına taşınmadı; bu veriler localStorage kullanmaya devam eder.
+Ön yüze Express API ve PostgreSQL hesap/oturum altyapısı eklendi. Kurulum adımları aşağıdadır. Hesap favorileri veritabanına taşındı. Özel ürün içerikleri, planlar ve günlük kayıtlar localStorage kullanmaya devam eder.
 
 ## Kurulum ve Çalıştırma
 
@@ -84,6 +84,12 @@ npm run lint
 ```
 
 Derleme veya yerel önizleme, sitenin internette yayımlandığı anlamına gelmez.
+
+## Hesaba Bağlı Favoriler
+
+Giriş yapan kullanıcının favorileri PostgreSQL'de kendi hesabına kaydedilir. Misafir favorileri tarayıcıda kalır. Hesabım ekranındaki aktarım düğmesi bu kayıtları hesap favorileriyle birleştirir; yerel kayıtları silmez ve tekrar aktarım kopya oluşturmaz. Diğer cihazda güncel liste için sayfayı yenileyin.
+
+Özel ürünlerin içeriği, profil, beslenme planı ve günlük kayıtlar henüz hesaba bağlı değildir. Özel ürün favorisinin kimliği aktarılabilir; ürün içeriği diğer tarayıcıda bulunmayabilir. Mevcut kurulumu güncellemek için `npm run db:migrate` çalıştırın; kurulum komutunu tekrar çalıştırmayın.
 
 ## Yerel Backend Kurulumu
 

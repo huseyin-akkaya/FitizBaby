@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-import { createHash } from 'node:crypto';
+import { migrationChecksums } from './migration-checksums.js';
 import { readdir, readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
@@ -15,10 +15,11 @@ export async function migrate(connectionString, appRole) {
     const directory = new URL('./migrations/', import.meta.url);
     for (const name of (await readdir(directory)).filter(file => file.endsWith('.sql')).sort()) {
       const sql = await readFile(new URL(name, directory), 'utf8');
-      const checksum = createHash('sha256').update(sql).digest('hex');
+      const checksums = migrationChecksums(sql);
+      const checksum = checksums[0];
       const previous = await client.query('SELECT checksum FROM schema_migrations WHERE name = $1', [name]);
       if (previous.rows[0]) {
-        if (previous.rows[0].checksum !== checksum) throw new Error('Uygulanmış migration değiştirildi; yeni migration ekle.');
+        if (!checksums.includes(previous.rows[0].checksum)) throw new Error('Uygulanmış migration değiştirildi; yeni migration ekle.');
         continue;
       }
       await client.query('BEGIN');
@@ -35,6 +36,8 @@ export async function migrate(connectionString, appRole) {
       await client.query('REVOKE ALL ON users, user_sessions FROM ' + role);
       await client.query('GRANT SELECT (id, display_name, email, password_hash, role), INSERT (display_name, email, password_hash), UPDATE (last_login_at) ON users TO ' + role);
       await client.query('GRANT SELECT, DELETE ON user_sessions TO ' + role);
+      await client.query('REVOKE ALL ON user_favorites FROM ' + role);
+      await client.query('GRANT SELECT, DELETE, INSERT (user_id, product_id) ON user_favorites TO ' + role);
       await client.query('GRANT INSERT (user_id, token_hash, expires_at), UPDATE (last_seen_at) ON user_sessions TO ' + role);
       await client.query('COMMIT');
     } catch (error) { await client.query('ROLLBACK'); throw error; }

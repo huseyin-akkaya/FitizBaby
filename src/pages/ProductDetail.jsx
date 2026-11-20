@@ -2,6 +2,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useProducts } from "../hooks/useProducts";
 import ProductHealth from "../components/ProductHealth";
 import { useFavorites } from "../hooks/useFavorites";
+import FavoritesStatus from "../components/FavoritesStatus";
 
 const nutrients = [
   ["Kalori", "calories", "kcal"],
@@ -20,7 +21,7 @@ function ProductDetail() {
   const navigate = useNavigate();
   const products = useProducts();
   const product = products.find(item => String(item.id) === String(id));
-  const { favoriteIds, toggleFavorite } = useFavorites();
+  const { favoriteIds, toggleFavorite, loading: favoritesLoading, busy: favoritesBusy } = useFavorites();
 
   if (!product) {
     return (
@@ -42,6 +43,7 @@ function ProductDetail() {
         <button type="button" onClick={() => navigate(-1)} className="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-zinc-500 transition hover:text-green-700">
           <span aria-hidden="true">←</span> Geri dön
         </button>
+        <FavoritesStatus />
         <article className="grid overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm lg:grid-cols-2 lg:items-start">
           <div className={`flex min-h-80 items-center justify-center bg-gradient-to-br p-8 sm:min-h-[480px] sm:p-12 ${product.accent}`}>
             <img src={product.image} alt={product.imageAlt ?? product.name} className="h-72 w-72 max-w-full object-contain sm:h-96 sm:w-96" />
@@ -52,7 +54,7 @@ function ProductDetail() {
             <h1 className="mt-1 text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl">{product.name}</h1>
             <p className="mt-4 leading-7 text-zinc-600">{product.description}</p>
 
-            <button type="button" onClick={() => toggleFavorite(product.id)} aria-pressed={isFavorite} className={`mt-6 inline-flex w-fit items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition ${isFavorite ? "border-rose-200 bg-rose-50 text-rose-600" : "border-zinc-200 text-zinc-700 hover:border-rose-200 hover:text-rose-600"}`}>
+            <button type="button" disabled={favoritesLoading || favoritesBusy} onClick={() => toggleFavorite(product.id)} aria-pressed={isFavorite} className={`mt-6 inline-flex w-fit items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition ${isFavorite ? "border-rose-200 bg-rose-50 text-rose-600" : "border-zinc-200 text-zinc-700 hover:border-rose-200 hover:text-rose-600"}`}>
               <svg viewBox="0 0 24 24" className="h-5 w-5" fill={isFavorite ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" /></svg>
               {isFavorite ? "Favorilerimde" : "Favorilere ekle"}
             </button>

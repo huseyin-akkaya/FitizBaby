@@ -13,6 +13,12 @@ Bu sürüm yerel geliştirme içindir. Güvenlik önlemleri ve testler bulunmas�
 - API rolünde yönetim/şema oluşturma yetkisi yoktur. Kullanıcı rolünü veya oturum bitişini değiştirme izinleri de verilmez. Şema değişiklikleri ayrı sahibin bağlantısıyla yapılır.
 - Helmet başlıkları, no-store hesap yanıtları ve ayrıntı/bağlantı bilgisi sızdırmayan hata yanıtları bulunur. Loglar hata gövdesi/parola yerine istek kimliği içerir.
 
+## Favorilerin yetkilendirilmesi
+
+Favori sorguları her zaman doğrulanmış oturumun user_id değeriyle sınırlandırılır. İstemci gövdesindeki userId/başka alanlar reddedilir. X-FitizBaby-Account başlığı yalnızca hesap değişikliğini tespit eder; yetki sağlamaz. Kaydetme/aktarım işlemi kullanıcı satırı kilidiyle tek transaction içinde tamamlanır, tekrar aktarım kopya oluşturmaz. API rolü favori sahibini UPDATE edemez. Bu sürümde veritabanı satır güvenliği (RLS) yoktur; yalıtım sunucu sorguları ve iki hesaplı testlerle sağlanır.
+
+Misafir favorileri tarayıcıdadır. Hesaba aktarım kendiliğinden yapılmaz, kaynak silinmez. Özel ürünlerin yalnızca kimlikleri favori kaydına alınır; içerikleri henüz hesaba bağlı değildir. Hesap bilgisi değiştiğinde arayüz eski hesaba ait favorileri gizler ve bekleyen istemci isteklerini iptal eder. Sunucuya ulaşmış işlem iptalden önce tamamlanmış olabilir; sunucu oturumu ve hesap eşleşmesi yine kontrol edilir.
+
 ## Gizli dosyalar
 
 .env yalnızca sınırlı API bağlantısı, .env.migration yalnızca şema sahibi bağlantısı içindir. Yönetici parolası yerel kurulumda bellekte kullanılır ve kaydedilmez. Gerçek dosyalar Git tarafından dışlanır; yalnızca örnekler paylaşılır. Windows'ta kurulum, sırları yazmadan önce dosya erişim mirasını kaldırır ve mevcut kullanıcı/SYSTEM/yöneticilere izin verir.
@@ -23,7 +29,7 @@ Bu sürüm yerel geliştirme içindir. Güvenlik önlemleri ve testler bulunmas�
 
 - E-posta doğrulama, parola sıfırlama, MFA ve hesap kurtarma yok. Kayıtta yinelenen e-posta 409 yanıtı döner; e-posta sahipliği henüz doğrulanmaz. Bu sebeple halka açık kayıt için tamamlanmış akış sayılmaz.
 - İstek sınırları tek süreç belleğindedir; üretimde birden fazla sunucuya uygun ortak sınırlama ve kalıcı izleme gerekir.
-- Ürün, favori ve beslenme verileri henüz kullanıcı hesabına bağlı değildir; aynı tarayıcıdaki yerel kayıtlar paylaşılır. Bu kayıtlar yerel geliştirme verisidir; çok kullanıcılı gizli veri depolaması olarak değerlendirilmemelidir.
+- Özel ürün içerikleri ve beslenme verileri henüz kullanıcı hesabına bağlı değildir; aynı tarayıcıdaki yerel kayıtlar paylaşılır. Bu kayıtlar yerel geliştirme verisidir; çok kullanıcılı gizli veri depolaması olarak değerlendirilmemelidir.
 - Gerçek AI, e-posta sağlayıcısı, bulut dağıtımı ve üretim yedeklemesi bu aşamada kurulmadı.
 
 ## Üretim öncesi

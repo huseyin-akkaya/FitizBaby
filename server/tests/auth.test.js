@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { once } from 'node:events';
 import { createHash } from 'node:crypto';
 import { createApp } from '../app.js';
+import { migrationChecksums } from '../db/migration-checksums.js';
 import { createPool, assertRuntimeRole, pool } from '../db/pool.js';
 
 const origin = 'http://localhost:8080';
@@ -21,6 +22,17 @@ async function withApi(target, action) {
 }
 const cookieFrom = response => response.headers.get('set-cookie').split(';')[0];
 const register = (request, user = newUser()) => request('/v1/auth/register', { method: 'POST', data: user });
+
+test('Migration checksums tolerate only LF/CRLF differences and reject content edits', () => {
+  const lf = 'CREATE TABLE sample (id INT);\n-- same SQL\n';
+  const crlf = lf.replace(/\n/g, '\r\n');
+  const hash = value => createHash('sha256').update(value).digest('hex');
+  assert.deepEqual(migrationChecksums(lf), migrationChecksums(crlf));
+  assert.ok(migrationChecksums(crlf).includes(hash(lf)));
+  assert.ok(migrationChecksums(lf).includes(hash(crlf)));
+  assert.ok(!migrationChecksums(lf.replace('INT', 'TEXT')).includes(hash(lf)));
+  assert.ok(!migrationChecksums(lf + '-- changed').includes(hash(lf)));
+});
 
 test('Origin, content type, body limits and input schema reject invalid requests', async () => withApi(null, async request => {
   assert.equal((await request('/v1/auth/login', { method: 'POST', data: {}, headers: { Origin: 'https://evil.example' } })).status, 403);
@@ -117,4 +129,47 @@ test('Real PostgreSQL: user input cannot become SQL or change privileges', { ski
   assert.equal((await response.json()).user.role, 'member');
   assert.ok((await database.query('SELECT COUNT(*)::int AS count FROM users')).rows[0].count > 0);
 }));
+
+test('Real PostgreSQL: favorites are private, imports idempotent, stale accounts and untrusted owners rejected', { skip: !integration }, async () => withApi(database, async request => {
+  assert.equal((await request('/v1/favorites')).status, 401);
+  const first = await register(request);
+  const firstCookie = cookieFrom(first);
+  const firstId = (await first.json()).user.id;
+  const second = await register(request);
+  const secondCookie = cookieFrom(second);
+  const secondId = (await second.json()).user.id;
+  const options = { cookie: firstCookie, headers: { 'X-FitizBaby-Account': firstId } };
+  const secondOptions = { cookie: secondCookie, headers: { 'X-FitizBaby-Account': secondId } };
+  const get = async args => (await (await request('/v1/favorites', args)).json()).productIds;
+  assert.deepEqual(await get(options), []);
+  assert.equal((await request('/v1/favorites', { ...options, method: 'POST', data: { productId: '1', favorite: true, userId: secondId } })).status, 400);
+  assert.equal((await request('/v1/favorites', { cookie: firstCookie })).status, 409);
+  assert.equal((await request('/v1/favorites', { ...secondOptions, method: 'POST', headers: options.headers, data: { productId: '1', favorite: true } })).status, 409);
+  assert.equal((await request('/v1/favorites', { ...options, method: 'POST', data: { productId: "1'); DROP TABLE users;--", favorite: true } })).status, 400);
+  assert.equal((await request('/v1/favorites', { ...options, method: 'POST', data: { productId: '999999', favorite: true } })).status, 400);
+  assert.equal((await request('/v1/favorites', { ...options, method: 'POST', data: { productId: '1', favorite: true } })).status, 200);
+  assert.deepEqual(await get(options), ['1']);
+  assert.deepEqual(await get(secondOptions), []);
+  for (let i = 0; i < 2; i += 1) {
+    const imported = await request('/v1/favorites/import', { ...options, method: 'POST', data: { productIds: ['1', '2', '2'] } });
+    assert.equal(imported.status, 200);
+    assert.deepEqual((await imported.json()).productIds, ['1', '2']);
+  }
+  const invalid = await request('/v1/favorites/import', { ...options, method: 'POST', data: { productIds: ['3', 'bad-id'] } });
+  assert.equal(invalid.status, 400);
+  assert.deepEqual(await get(options), ['1', '2']);
+  await request('/v1/favorites', { ...secondOptions, method: 'POST', data: { productId: '1', favorite: false } });
+  assert.deepEqual(await get(options), ['1', '2']);
+  await Promise.all(Array.from({ length: 4 }, () => request('/v1/favorites/import', { ...options, method: 'POST', data: { productIds: ['2', '3'] } })));
+  assert.deepEqual(await get(options), ['1', '2', '3']);
+  await request('/v1/favorites', { ...options, method: 'POST', data: { productId: '1', favorite: false } });
+  assert.deepEqual(await get(options), ['2', '3']);
+  assert.deepEqual(await get(secondOptions), []);
+  const permissions = await database.query("SELECT has_column_privilege(current_user, 'user_favorites', 'created_at', 'INSERT') AS can_forge_date, has_table_privilege(current_user, 'user_favorites', 'UPDATE') AS can_reassign");
+  assert.equal(permissions.rows[0].can_forge_date, false);
+  assert.equal(permissions.rows[0].can_reassign, false);
+  await request('/v1/auth/logout', { method: 'POST', data: {}, cookie: firstCookie });
+  assert.equal((await request('/v1/favorites', options)).status, 401);
+}));
+
 test.after(async () => { await database?.end(); await owner?.end(); await pool?.end(); });

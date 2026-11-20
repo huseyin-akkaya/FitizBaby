@@ -16,9 +16,17 @@ Eski Express/PostgreSQL taslağı güncel ön yüze seçilerek aktarıldı ve g�
 
 Kullanıcının kendi PostgreSQL kurulumunun tamamlanması için kendi terminalinde npm run setup:db çalıştırması gerekir. Testler geçici veritabanında yapılır; test başarısı kişisel kurulumun tamamlandığı anlamına gelmez.
 
-## Sonraki aşama: Hesaba bağlı veriler
+## Aşama 2a: Hesaba bağlı favoriler
 
-Ürünler, favoriler, profil, beslenme planı ve günlük kayıtlar henüz hesaplara bağlanmadı. Mevcut localStorage kayıtları korunacak; açık kullanıcı seçimi ve tekrarlı içe alımda çoğaltmayı önleyen düzen kurulacak. Her işlemde sunucunun oturumdan aldığı kullanıcı kimliği esas alınacak; istemcinin gönderdiği userId yetki sayılmayacak.
+Şema checksum denetimi Git/Windows LF–CRLF satır sonu farkını kabul eder; SQL içerik değişikliğini reddeder ve eski checksum kayıtlarını değiştirmez.
+
+Favoriler oturumdaki kullanıcıya göre PostgreSQL'de saklanır. Başka hesapların kayıtları listelenemez veya değiştirilemez. Hesap değişmişse eski sekmenin yazma isteği reddedilir. Tarayıcı favorileri yalnızca Hesabım ekranındaki açık aktarım düğmesiyle birleştirilir; tekrar aktarım kopya oluşturmaz, yerel kayıt silinmez. Sunucu yanıtı alınmadan başarılı kayıt gösterilmez. Sekmeler arası değişiklik bildirimi ve pencereye dönüşte yenileme vardır; farklı cihazlar için sayfa yenileme gerekir.
+
+Özel ürünlerin yalnızca favori kimliği aktarılır; ürün içeriği ve görseli henüz aktarılmaz. Özel ürün başka tarayıcıda bulunmayabilir. Favori başına yalnızca ürün kimliği saklanır; en fazla 1000 favori kabul edilir ve istek gövdesinin 16 KB sınırı sürer. Büyük aktarım bu sınırı aşarsa hiçbir kayıt değiştirilmeden reddedilir.
+
+## Sonraki aşama: Diğer hesaba bağlı veriler
+
+Özel ürün içerikleri, profil, beslenme planı ve günlük kayıtlar henüz hesaplara bağlanmadı. Mevcut localStorage kayıtları korunacak; açık kullanıcı seçimi ve tekrarlı içe alımda çoğaltmayı önleyen düzen kurulacak. Her işlemde sunucunun oturumdan aldığı kullanıcı kimliği esas alınacak; istemcinin gönderdiği userId yetki sayılmayacak.
 
 Ardından kendi ürününü düzenleme/silme, ortak katalog için moderasyon ve uygun görsel depolama ele alınacak. Paylaşılan cihazda farklı hesapların birbirinin kayıtlarını görmemesi bu aşamanın kabul koşuludur.
 

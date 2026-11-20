@@ -18,7 +18,8 @@ await mkdir(data);
 const secret = randomBytes(32).toString('hex');
 const pwfile = join(directory, 'test-password');
 await writeFile(pwfile, secret, { mode: 0o600 });
-const port = await new Promise((resolvePort, reject) => { const socket = net.createServer(); socket.once('error', reject); socket.listen(0, '127.0.0.1', () => { const chosen = socket.address().port; socket.close(() => resolvePort(chosen)); }); });
+const freePort = () => new Promise((resolvePort, reject) => { const socket = net.createServer(); socket.once('error', reject); socket.listen(0, '127.0.0.1', () => { const chosen = socket.address().port; socket.close(() => resolvePort(chosen)); }); });
+const port = await freePort();
 function pgCommand(command, args) {
   const log = openSync(join(directory, 'commands.log'), 'a');
   let result; try { result = spawnSync(executable(command), args, { stdio: ['ignore', log, log], windowsHide: true, timeout: 60000 }); } finally { closeSync(log); }
@@ -46,14 +47,19 @@ try {
   await run(process.execPath, ['--test', 'server/tests/production.test.js'], { ...env, NODE_ENV: 'production', FRONTEND_ORIGINS: 'https://localhost', TRUST_PROXY: 'true' });
   const browserTest = argument('--browser-test');
   if (browserTest) {
-    for (const [script, args] of [['server/index.js', []], ['node_modules/vite/bin/vite.js', ['--host', '127.0.0.1', '--port', '8080', '--strictPort']]]) children.push(spawn(process.execPath, [script, ...args], { env: { ...process.env, ...env }, stdio: 'inherit', windowsHide: true }));
+    const apiPort = await freePort();
+    const webPort = await freePort();
+    const browserBase = 'http://127.0.0.1:' + webPort;
+    const apiBase = 'http://127.0.0.1:' + apiPort;
+    const browserEnv = { ...process.env, ...env, API_PORT: String(apiPort), FRONTEND_ORIGINS: browserBase, FITIZBABY_BROWSER_BASE: browserBase, FITIZBABY_TEST_WEB_PORT: String(webPort) };
+    for (const script of ['server/index.js', 'server/tests/serve-browser.js']) children.push(spawn(process.execPath, [script], { env: browserEnv, stdio: 'inherit', windowsHide: true }));
     let ready = false;
     for (let attempt = 0; attempt < 40; attempt += 1) {
-      try { const results = await Promise.all([fetch('http://127.0.0.1:3001/api/health'), fetch('http://127.0.0.1:8080')]); if (results.every(response => response.ok)) { ready = true; break; } } catch { /* Servers are starting. */ }
+      try { const results = await Promise.all([fetch(apiBase + '/api/health'), fetch(browserBase)]); if (results.every(response => response.ok)) { ready = true; break; } } catch { /* Servers are starting. */ }
       await new Promise(resolveDelay => setTimeout(resolveDelay, 250));
     }
-    if (!ready) throw new Error('TEST_SERVERS_NOT_READY');
-    await run(process.execPath, [resolve(browserTest)], env);
+    if (!ready || children.some(child => child.exitCode !== null)) throw new Error('TEST_SERVERS_NOT_READY');
+    await run(process.execPath, [resolve(browserTest)], browserEnv);
   }
   console.info('Gerçek PostgreSQL testleri tamamlandı; kişisel veritabanı kullanılmadı.');
 } catch (error) { console.error('Entegrasyon testi tamamlanamadı:', error.message); process.exitCode = 1; }

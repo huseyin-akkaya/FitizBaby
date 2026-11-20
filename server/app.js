@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { env } from './config.js';
 import { pool } from './db/pool.js';
 import { createAuthRouter } from './routes/auth.js';
+import { createFavoritesRouter } from './routes/favorites.js';
 import { createLimits, requireAllowedOrigin } from './middleware/security.js';
 
 export function createApp(database = pool) {
@@ -20,6 +21,7 @@ export function createApp(database = pool) {
     catch { return res.status(503).json({ status: 'degraded', database: 'unavailable' }); }
   });
   app.use('/api/v1/auth', createAuthRouter(database, limits.auth));
+  app.use('/api/v1/favorites', createFavoritesRouter(database));
   app.use('/api', (_req, res) => res.status(404).json({ error: { code: 'NOT_FOUND', message: 'API adresi bulunamadı.' } }));
   app.use((error, _req, res, _next) => {
     void _next;

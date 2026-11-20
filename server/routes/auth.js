@@ -77,23 +77,12 @@ export function createAuthRouter(database, authLimit) {
     } catch (error) { await client.query('ROLLBACK').catch(() => {}); throw error; }
     finally { client.release(); }
   });
-  async function lookup(req, res) {
-    if (!database) return unavailable(res);
-    const token = readToken(req);
-    if (!token) return null;
-    const result = await database.query(`UPDATE user_sessions s SET last_seen_at = NOW() FROM users u
-      WHERE s.user_id = u.id AND s.token_hash = $1 AND s.expires_at > NOW()
-      AND s.last_seen_at > NOW() - INTERVAL '30 minutes'
-      RETURNING u.id, u.display_name, u.email, u.role`, [digest(token)]);
-    if (!result.rows[0]) { res.clearCookie(cookieName, cookieOptions); return null; }
-    return publicUser(result.rows[0]);
-  }
   router.get('/me', async (req, res) => {
-    const user = await lookup(req, res);
+    const user = await lookupUser(database, req, res);
     if (!res.headersSent) res.json({ user });
   });
   router.get('/account', async (req, res) => {
-    const user = await lookup(req, res);
+    const user = await lookupUser(database, req, res);
     if (res.headersSent) return;
     if (!user) return res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Bu işlem için giriş yapmalısın.' } });
     return res.json({ user });
@@ -107,3 +96,15 @@ export function createAuthRouter(database, authLimit) {
   });
   return router;
 }
+
+export async function lookupUser(database, req, res) {
+    if (!database) return unavailable(res);
+    const token = readToken(req);
+    if (!token) return null;
+    const result = await database.query(`UPDATE user_sessions s SET last_seen_at = NOW() FROM users u
+      WHERE s.user_id = u.id AND s.token_hash = $1 AND s.expires_at > NOW()
+      AND s.last_seen_at > NOW() - INTERVAL '30 minutes'
+      RETURNING u.id, u.display_name, u.email, u.role`, [digest(token)]);
+    if (!result.rows[0]) { res.clearCookie(cookieName, cookieOptions); return null; }
+    return publicUser(result.rows[0]);
+  }
