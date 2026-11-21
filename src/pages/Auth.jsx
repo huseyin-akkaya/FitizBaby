@@ -132,7 +132,7 @@ function AuthPage({ mode = "login" }) {
 
           {!isRegister&&<Link to="/forgot-password" className="mt-4 inline-block text-sm font-semibold text-green-800 underline">Parolamı unuttum</Link>}
           <p className="mt-5 rounded-xl border border-zinc-100 bg-zinc-50 px-3.5 py-3 text-xs leading-5 text-zinc-500">
-            Yerel geliştirme sürümündesin. Parolan en az 15 karakter olmalı. Şifren tarayıcıda saklanmaz; backend’e iletilir ve veritabanında Argon2id hash’i olarak tutulur. Doğrulama ve parola sıfırlama yerel deneme olarak kullanılabilir; gerçek e-posta gönderimi henüz bağlı değildir.
+            Yerel geliştirme sürümündesin. Parolan en az 15 karakter olmalı. Şifren tarayıcıda saklanmaz; backend’e iletilir ve veritabanında Argon2id hash’i olarak tutulur. Doğrulama ve parola sıfırlama yerel deneme olarak kullanılabilir; gerçek test gönderimi özel e-posta kurulumu tamamlandığında yalnızca tanımlı deneme alıcısına açılır.
           </p>
 
           <p className="mt-6 text-center text-sm text-zinc-600">

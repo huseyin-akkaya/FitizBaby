@@ -14,7 +14,10 @@
     "db:migrate": "node server/db/migrate.js",
     "test:server": "node --test --test-concurrency=1 server/tests/*.test.js",
     "test:integration": "node server/tests/run-postgres.js",
-    "mail:local": "node server/mail/read-local.js"
+    "mail:local": "node server/mail/read-local.js",
+    "setup:mail": "node server/mail/setup-resend.js",
+    "mail:check": "node server/mail/check.js",
+    "mail:status": "node server/mail/status.js"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",

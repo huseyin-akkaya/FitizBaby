@@ -33,3 +33,6 @@ coverage/
 
 # Private development recovery links; never serve or commit.
 .local-mail/
+
+!.env.mail.example
+.private-mail-setup-*/

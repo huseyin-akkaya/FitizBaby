@@ -9,9 +9,9 @@ export default function EmailVerification() {
  return <section className="mt-6 rounded-xl border border-zinc-200 bg-zinc-50 p-4">
   <h2 className="text-lg font-bold">Hesap güvenliği</h2>
   <p className="mt-2 text-sm">{user.emailVerified?'E-posta adresin doğrulandı.':'E-posta adresin henüz doğrulanmadı.'}</p>
-  <p className="mt-2 text-sm text-zinc-600">{delivery==='local'?'Yerel deneme kullanılıyor. Gerçek e-posta gönderilmez; bağlantı yalnızca bu bilgisayardaki korumalı deneme kutusuna yazılır.':delivery==='loading'?'Gönderim durumu kontrol ediliyor…':'E-posta gönderimi bu ortamda bağlı değil.'}</p>
-  <p className="mt-2 text-xs text-zinc-500">Bu deneme gerçek e-posta sahipliğini kanıtlamaz. Yerel geliştirmede doğrulama henüz hesap erişiminin ön koşulu değildir.</p>
-  <div className="mt-3 flex flex-wrap gap-3">{!user.emailVerified&&<button type="button" disabled={busy||delivery!=='local'} onClick={send} className="rounded-lg bg-green-700 px-4 py-2 font-semibold text-white disabled:opacity-50">{busy?'Hazırlanıyor…':'Doğrulama bağlantısı hazırla'}</button>}<Link to="/forgot-password" className="rounded-lg border border-zinc-300 px-4 py-2">Parolamı sıfırla</Link></div>
+  <p className="mt-2 text-sm text-zinc-600">{delivery==='local'?'Yerel deneme kullanılıyor. Gerçek e-posta gönderilmez; bağlantı yalnızca bu bilgisayardaki korumalı deneme kutusuna yazılır.':delivery==='resend'?'Gerçek test gönderimi açık. E-postalar yalnızca hizmette tanımlı kendi deneme adresine gönderilir.':delivery==='loading'?'Gönderim durumu kontrol ediliyor…':'E-posta gönderimi bu ortamda bağlı değil.'}</p>
+  <p className="mt-2 text-xs text-zinc-500">{delivery==='resend'?'Eski yerel onay gerçek e-posta doğrulaması sayılmaz. Gelen yeni bağlantıyla doğrulama yap.':'Yerel deneme gerçek e-posta sahipliğini kanıtlamaz.'} Doğrulama henüz hesap erişiminin ön koşulu değildir.</p>
+  <div className="mt-3 flex flex-wrap gap-3">{!user.emailVerified&&<button type="button" disabled={busy||!['local','resend'].includes(delivery)} onClick={send} className="rounded-lg bg-green-700 px-4 py-2 font-semibold text-white disabled:opacity-50">{busy?'Hazırlanıyor…':delivery==='resend'?'Doğrulama e-postası iste':'Doğrulama bağlantısı hazırla'}</button>}<Link to="/forgot-password" className="rounded-lg border border-zinc-300 px-4 py-2">Parolamı sıfırla</Link></div>
   {error&&<p role="alert" className="mt-3 text-sm text-red-700">{error}</p>}{notice&&<p role="status" className="mt-3 text-sm text-green-900">{notice}</p>}
  </section>;
 }

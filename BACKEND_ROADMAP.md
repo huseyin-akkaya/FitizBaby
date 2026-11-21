@@ -48,9 +48,17 @@ Hesap doğrulama durumu, tek kullanımlık/süreli/özetli belirteçler, doğrul
 
 Gerçek gönderim yoktur. Deneme iletileri Windows erişimi sınırlı, Git ve Vite dışında `.local-mail/` dizinindedir. `npm run mail:local` son 10 iletiyi gösterir. Link URL fragment'ındadır, sayfada temizlenir; GET tüketmez, açık onay gerekir. Doğrulama 24 saat, sıfırlama 30 dakika; aynı amaçta 60 saniye ara/saatte 5 istek sınırı vardır. Yerel onay gerçek e-posta sahipliği kanıtı sayılmaz; erişim koşulu yapılmadı. Üretimde yerel mod açılmaz, gerçek gönderim bağlanana kadar gönderim/kurtarma isteği kapalıdır.
 
+## Aşama 3b: Ücretsiz gerçek test gönderimi
+
+Resend Free için tek alıcılı geliştirme taşıyıcısı ve güvenli yerel kurulum eklendi. Alan adı olmadan yalnızca hizmet hesabının kendi adresine test yapılabilir. `setup:mail` anahtarı gizli ister; özel dosyayı izinleri sınırlı ve mevcut ayarı ezmeden yazar. Anahtar kullanıcı tarafından girilmeden gerçek gönderim aktif olmaz. Tarayıcıda anahtar bulunmaz.
+
+Token ve AES-256-GCM şifreli kuyruk aynı transaction'dadır. İşçi dış HTTP çağrısını transaction dışında yapar; idempotency, kiralama, süre sonu, tekrar deneme ve içerik temizliği vardır. Uygulama limiti 50/gün ve 1000/aydır; ücretsiz sağlayıcı planının altında tutulur. Yerel onay ile gerçek onay ayrıldı; Resend modunda yerel belirteç/onay kabul edilmez. Mevcut yerel deneme akışı korunur.
+
+Sahte taşıyıcıyla testler gerçek gönderim başarısı sayılmaz; kullanıcının Resend Free hesabı, Sending access anahtarı ve kendi adresindeki denemesi gerekir. Ücretli plana otomatik geçiş yoktur; üretim modu halen kapalıdır.
+
 ## Sonraki aşama
 
-Gerçek gönderim hizmetini seçip güvenli teslim kuyruğu/izleme ile bağlamak, üretimde doğrulama zorunluluğunu ve hesap varlığı sızıntısını azaltan kayıt akışını tamamlamak. Ardından hesap/veri dışa aktarma ve silme, veritabanı yedekleme/geri yükleme, ortak katalog moderasyonu ve üretim hazırlıkları ele alınmalı. Gerçek AI sağlayıcısı hâlâ bağlı değildir.
+Kullanıcının ücretsiz test hesabını bağlayıp gerçek teslimi doğrulamak. Ardından alan adını doğrulayıp genel alıcılı gönderimi, teslimat/bounce izlemeyi ve üretimde doğrulama zorunluluğunu ve hesap varlığı sızıntısını azaltan kayıt akışını tamamlamak. Ardından hesap/veri dışa aktarma ve silme, veritabanı yedekleme/geri yükleme, ortak katalog moderasyonu ve üretim hazırlıkları ele alınmalı. Gerçek AI sağlayıcısı hâlâ bağlı değildir.
 
 ## Yayımlamadan önce
 

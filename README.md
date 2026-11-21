@@ -32,9 +32,9 @@ Hazır ürün kataloğu proje dosyalarında bulunur. Misafir ürünleri, favoril
 
 - **Yapay zekâ asistanı:** Kısmen çalışan bir prototiptir. Mevcut kod, mesajdaki anahtar kelimeleri ve katalog eşleşmelerini kullanarak hazır yanıtlar üretir; harici bir yapay zekâ modeli veya API bağlantısı bulunmaz. Geliştirmesi tamamlanmamıştır.
 - **Beslenme planı:** Kalori ve makro hesaplama, hedefleri özelleştirme, üç/dört/beş öğün seçimi ve örnek tarif alternatifleri vardır. Bölümün geliştirmesi tamamlanmamıştır. Hesaplanan ihtiyaçlar ve tarif değerleri yaklaşık tahminlerdir.
-- **Kullanıcı girişi ve kayıt:** Express/PostgreSQL tabanlı yerel hesap ve oturum akışı eklendi. Veritabanı kurulumu sonrasında kayıt, giriş, hesap ekranı ve çıkış kullanılabilir. E-posta doğrulama ve parola sıfırlama yerel deneme olarak çalışır. Gerçek e-posta sağlayıcısı ve üretime açılma hazırlıkları tamamlanmadı.
+- **Kullanıcı girişi ve kayıt:** Express/PostgreSQL tabanlı yerel hesap ve oturum akışı eklendi. Veritabanı kurulumu sonrasında kayıt, giriş, hesap ekranı ve çıkış kullanılabilir. E-posta doğrulama ve parola sıfırlama yerel deneme olarak çalışır. Resend Free tek alıcılı test entegrasyonu vardır; gerçek gönderim için kullanıcının özel anahtar kurulumu gerekir. Alan adı doğrulaması ve üretime açılma hazırlıkları tamamlanmadı.
 - **Katalog yönetimi:** Kendi hesap ürününü ekleme/düzenleme/silme ve tarayıcıdan aktarım çalışır. Herkese açık ortak katalog için moderasyon henüz yoktur.
-- **Sunucu ve yayımlama:** Hesap ve oturum sunucusu yerel geliştirme için hazırlandı. Gerçek e-posta gönderimi, üretimde doğrulama zorunluluğu, yedekleme/geri yükleme ve sitenin yayımlanması sonraki aşamalardır.
+- **Sunucu ve yayımlama:** Hesap ve oturum sunucusu yerel geliştirme için hazırlandı. Genel kullanıma açık e-posta gönderimi, üretimde doğrulama zorunluluğu, yedekleme/geri yükleme ve sitenin yayımlanması sonraki aşamalardır.
 
 ## Kullanılan Teknolojiler
 
@@ -110,7 +110,7 @@ Her hesap için en fazla 3660 günlük kayıt, gün başına 100 öğün ürün�
 
 ## Yerel E-posta Doğrulama ve Parola Sıfırlama
 
-Bu aşamada SMTP veya başka bir gerçek e-posta gönderim hizmeti bağlı değildir. Gerçek e-posta gönderilmez. Geliştirmede `MAIL_MODE=local` kullanılır; deneme bağlantıları proje içindeki korumalı `.local-mail/` klasörüne yazılır. Windows erişimi mevcut kullanıcı, SYSTEM ve yöneticilerle sınırlıdır. Klasör Git dışında tutulur ve Vite üzerinden sunulması engellenir.
+Varsayılan yerel mod dışarıya e-posta göndermez. İsteğe bağlı Resend Free test kurulumu aşağıdadır; özel anahtar kurulmadan bu mod etkinleşmez. Geliştirmede `MAIL_MODE=local` kullanılır; deneme bağlantıları proje içindeki korumalı `.local-mail/` klasörüne yazılır. Windows erişimi mevcut kullanıcı, SYSTEM ve yöneticilerle sınırlıdır. Klasör Git dışında tutulur ve Vite üzerinden sunulması engellenir.
 
 1. Hesabım ekranında “Doğrulama bağlantısı hazırla” düğmesini kullanın. Parola sıfırlamak için giriş ekranındaki “Parolamı unuttum” bağlantısını açın.
 2. Proje terminalinde `npm run mail:local` çalıştırın. Komut son 10 yerel deneme iletisini gösterir.
@@ -120,7 +120,27 @@ Doğrulama bağlantısı 24 saat, sıfırlama bağlantısı 30 dakika geçerlidi
 
 Bağlantının gizli kısmı URL fragment'ında taşınır, sayfa açılınca adres çubuğundan kaldırılır. Yalnızca açmak işlemi tamamlamaz; kullanıcı onayı gerekir. Veritabanında bağlantı belirtecinin yalnızca SHA-256 özeti saklanır. Yerel ileti dosyası bağlantıyı içerdiği için gizlidir. Ekran yenilenirse bağlantının yeniden açılması gerekebilir.
 
-Deneme sonucu görünen doğrulama durumu gerçek e-posta sahipliğinin kanıtı değildir. Bu aşamada doğrulama hesap erişiminin ön koşulu değildir. Üretimde yerel kutu açılmaz; `MAIL_MODE=disabled` ile gönderim/kurtarma isteği kapalıdır. Gerçek gönderim ve üretim doğrulama zorunluluğu ayrıca kurulmalıdır. Yerel deneme veritabanını üretim kimlik doğrulaması olarak taşımayın. `APP_PUBLIC_URL` izin verilen kaynaklardan biri olmalı; yerel modda localhost/loopback olmalıdır. Host başlığından bağlantı üretilmez.
+Deneme sonucu görünen doğrulama durumu gerçek e-posta sahipliğinin kanıtı değildir. Bu aşamada doğrulama hesap erişiminin ön koşulu değildir. Üretimde yerel kutu açılmaz; `MAIL_MODE=disabled` ile gönderim/kurtarma isteği kapalıdır. Resend tek alıcılı test modu da üretimde açılmaz; genel gönderim, alan adı doğrulaması ve üretim doğrulama zorunluluğu ayrıca tamamlanmalıdır. Yerel deneme veritabanını üretim kimlik doğrulaması olarak taşımayın. `APP_PUBLIC_URL` izin verilen kaynaklardan biri olmalı; yerel modda localhost/loopback olmalıdır. Host başlığından bağlantı üretilmez.
+
+## Resend Free ile Gerçek Test E-postası
+
+Alan adı olmadan Resend yalnızca hizmette hesabı açtığınız e-posta adresine test gönderimine izin verir. Uygulama da alıcıyı bu tek adresle sınırlar. Resend'in Free planı ayda 3.000/günde 100 e-postadır; bu prototipte daha düşük **günde 50/ayda 1000 kuyruk kaydı** sınırı vardır. Kota dolunca yeni gönderim sıraya alınmaz. Uygulama ücretli plan veya faturalandırma API'si çağırmaz; sağlayıcı hesabında Free planını seçin.
+
+1. [Resend](https://resend.com/signup) üzerinde kendi ücretsiz hesabınızı açın ve adresinizi doğrulayın. Ücretli plana geçmeyin.
+2. API Keys bölümünde **Sending access** yetkili bir anahtar oluşturun. Full access gerekmez. Anahtarı sohbete veya GitHub'a koymayın.
+3. Proje terminalinde `npm run setup:mail` çalıştırın. Resend hesabınızı açtığınız e-posta adresini ve gizli soruda API anahtarını girin. Anahtar ekranda gösterilmez.
+4. `npm run db:migrate` çalıştırın, backend'i yeniden başlatın (`npm run dev:server`). `npm run mail:check` çıktısında `delivery: resend` olmalıdır; çıktı anahtarı/adresi göstermez. Gerçek işletim sistemi ortam değişkenleri özel dosyadan önceliklidir.
+5. FitizBaby'de aynı e-posta adresine ait hesabınızla giriş yapın. Hesabım ekranından doğrulama e-postası isteyin. Sıfırlamayı aynı adreste deneyebilirsiniz. Kuyruk 5 saniyede bir işlenir; isteğin kabulü e-postanın kutuya teslim edildiğini garanti etmez. Spam klasörünü de kontrol edin.
+
+`npm run mail:status` yalnızca güvenli kuyruk durum sayılarını gösterir. Kurulum komutu e-posta göndermez. Anahtar girilmeden veya gerçek deneme alınmadan gönderimin çalıştığı doğrulanmış sayılmaz. Testler gerçek sağlayıcı yerine sahte taşıyıcı kullanır.
+
+Özel `.env.mail` dosyası mevcut kullanıcı/SYSTEM/yöneticilerle sınırlıdır, Git ve Vite dışında tutulur. Dosya önce korumalı geçici dizinde hazırlanır ve mevcut ayarın üzerine yazılmadan atomik yayımlanır. Kurulum dosyası zaten varsa üzerine yazmaz. `.env.mail.example` yalnızca örnektir. Kuyruk şifreleme anahtarını silip yeniden üretmek bekleyen iletileri okunamaz yapar; anahtar yenileme ayrı bakım işlemidir.
+
+Gönderim HTTPS ile yalnızca `api.resend.com` üzerinden yapılır; tarayıcı anahtarı görmez. Kuyruk içeriği AES-256-GCM ile şifrelenir. Tekrar denemeler aynı gönderim kimliğiyle yapılır, kabul/süresi dolma/kalıcı hata sonrasında kuyruk içeriği temizlenir. Alıcı, konu ve güvenlik bağlantısı sağlayıcıya gider; beslenme, sağlık veya ürün verileri e-postaya eklenmez. Açılma/tıklama takibini kapalı tutun.
+
+Yerel doğrulama gerçek doğrulama sayılmaz. Resend modu açılınca eski yerel onay güvenilir kabul edilmez ve yerel belirteçler tüketilemez. Gelen yeni bağlantı gerçek doğrulamayı işaretler. Bu entegrasyon **yalnızca tek alıcılı geliştirme testi** içindir; başka kullanıcılara gönderim, alan adı doğrulaması ve üretim erişim kuralları sonraki aşamadır.
+
+Kaynaklar: [Free plan](https://resend.com/pricing), [test alıcısı kısıtı](https://resend.com/docs/knowledge-base/403-error-resend-dev-domain), [gönderim anahtarı yetkisi](https://resend.com/changelog/new-api-key-permissions), [tekrar gönderim kimlikleri](https://resend.com/changelog/idempotency-keys).
 
 ## Yerel Backend Kurulumu
 

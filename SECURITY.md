@@ -41,9 +41,21 @@ Doğrulama 24 saat, sıfırlama 30 dakika; her belirteç 32 rastgele bayttır ve
 
 Sıfırlama isteği bilinen/bilinmeyen, bekleme sınırındaki veya yerel teslimi başarısız hesaplar için aynı 202/gövdeyi döndürür. En az 400 ms yanıt süresi hedeflenir; bu, her koşulda zamanlama farkı yoktur garantisi değildir. Doğrulama istemek oturum ve etkin hesap başlığı ister. Doğrulama/sıfırlama tüketimi belirtece bağlıdır ve otomatik oturum açmaz. Ham belirteç API yanıtına/loga/localStorage'a yazılmaz; URL fragment'ı HTTP isteği/referrer'a gönderilmez ve sayfa açılınca temizlenir. Onay düğmesi olmadan GET bağlantıyı tüketmez.
 
-Gerçek e-posta gönderilmez. Yerel kutu yalnızca loopback geliştirme/test ortamında kullanılabilir; üretimde açılması reddedilir. Proje içindeki kutu yalnızca `.local-mail/` olabilir, Git/Vite dışında tutulur. Windows DACL'i tek işlemle mevcut kullanıcı/SYSTEM/yöneticilere verilir; eski dizin geçici olarak geniş üst klasör izinlerine döndürülmez. Unix'te klasör 0700, dosya 0600 kullanılır. Dosyalar ham bağlantı içerir; paylaşılmamalıdır. Son 10 iletiyi gösteren CLI yalnızca yerel modda çalışır. Eski dosyalar otomatik temizlenmez; süre dolsa bile gizli kabul edilmelidir. Dosya yazımı başarısızsa belirteç değiştirme transaction'ı geri alınır; nadir commit hatasında kullanılamaz bir yerel ileti kalabilir.
+Yerel modda gerçek e-posta gönderilmez. Yerel kutu yalnızca loopback geliştirme/test ortamında kullanılabilir; üretimde açılması reddedilir. Proje içindeki kutu yalnızca `.local-mail/` olabilir, Git/Vite dışında tutulur. Windows DACL'i tek işlemle mevcut kullanıcı/SYSTEM/yöneticilere verilir; eski dizin geçici olarak geniş üst klasör izinlerine döndürülmez. Unix'te klasör 0700, dosya 0600 kullanılır. Dosyalar ham bağlantı içerir; paylaşılmamalıdır. Son 10 iletiyi gösteren CLI yalnızca yerel modda çalışır. Eski dosyalar otomatik temizlenmez; süre dolsa bile gizli kabul edilmelidir. Dosya yazımı başarısızsa belirteç değiştirme transaction'ı geri alınır; nadir commit hatasında kullanılamaz bir yerel ileti kalabilir.
 
 Yerel onay gerçek e-posta sahipliğini kanıtlamaz ve hesap erişimini henüz kısıtlamaz. Yerel veritabanı gerçek üretim doğrulaması olarak taşınmamalıdır. Üretim için gerçek gönderim sağlayıcısı, güvenli kuyruk/teslim izleme, doğrulama zorunluluğu, bildirimler ve hesap varlığı sızıntısını azaltan kayıt akışı tamamlanmalıdır. `MAIL_MODE=disabled` gönderim/kurtarma isteğini hazır değil yanıtıyla kapatır. `APP_PUBLIC_URL` sabit izin listesinden alınır; Host başlığı bağlantıya dönüştürülmez.
+
+## Resend Free test taşıyıcısı ve şifreli kuyruk
+
+Resend modu yalnızca loopback geliştirme/test ortamında, tek tanımlı alıcıyla açılır; üretimde reddedilir. Alıcı kontrolü hem sıraya alma hem gönderim katmanındadır. API anahtarı yalnızca backend özel dosyası/ortamındadır; Sending access yetkisi yeterlidir. HTTPS hedefi sabittir, yönlendirmeler izlenmez, TLS denetimi kapatılmaz. Sağlayıcının ham hata gövdesi, anahtar veya bağlantı loglanmaz. E-posta dışına beslenme/ürün verisi taşınmaz.
+
+Belirteç ve kuyruk kaydı aynı transaction içinde yazılır; dış ağ çağrısı transaction dışında yapılır. Kuyruk AES-256-GCM ile şifrelenir, kayıt/belirteç kimliği ek doğrulama verisine bağlanır. Anahtar ayrı `.env.mail` dosyasındadır. Her mesaj için 30 dakikalık gönderim penceresi, 5 deneme ve 30 saniyelik kiralama vardır. Yeniden denemede sabit Idempotency-Key kullanılır; sağlayıcının 24 saatlik penceresi aşılmaz. Aynı canlı kiralama iki işçiye verilmez. Token iptal/süre sonu kontrol edilir; gönderim başlamışsa sonradan iptal edilen bağlantının e-postası ulaşabilir ama bağlantı sunucuda geçersiz kalır. Ağ kesilmesinde kesin teslim durumu bilinmeyebilir.
+
+Kabul, kalıcı hata veya süre sonunda şifreli içerik temizlenir; yalnızca durum/deneme/sağlayıcı kimliği gibi sınırlı metadata kalır. Kotası dolan yeni istek transaction'ı geri alınır; önceki geçerli token bozulmaz. Kalıcı günlük/aylık rezervasyon sayacı ve transaction kilidi, eşzamanlı isteklerde de en fazla 50/gün ve 1000/ay sınırı uygular. Başarısız/iptal işlerin kotası geri verilmez; bu muhafazakâr bir korumadır. Başka uygulamaların sağlayıcı hesabındaki kullanımı ayrıca kota tüketebilir. Kod ücretli plana yükseltme yapmaz.
+
+Gerçek sağlayıcı onayı `email_verification_source=resend` ile ayrılır. Önceki yerel onaylar Resend modunda veya üretimde güvenilir sayılmaz; yerel belirteçler bu modlarda tüketilemez. Yerel modda alınmış onay gerçek onayın yerini tutmaz. Alan adı olmadan yalnızca Resend hesabının kendi adresine test gönderilebilir. Bu, genel kullanıma veya üretime hazır e-posta akışı değildir.
+
+Özel ayar dosyası önce korumalı geçici dizinde hazırlanır; korumalı DACL uygulanmadan secret yazılmaz. Dosya mevcut hedefi ezmeyen hard-link ile atomik yayımlanır. Geçici dizin de Git/Vite dışında tutulur. Gerçek işletim sistemi ortamı dosya ayarlarından üstündür; testler özel dosyayı okumaz. Anahtar kurulumu dış ağa bağlanmaz/e-posta göndermez; gerçek teslim kullanıcı tarafından kendi kutusunda ayrıca doğrulanmalıdır.
 
 ## Gizli dosyalar
 
@@ -53,10 +65,10 @@ Yerel onay gerçek e-posta sahipliğini kanıtlamaz ve hesap erişimini henüz k
 
 ## Henüz tamamlanmayanlar
 
-- Doğrulama ve parola sıfırlama yerel deneme olarak çalışır; gerçek e-posta teslimi, üretimde zorunlu sahiplik doğrulama, MFA ve kurtarma bildirimleri yoktur. Kayıtta yinelenen e-posta hâlâ 409 döner. Halka açık kayıt/kurtarma için tamamlanmış üretim akışı sayılmaz.
+- Doğrulama ve parola sıfırlama yerel deneme olarak çalışır; genel alıcılı e-posta teslimi, üretimde zorunlu sahiplik doğrulama, MFA ve kurtarma bildirimleri yoktur. Kayıtta yinelenen e-posta hâlâ 409 döner. Halka açık kayıt/kurtarma için tamamlanmış üretim akışı sayılmaz.
 - İstek sınırları tek süreç belleğindedir; üretimde birden fazla sunucuya uygun ortak sınırlama ve kalıcı izleme gerekir.
 - Aktarılmamış misafir kayıtları aynı tarayıcıyı kullanan kişilerce görülebilir. Bu kayıtlar yerel geliştirme verisidir; çok kullanıcılı gizli veri depolaması olarak değerlendirilmemelidir.
-- Gerçek AI, e-posta sağlayıcısı, bulut dağıtımı ve üretim yedeklemesi bu aşamada kurulmadı.
+- Gerçek AI, genel alıcılı/üretim e-posta akışı, bulut dağıtımı ve üretim yedeklemesi kurulmadı. Resend Free tek alıcılı test entegrasyonu kullanıcı anahtar kurulumu sonrası açılır.
 
 ## Üretim öncesi
 

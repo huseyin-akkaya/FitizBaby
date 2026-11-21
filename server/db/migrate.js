@@ -34,10 +34,14 @@ export async function migrate(connectionString, appRole) {
     await client.query('BEGIN');
     try {
       await client.query('REVOKE ALL ON users, user_sessions FROM ' + role);
-      await client.query('GRANT SELECT (id, display_name, email, password_hash, role, email_verified_at), INSERT (display_name, email, password_hash), UPDATE (last_login_at, password_hash, email_verified_at, updated_at) ON users TO ' + role);
+      await client.query('GRANT SELECT (id, display_name, email, password_hash, role, email_verified_at, email_verification_source), INSERT (display_name, email, password_hash), UPDATE (last_login_at, password_hash, email_verified_at, email_verification_source, updated_at) ON users TO ' + role);
       await client.query('GRANT SELECT, DELETE ON user_sessions TO ' + role);
+      await client.query('REVOKE ALL ON mail_outbox, mail_usage FROM ' + role);
+      await client.query('GRANT SELECT ON mail_outbox, mail_usage TO ' + role);
+      await client.query('GRANT INSERT (id,user_id,action_id,ciphertext,expires_at), UPDATE (state,attempts,available_at,lease_until,lease_token,last_error,provider_message_id,ciphertext,updated_at) ON mail_outbox TO ' + role);
+      await client.query('GRANT INSERT (window_key,reserved), UPDATE (reserved) ON mail_usage TO ' + role);
       await client.query('REVOKE ALL ON account_actions FROM ' + role);
-      await client.query('GRANT SELECT, DELETE, INSERT (user_id, purpose, token_hash, expires_at), UPDATE (used_at) ON account_actions TO ' + role);
+      await client.query('GRANT SELECT, DELETE, INSERT (user_id, purpose, token_hash, expires_at, delivery), UPDATE (used_at) ON account_actions TO ' + role);
       await client.query('REVOKE ALL ON user_nutrition FROM ' + role);
       await client.query('GRANT SELECT, INSERT (user_id, key, data), UPDATE (data, revision, updated_at) ON user_nutrition TO ' + role);
       await client.query('REVOKE ALL ON user_products FROM ' + role);
