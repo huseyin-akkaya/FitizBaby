@@ -81,7 +81,7 @@ test('Real PostgreSQL: registration stores hashes; private account returns only 
   assert.match(cookieHeader, /SameSite=Lax/);
   const cookie = cookieFrom(response);
   const body = await response.json();
-  assert.deepEqual(Object.keys(body.user).sort(), ['email', 'id', 'name', 'role']);
+  assert.deepEqual(Object.keys(body.user).sort(), ['email', 'emailVerified', 'id', 'name', 'role']);
   assert.equal(body.user.role, 'member');
   assert.equal(body.user.email, user.email);
   const stored = await database.query('SELECT password_hash FROM users WHERE id = $1', [body.user.id]);

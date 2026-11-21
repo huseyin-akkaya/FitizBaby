@@ -32,9 +32,9 @@ Hazır ürün kataloğu proje dosyalarında bulunur. Misafir ürünleri, favoril
 
 - **Yapay zekâ asistanı:** Kısmen çalışan bir prototiptir. Mevcut kod, mesajdaki anahtar kelimeleri ve katalog eşleşmelerini kullanarak hazır yanıtlar üretir; harici bir yapay zekâ modeli veya API bağlantısı bulunmaz. Geliştirmesi tamamlanmamıştır.
 - **Beslenme planı:** Kalori ve makro hesaplama, hedefleri özelleştirme, üç/dört/beş öğün seçimi ve örnek tarif alternatifleri vardır. Bölümün geliştirmesi tamamlanmamıştır. Hesaplanan ihtiyaçlar ve tarif değerleri yaklaşık tahminlerdir.
-- **Kullanıcı girişi ve kayıt:** Express/PostgreSQL tabanlı yerel hesap ve oturum akışı eklendi. Veritabanı kurulumu sonrasında kayıt, giriş, hesap ekranı ve çıkış kullanılabilir. E-posta doğrulama, parola sıfırlama ve üretime açılma hazırlıkları henüz tamamlanmadı.
+- **Kullanıcı girişi ve kayıt:** Express/PostgreSQL tabanlı yerel hesap ve oturum akışı eklendi. Veritabanı kurulumu sonrasında kayıt, giriş, hesap ekranı ve çıkış kullanılabilir. E-posta doğrulama ve parola sıfırlama yerel deneme olarak çalışır. Gerçek e-posta sağlayıcısı ve üretime açılma hazırlıkları tamamlanmadı.
 - **Katalog yönetimi:** Kendi hesap ürününü ekleme/düzenleme/silme ve tarayıcıdan aktarım çalışır. Herkese açık ortak katalog için moderasyon henüz yoktur.
-- **Sunucu ve yayımlama:** Hesap ve oturum sunucusu yerel geliştirme için hazırlandı. E-posta doğrulama, parola kurtarma, üretim yedekleme/geri yükleme ve sitenin yayımlanması sonraki aşamalardır.
+- **Sunucu ve yayımlama:** Hesap ve oturum sunucusu yerel geliştirme için hazırlandı. Gerçek e-posta gönderimi, üretimde doğrulama zorunluluğu, yedekleme/geri yükleme ve sitenin yayımlanması sonraki aşamalardır.
 
 ## Kullanılan Teknolojiler
 
@@ -107,6 +107,20 @@ Plan ve günlük takip sayfalarındaki “Hesabıma kaydet” düğmesi değişi
 Günlük takipte tarih seçilebilir. Yeni öğünlerin etiket adı, referans ölçüsü ve kalori/protein/karbonhidrat/yağ değerleri kayıt sırasında tutulur. Ürün düzenleme veya silme geçmiş öğün değerlerini değiştirmez. Eski tarayıcı aktarımında kesin geçmiş etiket bulunamazsa güncel değerler veya kullanıcı beyanı açıkça işaretlenir; değer bulunamazsa uydurulmaz ve toplam eksik gösterilir. Sıfırlanmış hesap planı veya boşaltılmış gün tekrar aktarımda geri gelmez.
 
 Her hesap için en fazla 3660 günlük kayıt, gün başına 100 öğün ürünü sınırı vardır. Misafir kaydı yeni biçimde ilk kez değiştirilirken önceki ham veri `fitizbaby.backup.before-nutrition-v2.` önekiyle aynı tarayıcıda saklanır. Bu yerel koruma, sunucu yedeği değildir ve site verileriyle birlikte silinebilir. Otomatik bulut yedeği, hesap/veri dışa aktarma ve üretim gizlilik süreçleri henüz tamamlanmadı.
+
+## Yerel E-posta Doğrulama ve Parola Sıfırlama
+
+Bu aşamada SMTP veya başka bir gerçek e-posta gönderim hizmeti bağlı değildir. Gerçek e-posta gönderilmez. Geliştirmede `MAIL_MODE=local` kullanılır; deneme bağlantıları proje içindeki korumalı `.local-mail/` klasörüne yazılır. Windows erişimi mevcut kullanıcı, SYSTEM ve yöneticilerle sınırlıdır. Klasör Git dışında tutulur ve Vite üzerinden sunulması engellenir.
+
+1. Hesabım ekranında “Doğrulama bağlantısı hazırla” düğmesini kullanın. Parola sıfırlamak için giriş ekranındaki “Parolamı unuttum” bağlantısını açın.
+2. Proje terminalinde `npm run mail:local` çalıştırın. Komut son 10 yerel deneme iletisini gösterir.
+3. İlgili bağlantıyı kendi tarayıcınızda açın ve ekrandan onaylayın. Bağlantıları/deneme dosyalarını paylaşmayın.
+
+Doğrulama bağlantısı 24 saat, sıfırlama bağlantısı 30 dakika geçerlidir; tek kullanımlıktır. Yeni bağlantı hazırlanırsa aynı amaçtaki önceki bağlantı iptal edilir. Alıcı başına en az 60 saniye ara ve amaç başına saatte 5 bağlantı sınırı vardır. Parola sıfırlama, hesabın tüm oturumlarını ve bekleyen bağlantılarını iptal eder; ürün/beslenme verilerini silmez. Yeni parola 15–128 karakter olmalıdır.
+
+Bağlantının gizli kısmı URL fragment'ında taşınır, sayfa açılınca adres çubuğundan kaldırılır. Yalnızca açmak işlemi tamamlamaz; kullanıcı onayı gerekir. Veritabanında bağlantı belirtecinin yalnızca SHA-256 özeti saklanır. Yerel ileti dosyası bağlantıyı içerdiği için gizlidir. Ekran yenilenirse bağlantının yeniden açılması gerekebilir.
+
+Deneme sonucu görünen doğrulama durumu gerçek e-posta sahipliğinin kanıtı değildir. Bu aşamada doğrulama hesap erişiminin ön koşulu değildir. Üretimde yerel kutu açılmaz; `MAIL_MODE=disabled` ile gönderim/kurtarma isteği kapalıdır. Gerçek gönderim ve üretim doğrulama zorunluluğu ayrıca kurulmalıdır. Yerel deneme veritabanını üretim kimlik doğrulaması olarak taşımayın. `APP_PUBLIC_URL` izin verilen kaynaklardan biri olmalı; yerel modda localhost/loopback olmalıdır. Host başlığından bağlantı üretilmez.
 
 ## Yerel Backend Kurulumu
 

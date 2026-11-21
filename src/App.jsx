@@ -1,3 +1,4 @@
+import Recovery from './pages/Recovery';
 import Navbar from './components/Navbar'
 import HeroSection from './components/HeroSection'
 import FeatureSection from './components/FeatureSection'
@@ -23,6 +24,9 @@ function App() {
         <Route path="/products" element={<Products />}/>
         <Route path="/login" element={<AuthPage mode="login" />}/>
         <Route path="/register" element={<AuthPage mode="register" />}/>
+        <Route path="/forgot-password" element={<Recovery key="forgot" mode="forgot" />}/>
+        <Route path="/verify-email" element={<Recovery key="verify" mode="verify" />}/>
+        <Route path="/reset-password" element={<Recovery key="reset" mode="reset" />}/>
         <Route path="/account" element={<Account />}/>
         <Route path="/categories" element={<Categories />}/>
         <Route path="/products/:id" element={<ProductDetail />}/>

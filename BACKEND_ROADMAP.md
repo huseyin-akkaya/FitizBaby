@@ -42,9 +42,15 @@ Yeni günlük satırda sunucu kendi/ortak kataloğundan besin kaydını alır; i
 
 Kayıt başına revision, sunucuda sıkı doğrulama ve kullanıcı satırı kilidi vardır. Gün başına en fazla 100 satır, hesap başına 3660 gün; yalnızca oturum doğrulandıktan sonra 256 KB beslenme JSON sınırı uygulanır. Veri dışa aktarma, hesap silme/veri saklama politikası ve otomatik yedekleme henüz yoktur.
 
+## Aşama 3a: Yerel doğrulama ve parola sıfırlama
+
+Hesap doğrulama durumu, tek kullanımlık/süreli/özetli belirteçler, doğrulama isteme-onaylama ve parola sıfırlama ekranları eklendi. Parola sıfırlama bütün ilgili oturumları/bekleyen bağlantıları iptal eder. Sıfırlamayla yarışan eski parolalı giriş transaction içinde yeniden kontrol edilir. Bilinmeyen e-posta için farklı hesap varlığı yanıtı üretilmez. İstek, IP/alıcı bazında sınırlandırılır.
+
+Gerçek gönderim yoktur. Deneme iletileri Windows erişimi sınırlı, Git ve Vite dışında `.local-mail/` dizinindedir. `npm run mail:local` son 10 iletiyi gösterir. Link URL fragment'ındadır, sayfada temizlenir; GET tüketmez, açık onay gerekir. Doğrulama 24 saat, sıfırlama 30 dakika; aynı amaçta 60 saniye ara/saatte 5 istek sınırı vardır. Yerel onay gerçek e-posta sahipliği kanıtı sayılmaz; erişim koşulu yapılmadı. Üretimde yerel mod açılmaz, gerçek gönderim bağlanana kadar gönderim/kurtarma isteği kapalıdır.
+
 ## Sonraki aşama
 
-E-posta sahipliği doğrulama ve güvenli parola sıfırlama. Ardından hesap/veri dışa aktarma ve silme, veritabanı yedekleme/geri yükleme, ortak katalog moderasyonu ve üretim hazırlıkları ele alınmalı. Gerçek AI sağlayıcısı hâlâ bağlı değildir.
+Gerçek gönderim hizmetini seçip güvenli teslim kuyruğu/izleme ile bağlamak, üretimde doğrulama zorunluluğunu ve hesap varlığı sızıntısını azaltan kayıt akışını tamamlamak. Ardından hesap/veri dışa aktarma ve silme, veritabanı yedekleme/geri yükleme, ortak katalog moderasyonu ve üretim hazırlıkları ele alınmalı. Gerçek AI sağlayıcısı hâlâ bağlı değildir.
 
 ## Yayımlamadan önce
 

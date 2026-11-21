@@ -42,16 +42,16 @@ try {
   await provisionDatabase({ host: '127.0.0.1', port, database: 'postgres', user: 'test_admin', password: secret }, plan);
   await migrate(plan.ownerUrl, plan.app);
   await migrate(plan.ownerUrl, plan.app); // Repeat should safely skip applied migrations.
-  const env = { NODE_ENV: 'test', DATABASE_URL: plan.appUrl, FITIZBABY_TEST_DATABASE_URL: plan.appUrl, FRONTEND_ORIGINS: 'http://localhost:8080,http://127.0.0.1:8080', API_HOST: '127.0.0.1', API_PORT: '3001', TRUST_PROXY: 'false' };
-  await run(process.execPath, ['--test', '--test-concurrency=1', 'server/tests/auth.test.js', 'server/tests/products.test.js', 'server/tests/nutrition.test.js'], { ...env, FITIZBABY_TEST_OWNER_URL: plan.ownerUrl });
-  await run(process.execPath, ['--test', 'server/tests/production.test.js'], { ...env, NODE_ENV: 'production', FRONTEND_ORIGINS: 'https://localhost', TRUST_PROXY: 'true' });
+  const env = { MAIL_MODE:'local',LOCAL_MAIL_DIR:join(directory,'mail'),APP_PUBLIC_URL:'http://localhost:8080',NODE_ENV: 'test', DATABASE_URL: plan.appUrl, FITIZBABY_TEST_DATABASE_URL: plan.appUrl, FRONTEND_ORIGINS: 'http://localhost:8080,http://127.0.0.1:8080', API_HOST: '127.0.0.1', API_PORT: '3001', TRUST_PROXY: 'false' };
+  await run(process.execPath, ['--test', '--test-concurrency=1', 'server/tests/auth.test.js', 'server/tests/products.test.js', 'server/tests/nutrition.test.js', 'server/tests/recovery.test.js'], { ...env, FITIZBABY_TEST_OWNER_URL: plan.ownerUrl });
+  await run(process.execPath, ['--test', 'server/tests/production.test.js'], { ...env, NODE_ENV: 'production', MAIL_MODE:'disabled',APP_PUBLIC_URL:'https://localhost',FRONTEND_ORIGINS: 'https://localhost', TRUST_PROXY: 'true' });
   const browserTest = argument('--browser-test');
   if (browserTest) {
     const apiPort = await freePort();
     const webPort = await freePort();
     const browserBase = 'http://127.0.0.1:' + webPort;
     const apiBase = 'http://127.0.0.1:' + apiPort;
-    const browserEnv = { ...process.env, ...env, API_PORT: String(apiPort), FRONTEND_ORIGINS: browserBase, FITIZBABY_BROWSER_BASE: browserBase, FITIZBABY_TEST_WEB_PORT: String(webPort) };
+    const browserEnv = { ...process.env, ...env, API_PORT: String(apiPort), APP_PUBLIC_URL:browserBase,FRONTEND_ORIGINS: browserBase, FITIZBABY_BROWSER_BASE: browserBase, FITIZBABY_TEST_WEB_PORT: String(webPort) };
     for (const script of ['server/index.js', 'server/tests/serve-browser.js']) children.push(spawn(process.execPath, [script], { env: browserEnv, stdio: 'inherit', windowsHide: true }));
     let ready = false;
     for (let attempt = 0; attempt < 40; attempt += 1) {

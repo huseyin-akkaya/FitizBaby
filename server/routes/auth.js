@@ -4,17 +4,16 @@ import argon2 from 'argon2';
 import { z } from 'zod';
 import { env } from '../config.js';
 import { passwordWork } from '../middleware/security.js';
+import { hashOptions, passwordSchema as password } from '../auth/password-policy.js';
 
 const cookieName = env.NODE_ENV === 'production' ? '__Host-fitizbaby_session' : 'fitizbaby_session';
 const duration = 7 * 24 * 60 * 60 * 1000;
-const hashOptions = { type: argon2.argon2id, memoryCost: 65536, timeCost: 3, parallelism: 1 };
 const email = z.email().max(254);
-const password = z.string().min(15).max(128).refine(value => Buffer.byteLength(value, 'utf8') <= 512);
 const registerSchema = z.object({ name: z.string().trim().min(2).max(100), email: z.string().trim().toLowerCase().pipe(email), password }).strict();
 const loginSchema = z.object({ email: z.string().trim().toLowerCase().pipe(email), password: z.string().min(1).max(128) }).strict();
 const digest = token => createHash('sha256').update(token).digest('hex');
 const cookieOptions = { httpOnly: true, secure: env.NODE_ENV === 'production', sameSite: 'lax', path: '/' };
-const publicUser = row => ({ id: row.id, name: row.display_name, email: row.email, role: row.role });
+const publicUser = row => ({ id: row.id, name: row.display_name, email: row.email, role: row.role, emailVerified: Boolean(row.email_verified_at) });
 function readToken(req) {
   const value = req.headers.cookie?.split(';').map(part => part.trim()).find(part => part.startsWith(cookieName + '='))?.slice(cookieName.length + 1);
   return value && /^[A-Za-z0-9_-]{43}$/.test(value) ? value : null;
@@ -46,7 +45,7 @@ export function createAuthRouter(database, authLimit) {
     const client = await database.connect();
     try {
       await client.query('BEGIN');
-      const result = await client.query('INSERT INTO users (display_name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, display_name, email, role', [input.name, input.email, passwordHash]);
+      const result = await client.query('INSERT INTO users (display_name, email, password_hash) VALUES ($1, $2, $3) RETURNING id, display_name, email, role, email_verified_at', [input.name, input.email, passwordHash]);
       const user = result.rows[0];
       const token = await session(client, user.id, readToken(req));
       await client.query('COMMIT');
@@ -62,13 +61,16 @@ export function createAuthRouter(database, authLimit) {
     const input = parseBody(loginSchema, req.body, res);
     if (!input) return;
     if (!database) return unavailable(res);
-    const result = await database.query('SELECT id, display_name, email, password_hash, role FROM users WHERE email = $1', [input.email]);
+    const result = await database.query('SELECT id, display_name, email, password_hash, role, email_verified_at FROM users WHERE email = $1', [input.email]);
     const user = result.rows[0];
     const valid = await passwordWork(async () => user ? argon2.verify(user.password_hash, input.password) : (await argon2.hash(input.password, hashOptions), false));
     if (!valid) return res.status(401).json({ error: { code: 'INVALID_CREDENTIALS', message: 'E-posta veya parola hatalı.' } });
     const client = await database.connect();
     try {
       await client.query('BEGIN');
+      const latest = await client.query('SELECT password_hash, email_verified_at FROM users WHERE id=$1 FOR UPDATE', [user.id]);
+      if (latest.rows[0]?.password_hash !== user.password_hash) { await client.query('ROLLBACK'); return res.status(401).json({error:{code:'INVALID_CREDENTIALS',message:'E-posta veya parola hatalı.'}}); }
+      user.email_verified_at = latest.rows[0].email_verified_at;
       const token = await session(client, user.id, readToken(req));
       await client.query('UPDATE users SET last_login_at = NOW() WHERE id = $1', [user.id]);
       await client.query('COMMIT');
@@ -104,7 +106,7 @@ export async function lookupUser(database, req, res) {
     const result = await database.query(`UPDATE user_sessions s SET last_seen_at = NOW() FROM users u
       WHERE s.user_id = u.id AND s.token_hash = $1 AND s.expires_at > NOW()
       AND s.last_seen_at > NOW() - INTERVAL '30 minutes'
-      RETURNING u.id, u.display_name, u.email, u.role`, [digest(token)]);
+      RETURNING u.id, u.display_name, u.email, u.role, u.email_verified_at`, [digest(token)]);
     if (!result.rows[0]) { res.clearCookie(cookieName, cookieOptions); return null; }
     return publicUser(result.rows[0]);
   }

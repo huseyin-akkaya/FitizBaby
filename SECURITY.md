@@ -35,6 +35,16 @@ Yeni öğünde besin kaydı sunucunun ortak kataloğu veya aynı kullanıcının
 
 Hesap değiştiğinde önbellek temizlenir; devam eden çok kayıtlı işlemler hesap/sürüm kontrolüyle durur. Sunucuya ulaşmış bir işlem iptalden önce eski hesapta tamamlanmış olabilir. Gün başına 100 öğün satırı, hesap başına 3660 gün ve oturum sonrası 256 KB gövde sınırı vardır. Bu sağlıkla ilişkili veriler için üretimde gizlilik, veri saklama/silme, dışa aktarma, veritabanı yedeği ve şifreleme gereksinimleri ayrıca tamamlanmalıdır. Bu sürümde uygulama düzeyinde veri şifreleme veya RLS yoktur; yalıtım sunucu yetkilendirmesine dayanır.
 
+## Yerel doğrulama ve hesap kurtarma
+
+Doğrulama 24 saat, sıfırlama 30 dakika; her belirteç 32 rastgele bayttır ve veritabanında yalnızca SHA-256 özeti bulunur. Amaç, süre ve kullanım kontrol edilir; tek transaction içindeki ikinci kontrol eşzamanlı tekrar kullanımı engeller. Hesap başına aynı amaçtaki eski belirteçler yeni istekle iptal edilir; 60 saniye ara ve saatte 5 sınırı vardır. IP başına bağlantı isteği 15 dakikada 10, tüketme denemesi 30 ile sınırlıdır. Parola sıfırlama bütün kullanıcı oturumlarını ve bekleyen belirteçleri iptal eder. Girişte parola özeti kullanıcı satırı kilidi altında tekrar karşılaştırılır; sıfırlamadan önce eski parolayı doğrulayan bekleyen istek sonradan oturum açamaz.
+
+Sıfırlama isteği bilinen/bilinmeyen, bekleme sınırındaki veya yerel teslimi başarısız hesaplar için aynı 202/gövdeyi döndürür. En az 400 ms yanıt süresi hedeflenir; bu, her koşulda zamanlama farkı yoktur garantisi değildir. Doğrulama istemek oturum ve etkin hesap başlığı ister. Doğrulama/sıfırlama tüketimi belirtece bağlıdır ve otomatik oturum açmaz. Ham belirteç API yanıtına/loga/localStorage'a yazılmaz; URL fragment'ı HTTP isteği/referrer'a gönderilmez ve sayfa açılınca temizlenir. Onay düğmesi olmadan GET bağlantıyı tüketmez.
+
+Gerçek e-posta gönderilmez. Yerel kutu yalnızca loopback geliştirme/test ortamında kullanılabilir; üretimde açılması reddedilir. Proje içindeki kutu yalnızca `.local-mail/` olabilir, Git/Vite dışında tutulur. Windows DACL'i tek işlemle mevcut kullanıcı/SYSTEM/yöneticilere verilir; eski dizin geçici olarak geniş üst klasör izinlerine döndürülmez. Unix'te klasör 0700, dosya 0600 kullanılır. Dosyalar ham bağlantı içerir; paylaşılmamalıdır. Son 10 iletiyi gösteren CLI yalnızca yerel modda çalışır. Eski dosyalar otomatik temizlenmez; süre dolsa bile gizli kabul edilmelidir. Dosya yazımı başarısızsa belirteç değiştirme transaction'ı geri alınır; nadir commit hatasında kullanılamaz bir yerel ileti kalabilir.
+
+Yerel onay gerçek e-posta sahipliğini kanıtlamaz ve hesap erişimini henüz kısıtlamaz. Yerel veritabanı gerçek üretim doğrulaması olarak taşınmamalıdır. Üretim için gerçek gönderim sağlayıcısı, güvenli kuyruk/teslim izleme, doğrulama zorunluluğu, bildirimler ve hesap varlığı sızıntısını azaltan kayıt akışı tamamlanmalıdır. `MAIL_MODE=disabled` gönderim/kurtarma isteğini hazır değil yanıtıyla kapatır. `APP_PUBLIC_URL` sabit izin listesinden alınır; Host başlığı bağlantıya dönüştürülmez.
+
 ## Gizli dosyalar
 
 .env yalnızca sınırlı API bağlantısı, .env.migration yalnızca şema sahibi bağlantısı içindir. Yönetici parolası yerel kurulumda bellekte kullanılır ve kaydedilmez. Gerçek dosyalar Git tarafından dışlanır; yalnızca örnekler paylaşılır. Windows'ta kurulum, sırları yazmadan önce dosya erişim mirasını kaldırır ve mevcut kullanıcı/SYSTEM/yöneticilere izin verir.
@@ -43,7 +53,7 @@ Hesap değiştiğinde önbellek temizlenir; devam eden çok kayıtlı işlemler 
 
 ## Henüz tamamlanmayanlar
 
-- E-posta doğrulama, parola sıfırlama, MFA ve hesap kurtarma yok. Kayıtta yinelenen e-posta 409 yanıtı döner; e-posta sahipliği henüz doğrulanmaz. Bu sebeple halka açık kayıt için tamamlanmış akış sayılmaz.
+- Doğrulama ve parola sıfırlama yerel deneme olarak çalışır; gerçek e-posta teslimi, üretimde zorunlu sahiplik doğrulama, MFA ve kurtarma bildirimleri yoktur. Kayıtta yinelenen e-posta hâlâ 409 döner. Halka açık kayıt/kurtarma için tamamlanmış üretim akışı sayılmaz.
 - İstek sınırları tek süreç belleğindedir; üretimde birden fazla sunucuya uygun ortak sınırlama ve kalıcı izleme gerekir.
 - Aktarılmamış misafir kayıtları aynı tarayıcıyı kullanan kişilerce görülebilir. Bu kayıtlar yerel geliştirme verisidir; çok kullanıcılı gizli veri depolaması olarak değerlendirilmemelidir.
 - Gerçek AI, e-posta sağlayıcısı, bulut dağıtımı ve üretim yedeklemesi bu aşamada kurulmadı.

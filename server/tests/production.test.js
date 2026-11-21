@@ -17,6 +17,10 @@ test('Production: rejects plain HTTP and uses Secure host-only session cookies b
     assert.match(cookie, /^__Host-fitizbaby_session=/);
     assert.match(cookie, /; Secure/); assert.match(cookie, /; HttpOnly/); assert.match(cookie, /SameSite=Lax/);
     assert.ok(!/Domain=/i.test(cookie));
+    const status=await fetch(base+'/api/v1/auth/recovery-status',{headers:{'X-Forwarded-Proto':'https'}});
+    assert.equal((await status.json()).delivery,'disabled');
+    const forgot=await fetch(base+'/api/v1/auth/forgot-password',{method:'POST',headers:{Origin:'https://localhost','Content-Type':'application/json','X-Forwarded-Proto':'https'},body:JSON.stringify({email:'production-missing@example.test'})});
+    assert.equal(forgot.status,503);
   } finally { await new Promise(resolve => server.close(resolve)); }
 });
 test.after(async () => { await pool?.end(); });

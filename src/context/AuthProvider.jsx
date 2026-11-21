@@ -32,5 +32,6 @@ export default function AuthProvider({ children }) {
     await authRequest('logout', {});
     version.current += 1; setUser(null); setError(''); channel.current?.postMessage('changed');
   };
-  return <AuthContext.Provider value={{ user, loading, error, authenticate, logout, refresh }}>{children}</AuthContext.Provider>;
+  const refreshAcrossTabs=async()=>{await refresh();channel.current?.postMessage('changed');};
+  return <AuthContext.Provider value={{ user, loading, error, authenticate, logout, refresh, refreshAcrossTabs }}>{children}</AuthContext.Provider>;
 }
