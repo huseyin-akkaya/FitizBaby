@@ -40,7 +40,7 @@ Beslenme sayfalarında taslak + açık kaydetme vardır. Çakışmada taslak kor
 
 Yeni günlük satırda sunucu kendi/ortak kataloğundan besin kaydını alır; istemcinin yeni satır için gönderdiği değerleri yetkili veri saymaz. Var olan satırın besin kaydı miktar değişince korunur. Ürün silme/düzenleme önceki öğünleri değiştirmez. Eski tarayıcı kaydı aktarılırken güncel katalog veya kullanıcı beyanı işaretlenir; bulunamayan değerler null kalır ve toplam eksik gösterilir. Misafirin ham kayıtları ilk yeni biçim yazımında aynı tarayıcıda ayrı anahtarla korunur.
 
-Kayıt başına revision, sunucuda sıkı doğrulama ve kullanıcı satırı kilidi vardır. Gün başına en fazla 100 satır, hesap başına 3660 gün; yalnızca oturum doğrulandıktan sonra 256 KB beslenme JSON sınırı uygulanır. Veri dışa aktarma, hesap silme/veri saklama politikası ve otomatik yedekleme henüz yoktur.
+Kayıt başına revision, sunucuda sıkı doğrulama ve kullanıcı satırı kilidi vardır. Gün başına en fazla 100 satır, hesap başına 3660 gün; yalnızca oturum doğrulandıktan sonra 256 KB beslenme JSON sınırı uygulanır. Veri dışa aktarma ve hesap silme 4. aşamada eklendi; üretim veri saklama politikası ve otomatik yedekleme henüz yoktur.
 
 ## Aşama 3a: Yerel doğrulama ve parola sıfırlama
 
@@ -56,9 +56,17 @@ Token ve AES-256-GCM şifreli kuyruk aynı transaction'dadır. İşçi dış HTT
 
 Sahte taşıyıcıyla testler gerçek gönderim başarısı sayılmaz; kullanıcının Resend Free hesabı, Sending access anahtarı ve kendi adresindeki denemesi gerekir. Ücretli plana otomatik geçiş yoktur; üretim modu halen kapalıdır.
 
+Kullanıcı kendi adresinde gerçek doğrulama ve parola sıfırlama akışlarının çalıştığını doğruladı. Bu, genel alıcılı üretim gönderiminin hazır olduğu anlamına gelmez.
+
+## Aşama 4: Hesap verilerini indirme ve silme
+
+Güncel parola onayıyla, mevcut oturuma bağlı iki dakikalık tek kullanımlık indirme izni üretilir. Ayrı HttpOnly/SameSite=Strict çerezindeki rastgele izin yalnızca özet olarak veritabanında tutulur; URL ve JSON yanıtına girmez. Dışa aktarma tutarlı salt okunur veritabanı görünümünden akışla sıkıştırılır; sunucuda geçici arşiv dosyası oluşturulmaz. Arşiv yalnızca sahibinin profil, ürün/görsel, favori ve beslenme verilerini içerir; parola ve güvenlik sırlarını içermez. Sıkıştırma şifreleme değildir. Otomatik geri yükleme yoktur.
+
+Hesap silme güncel parola ve açık yazılı onay gerektirir. Parola özeti ve oturum, kullanıcı satırı kilidi altında tekrar kontrol edilir; hesapla ilişkili kayıtlar tek işlemde kaldırılır. Yerel deneme iletileri alıcı eşleşmesiyle ayrıca temizlenir. Diğer hesaplar, misafir verileri, indirilmiş dosyalar, ortak ayarlar ve anonim gönderim kotası etkilenmez. Sağlayıcı kayıtları ve varsa ayrı yedekler için saklama/temizlik süreci ayrıca gerekir.
+
 ## Sonraki aşama
 
-Kullanıcının ücretsiz test hesabını bağlayıp gerçek teslimi doğrulamak. Ardından alan adını doğrulayıp genel alıcılı gönderimi, teslimat/bounce izlemeyi ve üretimde doğrulama zorunluluğunu ve hesap varlığı sızıntısını azaltan kayıt akışını tamamlamak. Ardından hesap/veri dışa aktarma ve silme, veritabanı yedekleme/geri yükleme, ortak katalog moderasyonu ve üretim hazırlıkları ele alınmalı. Gerçek AI sağlayıcısı hâlâ bağlı değildir.
+Veritabanı yedekleme ve ayrı geçici veritabanına geri yükleme doğrulaması. Ardından alan adı ve genel alıcılı gönderim, teslimat/bounce izleme, üretimde doğrulama zorunluluğu, hesap varlığı sızıntısını azaltan kayıt akışı, ortak katalog moderasyonu ve üretim hazırlıkları ele alınmalı. Gerçek AI sağlayıcısı hâlâ bağlı değildir.
 
 ## Yayımlamadan önce
 

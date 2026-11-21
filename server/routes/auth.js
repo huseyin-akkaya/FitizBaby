@@ -13,7 +13,7 @@ const registerSchema = z.object({ name: z.string().trim().min(2).max(100), email
 const loginSchema = z.object({ email: z.string().trim().toLowerCase().pipe(email), password: z.string().min(1).max(128) }).strict();
 const digest = token => createHash('sha256').update(token).digest('hex');
 const cookieOptions = { httpOnly: true, secure: env.NODE_ENV === 'production', sameSite: 'lax', path: '/' };
-const publicUser = row => ({ id: row.id, name: row.display_name, email: row.email, role: row.role, emailVerified: Boolean(row.email_verified_at && (env.MAIL_MODE!=='resend'&&env.NODE_ENV!=='production'||row.email_verification_source==='resend')) });
+export const publicUser = row => ({ id: row.id, name: row.display_name, email: row.email, role: row.role, emailVerified: Boolean(row.email_verified_at && (env.MAIL_MODE!=='resend'&&env.NODE_ENV!=='production'||row.email_verification_source==='resend')) });
 function readToken(req) {
   const value = req.headers.cookie?.split(';').map(part => part.trim()).find(part => part.startsWith(cookieName + '='))?.slice(cookieName.length + 1);
   return value && /^[A-Za-z0-9_-]{43}$/.test(value) ? value : null;
@@ -110,3 +110,5 @@ export async function lookupUser(database, req, res) {
     if (!result.rows[0]) { res.clearCookie(cookieName, cookieOptions); return null; }
     return publicUser(result.rows[0]);
   }
+
+export function sessionTokenHash(req){const token=readToken(req);return token?digest(token):null;}

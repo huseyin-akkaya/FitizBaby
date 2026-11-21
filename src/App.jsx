@@ -1,3 +1,4 @@
+import AccountDeleted from './pages/AccountDeleted';
 import Recovery from './pages/Recovery';
 import Navbar from './components/Navbar'
 import HeroSection from './components/HeroSection'
@@ -27,6 +28,7 @@ function App() {
         <Route path="/forgot-password" element={<Recovery key="forgot" mode="forgot" />}/>
         <Route path="/verify-email" element={<Recovery key="verify" mode="verify" />}/>
         <Route path="/reset-password" element={<Recovery key="reset" mode="reset" />}/>
+        <Route path="/account-deleted" element={<AccountDeleted />}/>
         <Route path="/account" element={<Account />}/>
         <Route path="/categories" element={<Categories />}/>
         <Route path="/products/:id" element={<ProductDetail />}/>

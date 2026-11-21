@@ -106,7 +106,15 @@ Plan ve günlük takip sayfalarındaki “Hesabıma kaydet” düğmesi değişi
 
 Günlük takipte tarih seçilebilir. Yeni öğünlerin etiket adı, referans ölçüsü ve kalori/protein/karbonhidrat/yağ değerleri kayıt sırasında tutulur. Ürün düzenleme veya silme geçmiş öğün değerlerini değiştirmez. Eski tarayıcı aktarımında kesin geçmiş etiket bulunamazsa güncel değerler veya kullanıcı beyanı açıkça işaretlenir; değer bulunamazsa uydurulmaz ve toplam eksik gösterilir. Sıfırlanmış hesap planı veya boşaltılmış gün tekrar aktarımda geri gelmez.
 
-Her hesap için en fazla 3660 günlük kayıt, gün başına 100 öğün ürünü sınırı vardır. Misafir kaydı yeni biçimde ilk kez değiştirilirken önceki ham veri `fitizbaby.backup.before-nutrition-v2.` önekiyle aynı tarayıcıda saklanır. Bu yerel koruma, sunucu yedeği değildir ve site verileriyle birlikte silinebilir. Otomatik bulut yedeği, hesap/veri dışa aktarma ve üretim gizlilik süreçleri henüz tamamlanmadı.
+Her hesap için en fazla 3660 günlük kayıt, gün başına 100 öğün ürünü sınırı vardır. Misafir kaydı yeni biçimde ilk kez değiştirilirken önceki ham veri `fitizbaby.backup.before-nutrition-v2.` önekiyle aynı tarayıcıda saklanır. Bu yerel koruma, sunucu yedeği değildir ve site verileriyle birlikte silinebilir. Hesap verileri aşağıdaki dışa aktarma akışıyla indirilebilir. Otomatik bulut yedeği, dosyadan geri yükleme ve üretim gizlilik süreçleri henüz tamamlanmadı.
+
+## Hesap verilerini indirme ve hesap silme
+
+Hesabım → **Verilerim ve hesabım** bölümünde güncel parolayla indirme hazırlanır. İki dakika geçerli, tek kullanımlık bağlantı; profil, özel ürün ve görseller, favoriler, plan ve günlük kayıtları `.json.gz` biçiminde indirir. Parola özetleri, oturumlar, güvenlik bağlantıları ve gizli anahtarlar dışa aktarılmaz. Dosya sıkıştırılmıştır, **şifrelenmiş değildir**; kişisel beslenme bilgilerini içerir ve güvenli saklanmalıdır. Dosyayı uygulamaya otomatik geri yükleme henüz yoktur.
+
+Hesap silmek için güncel parola ve `HESABIMI SIL` onayı gerekir. Hesap ve bağlı veriler etkin veritabanından kaldırılır; açık oturumlar ve bekleyen güvenlik bağlantıları geçersiz olur. Bu işlem geri alınamaz. Aynı adrese ait yerel deneme iletileri de temizlenmeye çalışılır; başarısız temizlik ayrıca bildirilir. Diğer hesaplar ve tarayıcıdaki misafir kayıtları korunur.
+
+Önceden indirilen dosyalar, varsa ayrı veritabanı yedekleri, ortak uygulama ayarları ve e-posta sağlayıcısının kayıtları bu işlemle silinmez. Başlamış bir e-posta geri çağrılamayabilir; bağlantısı silme sonrasında çalışmaz. Bu işlev tek başına tamamlanmış bir üretim veri saklama veya mevzuat uyumu süreci değildir.
 
 ## Yerel E-posta Doğrulama ve Parola Sıfırlama
 

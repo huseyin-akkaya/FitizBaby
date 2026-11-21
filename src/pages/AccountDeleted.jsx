@@ -1,0 +1,5 @@
+import {Link,useLocation} from 'react-router-dom';
+export default function AccountDeleted(){
+ const {state}=useLocation();const completed=state?.accountDeleted===true;
+ return <main className="min-h-[60vh] bg-zinc-50 px-4 py-12"><section className="mx-auto max-w-xl rounded-2xl border border-zinc-200 bg-white p-6"><h1 className="text-2xl font-bold">{completed?'Hesabın silindi':'Hesap işlemleri'}</h1><p className="mt-4 text-sm leading-6">{completed?'Sunucudaki hesap ve bağlı kayıtları kaldırıldı. Oturumların ve güvenlik bağlantıların artık geçerli değil. Tarayıcıdaki misafir kayıtları ve önceden indirdiğin dosyalar korunuyor.':'Hesap işlemleri için giriş yapabilirsin.'}</p>{state?.warnings?.includes('LOCAL_DEMO_CLEANUP_INCOMPLETE')&&<p role="alert" className="mt-4 rounded-xl bg-amber-50 p-3 text-sm text-amber-900">Hesap silindi, ancak bazı yerel deneme iletileri temizlenemedi. Bilgisayarındaki yerel deneme kutusu ayrıca kontrol edilmeli.</p>}<Link to="/login" className="mt-5 inline-block rounded-xl bg-green-700 px-4 py-3 font-semibold text-white">Giriş sayfası</Link></section></main>;
+}

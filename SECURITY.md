@@ -33,7 +33,7 @@ Profil/plan/hedef/günlük kayıt sorgularının tamamı oturumun user_id değer
 
 Yeni öğünde besin kaydı sunucunun ortak kataloğu veya aynı kullanıcının özel ürünü üzerinden oluşturulur. Özel ürün okunurken satır kilidi alınır. Var olan satırın besin değerleri istemci tarafından değiştirilmez; sadece miktarı değişebilir. Eski tarayıcı kaydının değerleri doğrulanmış tarihsel etiket sayılmaz, kaynak türü işaretlenir. Eksik ürün değerleri uydurulmaz. Kişisel kayıt yanıtlarında no-store vardır; hesap verileri localStorage'a yazılmaz. Kaydedilmemiş taslaklar açık sekmenin belleğinde tutulur ve kapanışta kaybolabilir.
 
-Hesap değiştiğinde önbellek temizlenir; devam eden çok kayıtlı işlemler hesap/sürüm kontrolüyle durur. Sunucuya ulaşmış bir işlem iptalden önce eski hesapta tamamlanmış olabilir. Gün başına 100 öğün satırı, hesap başına 3660 gün ve oturum sonrası 256 KB gövde sınırı vardır. Bu sağlıkla ilişkili veriler için üretimde gizlilik, veri saklama/silme, dışa aktarma, veritabanı yedeği ve şifreleme gereksinimleri ayrıca tamamlanmalıdır. Bu sürümde uygulama düzeyinde veri şifreleme veya RLS yoktur; yalıtım sunucu yetkilendirmesine dayanır.
+Hesap değiştiğinde önbellek temizlenir; devam eden çok kayıtlı işlemler hesap/sürüm kontrolüyle durur. Sunucuya ulaşmış bir işlem iptalden önce eski hesapta tamamlanmış olabilir. Gün başına 100 öğün satırı, hesap başına 3660 gün ve oturum sonrası 256 KB gövde sınırı vardır. Hesap dışa aktarma ve silme aşağıda açıklanmıştır. Bu sağlıkla ilişkili veriler için üretimde gizlilik, veri saklama politikası, veritabanı yedeği ve şifreleme gereksinimleri ayrıca tamamlanmalıdır. Bu sürümde uygulama düzeyinde veri şifreleme veya RLS yoktur; yalıtım sunucu yetkilendirmesine dayanır.
 
 ## Yerel doğrulama ve hesap kurtarma
 
@@ -62,6 +62,18 @@ Gerçek sağlayıcı onayı `email_verification_source=resend` ile ayrılır. Ö
 .env yalnızca sınırlı API bağlantısı, .env.migration yalnızca şema sahibi bağlantısı içindir. Yönetici parolası yerel kurulumda bellekte kullanılır ve kaydedilmez. Gerçek dosyalar Git tarafından dışlanır; yalnızca örnekler paylaşılır. Windows'ta kurulum, sırları yazmadan önce dosya erişim mirasını kaldırır ve mevcut kullanıcı/SYSTEM/yöneticilere izin verir.
 
 Şema sahibi dosyasını üretim sunucusuna veya istemci derlemesine taşımayın. Gerçek parolaları sohbete, komut satırı argümanına, ekran görüntüsüne veya hata raporuna yapıştırmayın. Sızan sırları silmek tek başına yeterli değildir; ilgili parolalar değiştirilmelidir.
+
+## Hesap dışa aktarma ve silme
+
+Sahiplik oturumdan alınır; istemci kullanıcı kimliği yetki sağlamaz. Güncel parola Argon2 ile doğrulanır, ardından kullanıcı satırı kilitlenerek parola özetinin değişmediği ve mevcut oturumun hâlâ geçerli olduğu tekrar kontrol edilir. Parola sıfırlama veya oturum iptaliyle yarışan eski yetkiyle silme reddedilir. İstekler boyut, Origin ve işlem sıklığı denetimlerinden geçer.
+
+İndirme izni mevcut oturuma bağlıdır, iki dakika geçerlidir ve tek kullanımlıktır. Ek 256 bit rastgele izin HttpOnly, SameSite=Strict, yalnızca indirme yoluna ait çerezde; üretimde Secure olarak tutulur. Veritabanında yalnızca SHA-256 özeti bulunur. Ham izin URL veya JSON yanıtına yazılmaz; eski oturum çerezi tek başına hazırlanmış indirmeyi açamaz. HEAD isteği izni tüketmez, cross-site indirme reddedilir. Süreç başına en fazla iki eşzamanlı dışa aktarma vardır.
+
+Dışa aktarma REPEATABLE READ salt okunur görünümden sayfalı sorgularla akış halinde gzip olarak verilir; sunucuya arşiv dosyası yazılmaz. Yalnızca hesap alanları, ürün/görsel, silinmiş ürün kimlikleri, favori ve beslenme kayıtları seçilir. Parola özetleri, oturumlar, tokenlar ve e-posta kuyruğu dışa aktarılmaz. Arşiv şifrelenmez; indiren kişinin güvenli saklaması gerekir. Otomatik içe aktarma yoktur.
+
+Silme ayrıca `HESABIMI SIL` ifadesini gerektirir. Etkin veritabanında kullanıcı silinir; foreign key cascade ile oturumlar, ürünler/görseller, favoriler, beslenme kayıtları, güvenlik işlemleri, e-posta kuyruğu ve indirme izinleri kaldırılır. API rolüne kullanıcı silme izni verilir; doğrudan beslenme tablosu DELETE izni verilmez. Yanıt oturum çerezini temizlemez: gecikmiş yanıtın yeni hesaba ait çerezi silmesi engellenir; arayüz oturum durumunu yeniden sorgular ve diğer sekmelere bildirir.
+
+Yerel deneme kutusunda yalnızca üretilen dosya adları, normal dosyalar ve eşleşen alıcı temizlenir; sembolik bağlantı ve belirsiz dosyalar silinmez, eksik temizlik uyarılır. Ortak gönderim kotası kişisel veri içermez ve korunur. Başlamış dış gönderim geri çağrılamayabilir; silinen hesaba ait bağlantı geçersizdir. Misafir kayıtları, önceden indirilen arşivler, ayrı yedekler ve sağlayıcı kayıtları bu işlemle silinmez. Veritabanı silme güvenli fiziksel disk silme veya tek başına mevzuat uyumu iddiası değildir.
 
 ## Henüz tamamlanmayanlar
 

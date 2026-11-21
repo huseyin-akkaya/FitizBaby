@@ -43,7 +43,7 @@ try {
   await migrate(plan.ownerUrl, plan.app);
   await migrate(plan.ownerUrl, plan.app); // Repeat should safely skip applied migrations.
   const env = { MAIL_MODE:'local',LOCAL_MAIL_DIR:join(directory,'mail'),APP_PUBLIC_URL:'http://localhost:8080',NODE_ENV: 'test', DATABASE_URL: plan.appUrl, FITIZBABY_TEST_DATABASE_URL: plan.appUrl, FRONTEND_ORIGINS: 'http://localhost:8080,http://127.0.0.1:8080', API_HOST: '127.0.0.1', API_PORT: '3001', TRUST_PROXY: 'false' };
-  await run(process.execPath, ['--test', '--test-concurrency=1', 'server/tests/auth.test.js', 'server/tests/products.test.js', 'server/tests/nutrition.test.js', 'server/tests/recovery.test.js'], { ...env, FITIZBABY_TEST_OWNER_URL: plan.ownerUrl });
+  await run(process.execPath, ['--test', '--test-concurrency=1', 'server/tests/auth.test.js', 'server/tests/products.test.js', 'server/tests/nutrition.test.js', 'server/tests/recovery.test.js', 'server/tests/account-data.test.js'], { ...env, FITIZBABY_TEST_OWNER_URL: plan.ownerUrl });
   await run(process.execPath,['--test','server/tests/free-mail.test.js'],{...env,MAIL_MODE:'resend',RESEND_API_KEY:'re_test_fixture_not_a_real_key',RESEND_TEST_RECIPIENT:'provider-owner@example.test',MAIL_OUTBOX_KEY:randomBytes(32).toString('base64'),FITIZBABY_TEST_OWNER_URL:plan.ownerUrl});
   await run(process.execPath, ['--test', 'server/tests/production.test.js'], { ...env, NODE_ENV: 'production', MAIL_MODE:'disabled',APP_PUBLIC_URL:'https://localhost',FRONTEND_ORIGINS: 'https://localhost', TRUST_PROXY: 'true' });
   const browserTest = argument('--browser-test');

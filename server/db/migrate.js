@@ -34,7 +34,10 @@ export async function migrate(connectionString, appRole) {
     await client.query('BEGIN');
     try {
       await client.query('REVOKE ALL ON users, user_sessions FROM ' + role);
-      await client.query('GRANT SELECT (id, display_name, email, password_hash, role, email_verified_at, email_verification_source), INSERT (display_name, email, password_hash), UPDATE (last_login_at, password_hash, email_verified_at, email_verification_source, updated_at) ON users TO ' + role);
+      await client.query('GRANT SELECT (id, display_name, email, password_hash, role, email_verified_at, email_verification_source, created_at, updated_at, last_login_at), INSERT (display_name, email, password_hash), UPDATE (last_login_at, password_hash, email_verified_at, email_verification_source, updated_at) ON users TO ' + role);
+      await client.query('GRANT DELETE ON users TO ' + role);
+      await client.query('REVOKE ALL ON account_export_grants FROM ' + role);
+      await client.query('GRANT SELECT, DELETE, INSERT (session_id,user_id,capability_hash,expires_at), UPDATE (expires_at,capability_hash) ON account_export_grants TO ' + role);
       await client.query('GRANT SELECT, DELETE ON user_sessions TO ' + role);
       await client.query('REVOKE ALL ON mail_outbox, mail_usage FROM ' + role);
       await client.query('GRANT SELECT ON mail_outbox, mail_usage TO ' + role);
