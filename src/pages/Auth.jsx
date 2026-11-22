@@ -1,3 +1,4 @@
+import BrandMark from '../components/BrandMark';
 import { useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
@@ -68,14 +69,7 @@ function AuthPage({ mode = "login" }) {
         <div className="relative">
           <div className="flex items-center gap-3">
             <span className="grid h-12 w-12 place-items-center rounded-2xl bg-white ring-1 ring-green-900/10" aria-hidden="true">
-              <svg viewBox="0 0 64 64" className="h-9 w-9" fill="none">
-                <ellipse cx="31" cy="39" rx="21" ry="7" stroke="currentColor" strokeWidth="3" />
-                <ellipse cx="31" cy="41" rx="16" ry="4" stroke="currentColor" strokeWidth="2" />
-                <circle cx="19" cy="24" r="2.5" fill="currentColor" />
-                <circle cx="28" cy="18" r="2" fill="currentColor" />
-                <circle cx="34" cy="22" r="2.3" fill="currentColor" />
-                <path d="M41 18c6-3 15-2 17-5M39 25c6-3 15-2 17-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-              </svg>
+              <BrandMark className="h-9 w-9"/>
             </span>
             <span className="text-xl font-bold tracking-tight">Fitiz<span className="text-green-700">Baby</span></span>
           </div>

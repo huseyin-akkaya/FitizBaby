@@ -1,3 +1,4 @@
+import BrandMark from './BrandMark';
 import VisitorNav from './VisitorNav';
 import {useAuth} from '../hooks/useAuth';
 import {useState} from "react";
@@ -23,73 +24,7 @@ function Navbar() {
                     <div className="w-10 h-10">
 
                         {/* Rüzgârla tabaktan uçan kalorileri temsil eden SVG logo */}
-                        <svg viewBox="0 0 64 64" className="w-full h-full">
-
-                            {/* Tabağın dış kısmı */}
-                            <ellipse
-                                cx="32"
-                                cy="39"
-                                rx="21"
-                                ry="7"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="3"
-                            />
-
-                            {/* Tabağın iç kısmı */}
-                            <ellipse
-                                cx="32"
-                                cy="41"
-                                rx="16"
-                                ry="4"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                            />
-
-                            {/* Tabaktan uçan birinci kalori parçacığı */}
-                            <circle
-                                cx="19"
-                                cy="24"
-                                r="2.5"
-                                fill="currentColor"
-                            />
-
-                            {/* Tabaktan uçan ikinci kalori parçacığı */}
-                            <circle
-                                cx="28"
-                                cy="18"
-                                r="2"
-                                fill="currentColor"
-                            />
-
-                            {/* Tabaktan uçan üçüncü kalori parçacığı */}
-                            <circle
-                                cx="34"
-                                cy="22"
-                                r="2.3"
-                                fill="currentColor"
-                            />
-
-                            {/* Üst rüzgâr çizgisi */}
-                            <path
-                                d="M 41 18 C 47 15, 53 16, 58 13"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2.5"
-                                strokeLinecap="round"
-                            />
-
-                            {/* Alt rüzgâr çizgisi */}
-                            <path
-                                d="M 39 25 C 45 22, 51 23, 56 20"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                            />
-
-                        </svg>
+                        <BrandMark className="h-full w-full"/>
                     </div>
 
                     {/* Site adı / yazı logosu */}

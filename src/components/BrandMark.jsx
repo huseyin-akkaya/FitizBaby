@@ -1,0 +1,3 @@
+export default function BrandMark({className=''}){
+ return <svg viewBox="0 0 64 64" fill="none" className={className} aria-hidden="true"><path d="M31 35C23 24 29 11 48 8C50 23 42 34 31 35Z" fill="currentColor"/><path d="M29 36C16 35 11 28 12 18C24 17 33 25 29 36Z" fill="currentColor" opacity=".65"/><path d="M30 44C30 31 35 23 42 15" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/><path d="M33 39C44 39 54 43 54 47C54 52 44 56 31 56C18 56 8 52 8 47C8 43 15 40 24 39" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/><path d="M16 47C22 51 41 51 47 47" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>;
+}
