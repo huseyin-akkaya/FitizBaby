@@ -1,3 +1,4 @@
+import {buildHistory,historyDates} from '../../src/utils/historySummary.js';
 import {sessionTokenHash} from './auth.js';
 import {copyDay} from '../nutrition/copy-day.js';
 import { randomUUID } from 'node:crypto';
@@ -55,6 +56,14 @@ export function createNutritionRouter(database) {
     const result = await database.query('SELECT key,data,revision FROM user_nutrition WHERE user_id=$1 AND key=ANY($2::text[])',[res.locals.userId,keys]);
     const index = await database.query("SELECT key FROM user_nutrition WHERE user_id=$1 AND key LIKE 'day:%' ORDER BY key DESC",[res.locals.userId]);
     res.json({ userId:res.locals.userId, documents:keys.map(key => document(key,result.rows.find(row => row.key === key))), days:index.rows.map(row => row.key.slice(4)) });
+  });
+  router.get('/history',async(req,res)=>{
+    const parsed=z.object({end:dateSchema,days:z.enum(['7','30'])}).strict().safeParse(req.query);
+    if(!parsed.success)return fail(res,400,'INVALID_HISTORY','Geçerli bitiş tarihi ve 7 veya 30 günlük aralık seç.');
+    const {end,days}=parsed.data,count=Number(days),dates=historyDates(end,count);
+    if(!dateSchema.safeParse(dates[0]).success)return fail(res,400,'INVALID_HISTORY','Tarih aralığı desteklenen sınırın dışında.');
+    const result=await database.query('SELECT key,data FROM user_nutrition WHERE user_id=$1 AND key >= $2 AND key <= $3 ORDER BY key LIMIT 30',[res.locals.userId,'day:'+dates[0],'day:'+end]);
+    res.json({userId:res.locals.userId,history:buildHistory(result.rows,end,count)});
   });
   router.get('/:key',async (req,res) => {
     if (!keySchema.safeParse(req.params.key).success) return invalid(res);

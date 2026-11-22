@@ -161,3 +161,8 @@ async function commitSavedAction(keys,action){
  catch(error){if(current===version&&scope===state.scope)publish({error:error.message});throw error;}
  finally{if(current===version&&scope===state.scope)publish({busy:false});}
 }
+
+// Read-only history does not replace saved documents or open drafts.
+export async function loadSavedHistory(end,days){return (await request('/history?end='+encodeURIComponent(end)+'&days='+days)).history;}
+
+export async function loadHistoryDay(day){return (await request('/'+encodeURIComponent('day:'+day))).document;}

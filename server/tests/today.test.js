@@ -1,3 +1,4 @@
+import {buildHistory,historyDates} from '../../src/utils/historySummary.js';
 import {products} from '../../src/data/products.js';
 import {captureNutrition} from '../../src/utils/mealSnapshots.js';
 import test from 'node:test';
@@ -78,4 +79,20 @@ test('Real PostgreSQL: quantity and deletion preserve snapshots; explicit refres
  response=await put({revision:doc.revision,data,refresh});assert.equal(response.status,200);doc=(await response.json()).document;assert.equal(doc.data.breakfast[0].snapshot.protein,25.5);assert.equal(doc.data.breakfast[0].amount,50);assert.deepEqual(doc.data.breakfast[1].snapshot,data.breakfast[1].snapshot);
  assert.equal((await put({revision,data:doc.data})).status,409);
  data.breakfast=doc.data.breakfast.slice(1);response=await put({revision:doc.revision,data});assert.equal(response.status,200);doc=(await response.json()).document;assert.equal(doc.data.breakfast.length,1);assert.equal(doc.data.breakfast[0].productId,2);
+}));
+
+test('History separates no record, cleared days, missing nutrition and actual zero; averages exclude partial days',()=>{
+ const documents=[{key:'day:2026-11-20',data:{...empty(),breakfast:[entry(2,snapshot(),100)]}},{key:'day:2026-11-21',data:{...empty(),breakfast:[entry(2,{...snapshot(),protein:null},100)]}},{key:'day:2026-11-22',data:empty()}];
+ const history=buildHistory(documents,'2026-11-22',7);
+ assert.equal(history.loggedDays,2);assert.equal(history.averages.calories.value,360);assert.equal(history.averages.calories.days,2);assert.equal(history.averages.protein.days,1);assert.equal(history.averages.protein.value,14);assert.equal(history.averages.protein.partialDays,1);
+ assert.equal(history.days[0].saved,false);assert.equal(history.days.at(-1).saved,true);assert.equal(history.days.at(-1).entryCount,0);assert.equal(history.frequent[0].entries,2);assert.equal(history.frequent[0].days,2);
+ const zero=buildHistory([{key:'day:2026-11-22',data:{...empty(),breakfast:[entry(2,{...snapshot(),protein:0})]}}],'2026-11-22',7);assert.equal(zero.averages.protein.value,0);assert.equal(zero.averages.protein.days,1);
+ assert.deepEqual(historyDates('2024-03-01',3),['2024-02-28','2024-02-29','2024-03-01']);
+});
+test('Real PostgreSQL: history is owner-only, bounded, strict and uses saved historical nutrition',{skip:!enabled},()=>api(async(request,register)=>{
+ const a=await register(),b=await register();await seed(a,'day:2026-11-20',{...empty(),breakfast:[entry(2,snapshot(),100)]});await seed(a,'day:2026-11-21',{...empty(),breakfast:[entry(2,{...snapshot(),protein:null},100)]});await seed(a,'day:2026-11-22',empty());await seed(a,'day:2026-10-01',{...empty(),breakfast:[entry(2)]});await seed(b,'day:2026-11-20',{...empty(),breakfast:[entry(7,snapshot(7,'Private other owner'),100)]});
+ const path='nutrition/history?end=2026-11-22&days=7';assert.equal((await request(path)).status,401);assert.equal((await request(path,{...a,account:b.account})).status,409);
+ const response=await request(path,a);assert.equal(response.status,200);const result=await response.json();assert.equal(result.userId,a.account);assert.equal(result.history.days.length,7);assert.equal(result.history.loggedDays,2);assert.equal(result.history.averages.calories.value,360);assert.equal(result.history.averages.protein.days,1);assert.equal(result.history.frequent[0].name,'Historical oats');assert.ok(!JSON.stringify(result).includes('Private other owner'));
+ for(const query of ['end=2026-02-30&days=7','end=2026-11-22&days=3650','end=2026-11-22&days=7&userId='+b.account,'end=1900-01-01&days=30'])assert.equal((await request('nutrition/history?'+query,a)).status,400);
+ assert.equal((await (await request('nutrition/history?end=2026-11-22&days=30',a)).json()).history.days.length,30);
 }));

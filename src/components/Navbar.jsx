@@ -39,10 +39,11 @@ function Navbar() {
                 </Link>
 
                 {/* Navbar'ın ortasında bulunan sayfa bağlantıları */}
-                <div className="hidden xl:flex flex-1 justify-center gap-8 text-sm font-medium whitespace-nowrap">
+                <div className="hidden xl:flex flex-1 justify-center gap-4 text-sm font-medium whitespace-nowrap">
                     <Link to="/today" aria-current={pathname==='/today'?'page':undefined} className="transition hover:text-green-400">Bugünüm</Link>
 
                     {/* Ürünler sayfası bağlantısı */}
+                    <Link to="/history" aria-current={pathname==='/history'?'page':undefined} className="transition hover:text-green-400">İlerlemem</Link>
                     <Link to="/products" className="transition hover:text-green-400">
                         Ürünler
                     </Link>
@@ -139,7 +140,7 @@ function Navbar() {
              <div
                 className={`xl:hidden overflow-hidden border-t border-zinc-800 bg-zinc-950 px-6 transition-all duration-200 ease-out ${
                     isMenuOpen
-                    ? "max-h-96 py-4 opacity-100"
+                    ? "max-h-[80vh] overflow-y-auto py-4 opacity-100"
                     : "max-h-0 py-0 opacity-0"
                 }`}
                 >
@@ -147,6 +148,7 @@ function Navbar() {
                     {/* Mobil menüdeki sayfa bağlantıları */}
                     <div className="flex flex-col gap-4">
                         <Link to="/today" aria-current={pathname==='/today'?'page':undefined} onClick={()=>setIsMenuOpen(false)} className="transition hover:text-green-400">Bugünüm</Link>
+                        <Link to="/history" onClick={()=>setIsMenuOpen(false)} className="transition hover:text-green-400">İlerlemem</Link>
                         <Link to="/products" onClick={() => setIsMenuOpen(false)} className="transition hover:text-green-400">
                             Ürünler
                         </Link>
