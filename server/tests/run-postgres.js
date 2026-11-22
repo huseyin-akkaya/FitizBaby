@@ -48,7 +48,7 @@ try {
   }else if(process.argv.includes("--backup-only")){
     await run(process.execPath,["--test","server/tests/backup.test.js"],{...env,FITIZBABY_TEST_OWNER_URL:plan.ownerUrl,FITIZBABY_TEST_PG_BIN:resolve(bin)});
   }else{
-  await run(process.execPath, ['--test', '--test-concurrency=1', 'server/tests/auth.test.js', 'server/tests/products.test.js', 'server/tests/nutrition.test.js', 'server/tests/recovery.test.js', 'server/tests/account-data.test.js', 'server/tests/account-security.test.js', 'server/tests/today.test.js', 'server/tests/backup.test.js'], { ...env, FITIZBABY_TEST_OWNER_URL: plan.ownerUrl, FITIZBABY_TEST_PG_BIN: resolve(bin) });
+  await run(process.execPath, ['--test', '--test-concurrency=1', 'server/tests/auth.test.js', 'server/tests/products.test.js', 'server/tests/nutrition.test.js', 'server/tests/recovery.test.js', 'server/tests/account-data.test.js', 'server/tests/account-security.test.js', 'server/tests/today.test.js', 'server/tests/companion.test.js', 'server/tests/backup.test.js'], { ...env, FITIZBABY_TEST_OWNER_URL: plan.ownerUrl, FITIZBABY_TEST_PG_BIN: resolve(bin) });
   await run(process.execPath,['--test','server/tests/free-mail.test.js'],{...env,MAIL_MODE:'resend',RESEND_API_KEY:'re_test_fixture_not_a_real_key',RESEND_TEST_RECIPIENT:'provider-owner@example.test',MAIL_OUTBOX_KEY:randomBytes(32).toString('base64'),FITIZBABY_TEST_OWNER_URL:plan.ownerUrl});
   await run(process.execPath, ['--test', 'server/tests/production.test.js'], { ...env, NODE_ENV: 'production', MAIL_MODE:'disabled',APP_PUBLIC_URL:'https://localhost',FRONTEND_ORIGINS: 'https://localhost', TRUST_PROXY: 'true' });
   }

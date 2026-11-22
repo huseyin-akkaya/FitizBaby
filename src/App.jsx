@@ -1,3 +1,4 @@
+import CompanionProvider from './context/CompanionProvider';
 import {lazy,Suspense} from 'react';
 const Today=lazy(()=>import('./pages/Today'));
 import SiteFooter from './components/SiteFooter';
@@ -21,7 +22,7 @@ import { Link } from 'react-router-dom';
 
 function App() {
   return (
-    <div className="fitiz-app">
+    <CompanionProvider><div className="fitiz-app">
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />}/>
@@ -45,7 +46,7 @@ function App() {
         <Route path="/nutrition" element={<NutritionAssistant />}/>
       </Routes>
       <SiteFooter/>
-    </div>
+    </div></CompanionProvider>
   )
 }
 

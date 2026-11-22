@@ -9,7 +9,6 @@ import BrandMark from '../components/BrandMark';
 import {getPersonalSnapshot,subscribePersonal,ensureDocuments,saveCleanDocument,copySavedDay,reloadDocuments,isDirty} from '../data/personalStorage';
 import {dailyNutrients,mealSlots,previousDay,emptyDay,savedTargets,summarizeDay,servingUnit} from '../utils/todaySummary';
 import {captureNutrition,entryProduct} from '../utils/mealSnapshots';
-import TodayCompanion from '../components/TodayCompanion';
 import {useTodayFeedback} from '../hooks/useTodayFeedback';
 import './Today.css';
 const format=value=>new Intl.NumberFormat('tr-TR',{maximumFractionDigits:1}).format(value);
@@ -97,7 +96,6 @@ function Dashboard({day}){
  const calories=summary.totals.calories,target=targets.calories,percentage=target>0?Math.max(0,Math.min(100,calories.value/target*100)):null;
  const tracker='/macro-tracker?day='+day;
  return <main className="today-page" data-day={day}><div className="today-container"><header className="today-header"><div><p className="app-eyebrow"><BrandMark/> BUGÜN KENDİN İÇİN BİR ADIM</p><h1>Bugünüm<em>.</em></h1><p>{new Intl.DateTimeFormat('tr-TR',{dateStyle:'full'}).format(new Date(day+'T12:00:00'))} · Merhaba, {user.name.trim().split(/\s+/)[0]}.</p></div><div className="today-actions"><button type="button" onClick={refresh} disabled={busy} className="today-secondary">Kayıtları yenile</button><button type="button" onClick={()=>openQuick()} disabled={busy} className="today-primary">＋ Öğün ekle</button></div></header>
-  <TodayCompanion feedback={feedback}/>
   <div className="today-message" aria-live="polite">{notice&&<p role="status">{notice}</p>}{(error||state.error)&&<p role="alert">{error||state.error}</p>}</div>
   {(dayDirty||targetDirty)&&<p className="today-info">Günlük takipte kaydedilmemiş değişikliklerin var. Bu özet kaydedilmiş verileri gösterir. Yeni kayıt eklemeden önce <Link to={tracker}>taslağını kontrol et.</Link></p>}
   {(!hasTarget||!hasMeals)&&<section className="today-start" aria-labelledby="today-start-title"><div><p className="today-eyebrow">SANA AİT BİR BAŞLANGIÇ</p><h2 id="today-start-title">Küçük adımlarla <em>başlayalım.</em></h2></div><ol><li className={hasTarget?'done':''}><span>{hasTarget?'✓':'1'}</span><div><strong>Günlük hedefini belirle</strong><button type="button" onClick={openGoals} disabled={busy||targetDirty}>{hasTarget?'Hedeflerini gözden geçir':'Hedeflerini gir'} <span aria-hidden="true">↗</span></button></div></li><li className={hasMeals?'done':''}><span>{hasMeals?'✓':'2'}</span><div><strong>İlk ürününü seç</strong><button type="button" onClick={()=>openQuick()} disabled={busy}>Öğününe bir ürün ekle <span aria-hidden="true">↗</span></button></div></li><li className={hasMeals?'done':''}><span>{hasMeals?'✓':'3'}</span><div><strong>Kaydet ve geri dön</strong><p>Öğünü hesabına kaydettiğinde burada görünür.</p></div></li></ol></section>}

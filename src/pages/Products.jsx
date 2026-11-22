@@ -1,3 +1,4 @@
+import {useTodayFeedback} from '../hooks/useTodayFeedback';
 import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import RangeSlider from "../components/RangeSlider";
@@ -14,6 +15,7 @@ const initialFilters = { brands: [], minCalories: "", maxCalories: "", minProtei
 const Heart = ({ filled = false }) => <svg viewBox="0 0 24 24" className="h-5 w-5" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" /></svg>;
 
 function Products() {
+  const companion=useTodayFeedback();
   const products = useProducts();
   const catalog = useProductCatalog();
   const categories = ["Tümü", ...getProductCategories(products)];
@@ -114,7 +116,7 @@ function Products() {
 
       <ProductStorageStatus /><FavoritesStatus />
       {success && <p role="status" className="mb-5 rounded-xl bg-green-50 p-4 text-sm text-green-900">{success}</p>}
-      {addingProduct && <AddProductForm onCancel={() => setAddingProduct(false)} onAdded={() => { setAddingProduct(false); clearFilters(); setSuccess(catalog.account ? 'Ürün hesabına kaydedildi. Detayını açabilir, düzenleyebilir ve karşılaştırabilirsin.' : 'Ürün bu tarayıcıya kaydedildi. Hesabım ekranından ayrıca aktarabilirsin.'); }} />}
+      {addingProduct && <AddProductForm onCancel={() => setAddingProduct(false)} onAdded={() => { companion.speak('add',true); setAddingProduct(false); clearFilters(); setSuccess(catalog.account ? 'Ürün hesabına kaydedildi. Detayını açabilir, düzenleyebilir ve karşılaştırabilirsin.' : 'Ürün bu tarayıcıya kaydedildi. Hesabım ekranından ayrıca aktarabilirsin.'); }} />}
       <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[270px_minmax(0,1fr)]">
         <aside className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
           <div className="mb-5 flex items-center justify-between"><h2 className="text-base font-bold text-zinc-900">Filtreler</h2>{hasFilters && <button onClick={clearFilters} className="text-xs font-semibold text-green-700 hover:text-green-800">Temizle</button>}</div>
