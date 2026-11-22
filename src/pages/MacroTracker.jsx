@@ -1,9 +1,11 @@
+import useToday from '../hooks/useToday';
+import {validDay} from '../utils/todaySummary';
 import {useAuth} from '../hooks/useAuth';
 import { captureNutrition, entryProduct } from '../utils/mealSnapshots';
 import { personalStorage } from '../data/personalStorage';
 import { PersonalGate, PersonalSavePanel } from '../components/PersonalDocuments';
-import { useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { products } from "../data/catalogStore";
 import { useProducts } from "../hooks/useProducts";
 import { getProductCategoryNames } from "../data/productCategories";
@@ -24,11 +26,6 @@ const nutrients = [
 const numberFormat = new Intl.NumberFormat("tr-TR", { maximumFractionDigits: 1 });
 const emptyTargets = () => Object.fromEntries(nutrients.map(({ key }) => [key, ""]));
 const emptyMeals = () => Object.fromEntries(mealTypes.map(({ key }) => [key, []]));
-
-function localDayKey() {
-  const date = new Date();
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-}
 
 function readTargets() {
   try {
@@ -157,7 +154,8 @@ function MealSection({ meal, entries, totals, onAdd, onChangeEntry, onChangeMode
   </section>;
 }
 
-function MacroTracker({ selectedDay }) {
+function MacroTracker({ selectedDay, focusMeal }) {
+  useEffect(()=>{if(!mealTypes.some(meal=>meal.key===focusMeal))return;const frame=requestAnimationFrame(()=>{const input=document.getElementById("meal-search-"+focusMeal);input?.closest("section")?.scrollIntoView({behavior:"instant",block:"start"});input?.focus({preventScroll:true});});return()=>cancelAnimationFrame(frame);},[selectedDay,focusMeal]);
   const {user}=useAuth();
   useProducts();
   const dayKey = selectedDay;
@@ -260,10 +258,14 @@ function MacroTracker({ selectedDay }) {
 
       <div className="mt-6 grid gap-5 lg:grid-cols-2">{mealTypes.map((meal) => <MealSection key={meal.key} meal={meal} entries={meals[meal.key]} totals={mealTotals[meal.key]} onAdd={addProduct} onChangeEntry={changeEntry} onChangeMode={changeMode} onRemove={removeProduct} />)}</div>
 
-      <footer className="mt-6 rounded-xl border border-zinc-200 bg-white p-4 text-xs leading-5 text-zinc-500">Besin değerleri katalogdaki g/ml referans miktarına göre gramajla orantılı hesaplanır. Paket miktarı kaynakta biliniyorsa başlangıç değeri gösterilir; ambalajın farklıysa etiketteki net miktarı gir. Eksik besin değerleri sıfır kabul edilmez. Günlük hedefler ve kayıtlar hesabına yüklenmez, bu tarayıcıda tutulur.</footer>
+      <footer className="mt-6 rounded-xl border border-zinc-200 bg-white p-4 text-xs leading-5 text-zinc-500">Besin değerleri katalogdaki g/ml referans miktarına göre gramajla orantılı hesaplanır. Paket miktarı kaynakta biliniyorsa başlangıç değeri gösterilir; ambalajın farklıysa etiketteki net miktarı gir. Eksik besin değerleri sıfır kabul edilmez. {user?'Değişikliklerini Hesabıma kaydet düğmesiyle hesabında saklayabilirsin.':'Misafir günlük hedefleri ve kayıtları bu tarayıcıda tutulur.'}</footer>
       {storageWarning && <p role="status" className="mt-3 text-sm text-amber-800">{storageWarning}</p>}
     </div>
   </main>;
 }
 
-export default function MacroTrackerPage(){const [selectedDay,setSelectedDay]=useState(localDayKey);return <><div className="mx-auto max-w-7xl px-4 pt-5"><label className="text-sm font-semibold">Kayıt tarihi <input aria-label="Kayıt tarihi" type="date" min="1900-01-01" max="2199-12-31" value={selectedDay} onChange={event=>{if(event.target.value)setSelectedDay(event.target.value);}} className="ml-3 rounded-lg border p-2" /></label></div><PersonalGate keys={['targets','day:'+selectedDay]}><MacroTracker selectedDay={selectedDay}/></PersonalGate></>;}
+export default function MacroTrackerPage(){
+ const [params,setParams]=useSearchParams(),today=useToday();
+ const selectedDay=validDay(params.get('day'))?params.get('day'):today;
+ return <><div className="mx-auto max-w-7xl px-4 pt-5"><label className="text-sm font-semibold">Kayıt tarihi <input aria-label="Kayıt tarihi" type="date" min="1900-01-01" max="2199-12-31" value={selectedDay} onChange={event=>{if(validDay(event.target.value)){const next=new URLSearchParams(params);next.set('day',event.target.value);setParams(next);}}} className="ml-3 rounded-lg border p-2" /></label></div><PersonalGate keys={['targets','day:'+selectedDay]}><MacroTracker selectedDay={selectedDay} focusMeal={params.get('meal')}/></PersonalGate></>;
+}

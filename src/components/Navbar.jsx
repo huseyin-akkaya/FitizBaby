@@ -2,12 +2,13 @@ import BrandMark from './BrandMark';
 import VisitorNav from './VisitorNav';
 import {useAuth} from '../hooks/useAuth';
 import {useState} from "react";
-import {Link} from "react-router-dom";
+import {Link,useLocation} from "react-router-dom";
 import AuthActions from "./AuthActions";
 
 function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const {user}=useAuth();
+    const {pathname}=useLocation();
     if(!user)return <VisitorNav/>;
 
     return (
@@ -39,6 +40,7 @@ function Navbar() {
 
                 {/* Navbar'ın ortasında bulunan sayfa bağlantıları */}
                 <div className="hidden xl:flex flex-1 justify-center gap-8 text-sm font-medium whitespace-nowrap">
+                    <Link to="/today" aria-current={pathname==='/today'?'page':undefined} className="transition hover:text-green-400">Bugünüm</Link>
 
                     {/* Ürünler sayfası bağlantısı */}
                     <Link to="/products" className="transition hover:text-green-400">
@@ -144,6 +146,7 @@ function Navbar() {
                    
                     {/* Mobil menüdeki sayfa bağlantıları */}
                     <div className="flex flex-col gap-4">
+                        <Link to="/today" aria-current={pathname==='/today'?'page':undefined} onClick={()=>setIsMenuOpen(false)} className="transition hover:text-green-400">Bugünüm</Link>
                         <Link to="/products" onClick={() => setIsMenuOpen(false)} className="transition hover:text-green-400">
                             Ürünler
                         </Link>

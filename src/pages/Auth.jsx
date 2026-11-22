@@ -52,7 +52,7 @@ function AuthPage({ mode = "login" }) {
     try {
       await authenticate(isRegister ? 'register' : 'login', isRegister ? { name, email, password } : { email, password });
       setFeedback({ type: "success", text: isRegister ? "Hesabın oluşturuldu. Ana sayfana yönlendiriliyorsun." : "Giriş başarılı. Ana sayfana yönlendiriliyorsun." });
-      navigate("/", { replace: true });
+      navigate("/today", { replace: true });
     } catch (error) {
       setFeedback({ type: "error", text: error instanceof TypeError ? "API sunucusuna ulaşılamadı. Backend sunucusunun açık olduğunu kontrol et." : error.message });
     } finally {
@@ -61,7 +61,7 @@ function AuthPage({ mode = "login" }) {
   };
 
   if (loading) return <main className="p-10" role="status">Oturum kontrol ediliyor…</main>;
-  if (user) return <Navigate to="/" replace />;
+  if (user) return <Navigate to="/today" replace />;
 
   return <main className="min-h-[calc(100vh-5rem)] bg-gradient-to-br from-green-50 via-zinc-50 to-amber-50 px-4 py-8 sm:px-6 sm:py-12">
     <div className="mx-auto grid max-w-6xl items-stretch gap-6 lg:grid-cols-[1fr_0.9fr] lg:gap-8">

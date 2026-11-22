@@ -72,9 +72,13 @@ Ayrı parolayla AES-256-GCM şifreli pg_dump yedeği, snapshot altında içerik 
 
 Güncel parola onaylı parola değiştirme, aynı hesaba ait etkin oturum listesi, tek başka oturumu veya diğer tüm oturumları kapatma eklendi. Parola değişikliği tüm oturumları ve bekleyen güvenlik izinlerini iptal eder; kişisel kayıtları korur. Ortak yeniden doğrulama kontrolü işlem kilidi altında hash/oturum durumunu tekrar doğrular. Cihaz/IP kaydı ve güvenlik bildirim e-postası eklenmedi. Başka cihaz ekranı sonraki istekte, aynı tarayıcıdaki sekmeler bildirimle güncellenir.
 
+## Aşama 7: Bugünüm ve günlük kullanım döngüsü
+
+Giriş sonrası kişisel günlük özet, hedef belirleme, favori/özel ürün/katalogdan açık onaylı hızlı öğün kaydı ve önceki günden seçili öğün kopyalama eklendi. Kaydedilmiş veri ile taslak ayrı tutulur; hata ve revision çakışmasında yeni veri uydurulmaz veya eski kayıt ezilmez. Sunucu kopyalaması geçmiş besin değerlerini korur ve aynı ürünleri çoğaltmaz. Yerel gün değişimi, tarihle günlük takip bağlantısı ve hesap yalıtımı test edilir. Misafir verileri otomatik aktarılmaz. E-posta değişikliği kullanıcının tercihiyle ertelendi.
+
 ## Sonraki aşama
 
-E-posta adresi değişikliğini eski/yeni adres onayıyla tasarlama; ardından alan adı ve genel alıcılı gönderim, teslimat/bounce izleme, üretimde doğrulama zorunluluğu, hesap varlığı sızıntısını azaltan kayıt akışı, ortak katalog moderasyonu ve üretim hazırlıkları ele alınmalı. Gerçek AI sağlayıcısı hâlâ bağlı değildir.
+Bugünüm için kullanıcı geri bildirimlerini değerlendirme; ardından alan adı ve genel alıcılı gönderim, teslimat/bounce izleme, üretimde doğrulama zorunluluğu, hesap varlığı sızıntısını azaltan kayıt akışı, ortak katalog moderasyonu ve üretim hazırlıkları ele alınmalı. Gerçek AI sağlayıcısı hâlâ bağlı değildir.
 
 ## Yayımlamadan önce
 

@@ -141,3 +141,23 @@ export async function importNutrition(sourceKeys) {
   }catch(error){if(state.scope===scope&&version===operationVersion)publish({error:`${imported} kayıt aktarıldıktan sonra durdu: ${error.message} Kaynaklar korundu; tekrar aktarım mevcut kayıtları ezmez.`});}
   finally{if(state.scope===scope&&version===operationVersion)publish({busy:false});}
 }
+
+// Dashboard actions publish saved data only after server confirmation. Existing
+// drafts are never overwritten, and the scope version guards account switches.
+export async function saveCleanDocument(key,data,expectedRevision){
+ if(state.docs[key]?.revision!==expectedRevision)throw new Error("Kayıt değişti. Yenileyip yeniden kontrol et.");
+ return commitSavedAction([key],()=>request('/'+encodeURIComponent(key),'PUT',{revision:state.docs[key].revision,data}));
+}
+export async function copySavedDay(sourceDay,targetDay,meals,sourceRevision,revision){
+ const source='day:'+sourceDay,target='day:'+targetDay;
+ if(state.docs[source]?.revision!==sourceRevision||state.docs[target]?.revision!==revision)throw new Error('Günlük kayıtlar değişti. Yenileyip yeniden kontrol et.');
+ return commitSavedAction([source,target],()=>request('/copy-day','POST',{sourceDay,targetDay,meals,sourceRevision:state.docs[source].revision,revision:state.docs[target].revision}));
+}
+async function commitSavedAction(keys,action){
+ if(!state.ready||state.busy||['guest','pending'].includes(state.scope))throw new Error('Hesap kayıtları henüz hazır değil.');
+ if(keys.some(key=>!state.docs[key]?.loaded||isDirty(state.docs[key])))throw new Error('Bu kayıtta kaydedilmemiş bir taslak var. Önce günlük takip ekranında kaydet veya taslağı kontrol et.');
+ const scope=state.scope,current=version;publish({busy:true,error:'',notice:''});
+ try{const result=await action();if(current!==version||scope!==state.scope)throw new Error('Hesap değişti.');const saved=storeDocument(result.document);publish({docs:{...state.docs,[saved.key]:saved},days:saved.key.startsWith('day:')?[...new Set([...state.days,saved.key.slice(4)])].sort().reverse():state.days});return result;}
+ catch(error){if(current===version&&scope===state.scope)publish({error:error.message});throw error;}
+ finally{if(current===version&&scope===state.scope)publish({busy:false});}
+}

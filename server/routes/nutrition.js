@@ -1,3 +1,4 @@
+import {copyDay} from '../nutrition/copy-day.js';
 import { randomUUID } from 'node:crypto';
 import express, { Router } from 'express';
 import { z } from 'zod';
@@ -44,6 +45,7 @@ export function createNutritionRouter(database) {
   const router = Router();
   router.use(requireAccount(database));
   router.use(express.json({ limit: '256kb', strict: true }));
+  router.post('/copy-day',(req,res)=>copyDay(database,req,res));
   router.get('/',async (req,res) => {
     if (!dateSchema.safeParse(req.query.day).success) return invalid(res);
     const keys = ['profile','plan','targets','day:' + req.query.day];

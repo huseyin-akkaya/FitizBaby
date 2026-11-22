@@ -1,12 +1,12 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import { ensureDocuments, bootstrapPersonal, getPersonalSnapshot, subscribePersonal, isDirty, saveDocuments, reloadDocuments } from '../data/personalStorage';
 function usePersonalState(){return useSyncExternalStore(subscribePersonal,getPersonalSnapshot,getPersonalSnapshot);}
-export function PersonalGate({keys,children}) {
+export function PersonalGate({keys,children,preserveOnSave=false}) {
   const state=usePersonalState();const signature=keys.join('|');
   const loaded=state.scope==='guest'||keys.every(key=>state.docs[key]?.loaded);
   useEffect(()=>{if(state.ready&&!loaded)ensureDocuments(signature.split('|'));},[state.ready,loaded,signature]);
   if(!state.ready||!loaded)return <main className="mx-auto max-w-xl p-8"><h1 className="text-2xl font-bold">Beslenme kayıtları</h1><p role={state.error?'alert':'status'} className="mt-4">{state.error||'Kayıtlar yükleniyor…'}</p>{state.error&&<button type="button" onClick={()=>state.ready?ensureDocuments(keys):bootstrapPersonal()} className="mt-4 rounded-xl bg-green-700 px-4 py-3 text-white">Yeniden dene</button>}</main>;
-  const epoch=keys.map(key=>state.docs[key]?.epoch||0).join(':');
+  const epoch=preserveOnSave?'stable':keys.map(key=>state.docs[key]?.epoch||0).join(':');
   return <section key={state.scope+':'+signature+':'+epoch}><fieldset disabled={state.busy}>{children}</fieldset></section>;
 }
 export function PersonalSavePanel({keys}) {
