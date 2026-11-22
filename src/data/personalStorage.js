@@ -144,9 +144,9 @@ export async function importNutrition(sourceKeys) {
 
 // Dashboard actions publish saved data only after server confirmation. Existing
 // drafts are never overwritten, and the scope version guards account switches.
-export async function saveCleanDocument(key,data,expectedRevision){
+export async function saveCleanDocument(key,data,expectedRevision,refresh){
  if(state.docs[key]?.revision!==expectedRevision)throw new Error("Kayıt değişti. Yenileyip yeniden kontrol et.");
- return commitSavedAction([key],()=>request('/'+encodeURIComponent(key),'PUT',{revision:state.docs[key].revision,data}));
+ return commitSavedAction([key],()=>request('/'+encodeURIComponent(key),'PUT',{revision:state.docs[key].revision,data,...(refresh?{refresh}:{})}));
 }
 export async function copySavedDay(sourceDay,targetDay,meals,sourceRevision,revision){
  const source='day:'+sourceDay,target='day:'+targetDay;

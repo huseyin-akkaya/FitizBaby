@@ -208,11 +208,11 @@ export const products = [
     "name": "%100 Fıstık Ezmesi",
     "brand": "Fellas",
     "category": "Atıştırmalık",
-    "calories": null,
-    "protein": null,
-    "carbs": null,
-    "sugar": null,
-    "fat": null,
+    "calories": 638,
+    "protein": 25.5,
+    "carbs": 7.6,
+    "sugar": 4,
+    "fat": 54.2,
     "serving": "100 g",
     "image": "/images/products/fellas-fistik-ezmesi.jpg",
     "accent": "from-yellow-50 to-amber-100",
@@ -224,15 +224,31 @@ export const products = [
       "contains": [
         "Yer fıstığı"
       ],
-      "mayContain": null,
-      "status": "ingredient-derived"
+      "mayContain": [
+        "Antep fıstığı",
+        "Fındık",
+        "Ceviz",
+        "Badem",
+        "Kaju",
+        "Gluten",
+        "Susam"
+      ],
+      "status": "label-confirmed"
     },
     "ingredientSource": {
       "label": "Fellas resmi ürün sayfası",
       "url": "https://fellasfoods.com.tr/products/fellas-100-fistik-ezmesi",
-      "checkedAt": "2026-09-28"
+      "checkedAt": "2026-11-22"
     },
-    "nutritionNote": "Besin etiketi doğrulanamadı; değerler gösterilmez."
+    "saturatedFat": 7.6,
+    "fiber": 8.9,
+    "salt": 0,
+    "packageSize": 300,
+    "nutritionSource": {
+      "label": "Fellas resmi 2026 ürün kataloğu · %100 Yer Fıstığı Ezmesi (300 g)",
+      "url": "https://cdn.shopify.com/s/files/1/0681/8765/2266/files/Fellas_Urun_Katalogu_2026_web_5f935679-422f-4e76-99ed-27f6b1fb9ce0.pdf?v=1773657737",
+      "checkedAt": "2026-11-22"
+    }
   },
   {
     "id": 7,

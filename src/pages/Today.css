@@ -15,3 +15,5 @@
 .today-macro .today-missing-note,.today-energy .today-missing-note{font-size:10px;font-weight:400;color:#7a8069;line-height:1.7;margin-top:8px;max-width:340px}
 .today-energy .today-goal-status{font-size:11px;color:#56734b;line-height:1.7;margin-top:5px}
 .today-macro .today-goal-status{color:#56734b}
+
+.today-entry-amount{display:block;font-size:.85rem;color:#66765c;margin:4px 0}.today-entry-actions{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 14px}.today-entry-actions button{border:1px solid #cbd8bc;border-radius:12px;background:#fffdf6;color:#244e38;padding:6px 9px;font-size:.8rem;cursor:pointer}.today-entry-actions button:disabled{opacity:.5;cursor:default}.today-label-table{width:100%;border-collapse:collapse;margin:18px 0;font-size:.9rem}.today-label-table th,.today-label-table td{text-align:left;padding:8px 4px;border-bottom:1px solid #dce5ca}.today-label-table caption{text-align:left;margin-bottom:8px}

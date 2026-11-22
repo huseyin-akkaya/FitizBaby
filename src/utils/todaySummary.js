@@ -5,13 +5,13 @@ export const emptyDay=()=>Object.fromEntries(mealSlots.map(({key})=>[key,[]]));
 export function previousDay(day){const date=new Date(day+'T12:00:00');date.setDate(date.getDate()-1);return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;}
 export function servingUnit(product){return product?.serving==='100 ml'?'ml':'g';}
 export function summarizeDay(data,catalog){
- const totals=Object.fromEntries(dailyNutrients.map(({key})=>[key,{value:0,missing:0}]));
+ const totals=Object.fromEntries(dailyNutrients.map(({key})=>[key,{value:0,missing:0,missingProducts:[]}]));
  const meals=mealSlots.map(slot=>({...slot,entries:Array.isArray(data?.[slot.key])?data[slot.key]:[]}));
  for(const meal of meals)for(const entry of meal.entries){
   const consumed=entry.mode==='package'?Number(entry.packageSize)*Number(entry.packageCount):Number(entry.amount);
   if(!Number.isFinite(consumed)||consumed<=0)continue;
   const product=entry.snapshot===undefined?null:entryProduct(entry,catalog),reference=/^(\d+(?:\.\d+)?)\s*(g|ml)$/.exec(product?.serving||''),amount=Number(reference?.[1]);
-  for(const {key}of dailyNutrients){const value=product?.[key];if(!reference||!Number.isFinite(amount)||amount<=0||typeof value!=='number'||!Number.isFinite(value))totals[key].missing++;else totals[key].value+=consumed/amount*value;}
+  for(const {key}of dailyNutrients){const value=product?.[key];if(!reference||!Number.isFinite(amount)||amount<=0||typeof value!=='number'||!Number.isFinite(value)){totals[key].missing++;const current=catalog.find(item=>String(item.id)===String(entry.productId));const name=[entry.snapshot?.brand??current?.brand,entry.snapshot?.name??current?.name].filter(Boolean).join(' ')||'Ürün bilgisi bulunamadı';totals[key].missingProducts.push(`${name} (${meal.label})`);}else totals[key].value+=consumed/amount*value;}
  }
  return{totals,meals,entryCount:meals.reduce((count,meal)=>count+meal.entries.length,0)};
 }

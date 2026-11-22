@@ -1,3 +1,5 @@
+import {products} from '../../src/data/products.js';
+import {captureNutrition} from '../../src/utils/mealSnapshots.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {once} from 'node:events';
@@ -64,3 +66,16 @@ test('Real PostgreSQL: copy database failure rolls back and never exposes privat
  await api(async(request,register)=>{const a=await register(),source={...empty(),breakfast:[entry()]},sr=await seed(a,'day:2026-11-21',source);const response=await copy(request,a,{sourceDay:'2026-11-21',targetDay:'2026-11-22',sourceRevision:sr,revision:null,meals:['breakfast']});assert.equal(response.status,500);assert.ok(!(await response.text()).includes('PRIVATE_COPY_DIAGNOSTIC'));assert.equal((await owner.query('SELECT COUNT(*)::int AS n FROM user_nutrition WHERE user_id=$1 AND key=$2',[a.account,'day:2026-11-22'])).rows[0].n,0);assert.deepEqual((await owner.query('SELECT data FROM user_nutrition WHERE user_id=$1 AND key=$2',[a.account,'day:2026-11-21'])).rows[0].data,source);},proxy);
 });
 test.after(async()=>{await db?.end();await owner?.end();await pool?.end();});
+
+test('Real PostgreSQL: quantity and deletion preserve snapshots; explicit refresh verifies the preview and changes only one saved entry',{skip:!enabled},()=>api(async(request,register)=>{
+ const a=await register(),b=await register(),key='day:2026-11-22',data={...empty(),breakfast:[entry(6,{...snapshot(6,'Old peanut butter'),protein:null}),entry(2)]};
+ let revision=await seed(a,key,data);const put=(body,user=a)=>request('nutrition/'+encodeURIComponent(key),{...user,method:'PUT',data:body});
+ data.breakfast[0].amount=50;let response=await put({revision,data});assert.equal(response.status,200);let doc=(await response.json()).document;assert.equal(doc.data.breakfast[0].amount,50);assert.deepEqual(doc.data.breakfast[0].snapshot,data.breakfast[0].snapshot);
+ const refresh={entryId:data.breakfast[0].id,preview:captureNutrition(products.find(item=>item.id===6))};
+ assert.equal((await put({revision:doc.revision,data,refresh:{...refresh,preview:{...refresh.preview,protein:99}}})).status,409);
+ assert.equal((await put({revision:doc.revision,data,refresh:{...refresh,entryId:randomUUID()}})).status,400);
+ assert.equal((await put({revision:doc.revision,data,refresh},b)).status,409);
+ response=await put({revision:doc.revision,data,refresh});assert.equal(response.status,200);doc=(await response.json()).document;assert.equal(doc.data.breakfast[0].snapshot.protein,25.5);assert.equal(doc.data.breakfast[0].amount,50);assert.deepEqual(doc.data.breakfast[1].snapshot,data.breakfast[1].snapshot);
+ assert.equal((await put({revision,data:doc.data})).status,409);
+ data.breakfast=doc.data.breakfast.slice(1);response=await put({revision:doc.revision,data});assert.equal(response.status,200);doc=(await response.json()).document;assert.equal(doc.data.breakfast.length,1);assert.equal(doc.data.breakfast[0].productId,2);
+}));
