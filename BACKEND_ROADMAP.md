@@ -68,9 +68,13 @@ Hesap silme güncel parola ve açık yazılı onay gerektirir. Parola özeti ve 
 
 Ayrı parolayla AES-256-GCM şifreli pg_dump yedeği, snapshot altında içerik özetleri ve ayrı geçici sunucuda geri yükleme karşılaştırması eklendi. Oturumlar, güvenlik bağlantıları ve e-posta kuyruğu dışlanır. Nihai dosya yalnızca doğrulama sonrasında yayımlanır. Proje dışında özel izinlerle saklanır; eski yedekler otomatik silinmez. Zamanlanmış/uzak kopya ve mevcut veritabanına otomatik kurtarma geçişi henüz yoktur. Kullanım ve sınırlar BACKUPS.md dosyasındadır.
 
+## Aşama 6: Parola değişikliği ve oturum yönetimi
+
+Güncel parola onaylı parola değiştirme, aynı hesaba ait etkin oturum listesi, tek başka oturumu veya diğer tüm oturumları kapatma eklendi. Parola değişikliği tüm oturumları ve bekleyen güvenlik izinlerini iptal eder; kişisel kayıtları korur. Ortak yeniden doğrulama kontrolü işlem kilidi altında hash/oturum durumunu tekrar doğrular. Cihaz/IP kaydı ve güvenlik bildirim e-postası eklenmedi. Başka cihaz ekranı sonraki istekte, aynı tarayıcıdaki sekmeler bildirimle güncellenir.
+
 ## Sonraki aşama
 
-Hesapta güncel parolayla parola değiştirme ve açık oturumları yönetme; ardından alan adı ve genel alıcılı gönderim, teslimat/bounce izleme, üretimde doğrulama zorunluluğu, hesap varlığı sızıntısını azaltan kayıt akışı, ortak katalog moderasyonu ve üretim hazırlıkları ele alınmalı. Gerçek AI sağlayıcısı hâlâ bağlı değildir.
+E-posta adresi değişikliğini eski/yeni adres onayıyla tasarlama; ardından alan adı ve genel alıcılı gönderim, teslimat/bounce izleme, üretimde doğrulama zorunluluğu, hesap varlığı sızıntısını azaltan kayıt akışı, ortak katalog moderasyonu ve üretim hazırlıkları ele alınmalı. Gerçek AI sağlayıcısı hâlâ bağlı değildir.
 
 ## Yayımlamadan önce
 

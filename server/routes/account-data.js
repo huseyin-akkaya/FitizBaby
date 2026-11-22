@@ -4,11 +4,10 @@ import {Router} from 'express';
 import {Readable} from 'node:stream';
 import {pipeline} from 'node:stream/promises';
 import {createGzip} from 'node:zlib';
-import argon2 from 'argon2';
 import {z} from 'zod';
 import {requireAccount} from '../middleware/account.js';
 import {sessionTokenHash,publicUser} from './auth.js';
-import {passwordWork} from '../middleware/security.js';
+import {reauthenticate} from '../auth/reauthenticate.js';
 import {removeLocalAccountMail} from '../mail/cleanup-local.js';
 const password=z.string().min(1).max(128).refine(value=>Buffer.byteLength(value,'utf8')<=512);
 const exportSchema=z.object({password}).strict();
@@ -19,22 +18,6 @@ const exportCookie=env.NODE_ENV==='production'?'__Secure-fitizbaby_export':'fiti
 const hash=value=>createHash('sha256').update(value).digest('hex');
 function exportCapability(req){const value=req.headers.cookie?.split(';').map(part=>part.trim()).find(part=>part.startsWith(exportCookie+'='))?.slice(exportCookie.length+1);return value&&/^[A-Za-z0-9_-]{43}$/.test(value)?value:null;}
 let activeExports=0;
-async function reauthenticate(database,req,res,action) {
- const userId=res.locals.userId;
- const result=await database.query('SELECT password_hash FROM users WHERE id=$1',[userId]);
- const stored=result.rows[0]?.password_hash;
- if(!stored||!await passwordWork(()=>argon2.verify(stored,req.body.password)))return denied(res);
- const client=await database.connect();
- try{
-  await client.query('BEGIN');
-  const current=await client.query('SELECT password_hash,email FROM users WHERE id=$1 FOR UPDATE',[userId]);
-  if(current.rows[0]?.password_hash!==stored){await client.query('ROLLBACK');return denied(res);}
-  const session=await client.query("SELECT id FROM user_sessions WHERE user_id=$1 AND token_hash=$2 AND expires_at>NOW() AND last_seen_at>NOW()-INTERVAL '30 minutes' FOR UPDATE",[userId,sessionTokenHash(req)]);
-  if(!session.rowCount){await client.query('ROLLBACK');return denied(res);}
-  const output=await action(client,{userId,sessionId:session.rows[0].id,email:current.rows[0].email});
-  await client.query('COMMIT');return output;
- }catch(error){await client.query('ROLLBACK').catch(()=>{});throw error;}finally{client.release();}
-}
 async function* exportJson(client,userId,account) {
  yield '{"format":"fitizbaby.account-export","version":1,"exportedAt":'+JSON.stringify(new Date().toISOString())+',"account":'+JSON.stringify(account)+',"products":[';
  let cursor='',first=true;

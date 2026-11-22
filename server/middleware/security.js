@@ -10,7 +10,7 @@ export function requireAllowedOrigin(req, res, next) {
 }
 export function createLimits() {
   const options = { windowMs: 15 * 60 * 1000, standardHeaders: 'draft-8', legacyHeaders: false, message: { error: { code: 'TOO_MANY_ATTEMPTS', message: 'Çok fazla deneme yapıldı. Bir süre sonra yeniden dene.' } } };
-  return { accountData:rateLimit({...options,limit:5}),exportDownload:rateLimit({...options,limit:10}),recoveryAsk:rateLimit({...options,limit:10}),recoveryConsume:rateLimit({...options,limit:30}),api: rateLimit({ ...options, limit: 300 }), auth: rateLimit({ ...options, limit: 10 }) };
+  return { securityRead:rateLimit({...options,limit:60}),securityWrite:rateLimit({...options,limit:5}),accountData:rateLimit({...options,limit:5}),exportDownload:rateLimit({...options,limit:10}),recoveryAsk:rateLimit({...options,limit:10}),recoveryConsume:rateLimit({...options,limit:30}),api: rateLimit({ ...options, limit: 300 }), auth: rateLimit({ ...options, limit: 10 }) };
 }
 let hashing = 0;
 export async function passwordWork(action) {

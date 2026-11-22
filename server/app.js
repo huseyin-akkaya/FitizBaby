@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { env } from './config.js';
 import { pool } from './db/pool.js';
 import { createRecoveryRouter } from './routes/recovery.js';
+import {createAccountSecurityRouter} from './routes/account-security.js';
 import {createAccountDataRouter} from './routes/account-data.js';
 import { createAuthRouter } from './routes/auth.js';
 import { createFavoritesRouter } from './routes/favorites.js';
@@ -27,6 +28,7 @@ export function createApp(database = pool, { deliverLocalMail } = {}) {
     try { await database.query('SELECT 1'); return res.json({ status: 'ok', database: 'connected' }); }
     catch { return res.status(503).json({ status: 'degraded', database: 'unavailable' }); }
   });
+  app.use('/api/v1/account/security',createAccountSecurityRouter(database,limits));
   app.use('/api/v1/account',createAccountDataRouter(database,limits));
   app.use('/api/v1/auth', createAuthRouter(database, limits.auth));
   app.use('/api/v1/auth', createRecoveryRouter(database, limits, deliverLocalMail));

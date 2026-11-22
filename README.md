@@ -192,3 +192,11 @@ Bu nedenle projeyi, tüm kodlarını kendi başıma yazdığım bir çalışma o
 ## Şifreli veritabanı yedeği
 
 `npm run db:backup -- --pg-bin "D:\postgare\bin"` komutu ayrı yedek parolasını gizli ister. Kayıtlar şifrelenir; yedek ayrı geçici PostgreSQL sunucusunda geri yüklenip içerik özetleri karşılaştırılmadan tamamlanmış sayılmaz. Oturumlar ve bekleyen güvenlik bağlantıları dışlanır. Arşivler proje/Git dışında tutulur. Mevcut veritabanının üzerine yazılmaz. Kurulum, tekrar doğrulama, saklama ve kurtarma sınırları için [BACKUPS.md](BACKUPS.md) dosyasını okuyun.
+
+## Parola değişikliği ve açık oturumlar
+
+Hesabım → **Parola ve oturum güvenliği** bölümünden güncel parola doğrulanarak yeni parola belirlenebilir. Yeni parola 15–128 karakter, en fazla 512 UTF-8 bayt olmalı ve mevcut paroladan farklı olmalıdır. Argon2id ile saklanır. Değişiklik bu hesabın tüm oturumlarını kapatır; yeniden giriş gerekir. Bekleyen doğrulama/parola sıfırlama bağlantıları, indirme izinleri ve bekleyen e-posta kuyrukları geçersiz olur. Doğrulama durumu kendiliğinden yükseltilmez. Kaydedilmiş ürünler, favoriler ve beslenme kayıtları korunur.
+
+Açık oturum listesi yalnızca bu hesaba ait, süresi dolmamış ve son 30 dakikada etkin oturumları gösterir. Bu oturum işaretlenir; açılış, son etkinlik ve en geç sona erme tarihleri tarayıcının saat dilimindedir. Cihaz/IP bilgisi tutulmadığından bunlar gösterilmez. Liste kendiliğinden sürekli yenilenmez; yenile düğmesi kullanılabilir. Güncel parolayla seçilen başka oturum veya diğer tüm oturumlar kapatılabilir; mevcut oturum açık kalır. Mevcut oturum için menüdeki çıkış düğmesi kullanılır.
+
+Kapatılan oturum sunucuda hemen geçersiz olur; başka cihazın açık ekranı bir sonraki istek/oturum yenilemesinde güncellenir. Aynı tarayıcıdaki sekmelere oturum durumu bildirimi yapılır. Başlamış bir e-posta geri çağrılamayabilir, ancak iptal edilen bağlantısı çalışmaz. Güvenlik işlemleri için otomatik bildirim e-postası ve MFA henüz eklenmedi.
