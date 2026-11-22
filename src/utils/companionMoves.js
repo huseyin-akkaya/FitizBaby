@@ -1,0 +1,2 @@
+export const companionMoves=[['wave','El sallama'],['squat','Çök kalk'],['rope','İp atlama'],['pullup','Barfiks'],['pushup','Şınav'],['situp','Mekik'],['slip','Komik düşüp kalkma']];
+export function roamPosition(width,height,random=Math.random){const maxX=Math.max(8,width-112),minY=Math.min(110,Math.max(8,height-240)),maxY=Math.max(minY,height-225);return{x:8+random()*Math.max(0,maxX-8),y:minY+random()*(maxY-minY)};}

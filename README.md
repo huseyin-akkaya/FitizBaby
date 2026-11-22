@@ -238,3 +238,9 @@ Filiz, tüm sayfalarda sağ alttaki karakter düğmesinden açılır. Ürünler,
 Ayarlar: karakteri aç/kapat; eğlenceli, komik, ciddi ve absürt üslupları bağımsız seç; otomatik sayfa/mola mesajlarını aç/kapat; sakin/dengeli/canlı sıklık; adla hitap; ses, titreşim ve hareket. Tüm üsluplar kapalıysa mesaj üretilmez. Tercihler bu tarayıcıda hesap kimliğine göre ayrılır; tarayıcılar arasında eşitlenmez. Kullanıcı adı yalnızca etkin oturumdan alınır. Gezinme geçmişi veya sohbet metni kalıcı olarak saklanmaz.
 
 Filiz ile küçük sohbet, hazır yerel kurallara dayanır; harici dil modeline bağlı değildir. Yanıt seçimi ayrı bir adaptördedir; gelecekte gerçek konuşma hizmeti bağlanabilir. Bu özellik tamamlanmış bir yapay zekâ sohbet sistemi olarak sunulmaz. Karakter gerçek bir canlı değildir; mesajları beslenme uzmanı görüşü yerine geçmez. Sesler cihazda üretilir, harici izleme/kamera/mikrofon bağlantısı kurulmaz.
+
+### Filiz’in dolaşması ve hareketleri
+
+Filiz ara sıra ekranda dolaşır; el sallama, çök kalk, ip atlama, barfiks, şınav, mekik ve komik düşüp kalkma gösterileri yapabilir. Karakter panelindeki Dolaşma ve gösteriler bölümünden dolaşma, fare yaklaşınca şeffaflaşma ve her hareket ayrı ayrı açılıp kapatılır. Hareketi dene seçeneği seçilen hareketin önizlemesini başlatır. Mesaj sıklığı dolaşma aralıklarını da etkiler.
+
+Dolaşan katman her zaman tıklamaları geçirir; şeffaflaşma kapalı olsa bile arkasındaki içerik kullanılabilir. Şeffaflaşma için fare konumu yalnızca anlık olarak ekranda karşılaştırılır; kaydedilmez veya gönderilmez. Sabit Filiz düğmesi ayarlara erişmek için tıklanabilir kalır. Panel, mesaj veya hassas giriş/şifre ekranı açıkken dolaşma durur. Arka plan sekmesinde gösteri yapılmaz; azaltılmış hareket tercihinde dolaşma tamamen kapalıdır. Konumlar mevcut pencere boyutuna göre seçilir ve pencere değiştiğinde gösteri sıfırlanır.
