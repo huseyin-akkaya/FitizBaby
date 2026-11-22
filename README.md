@@ -244,3 +244,9 @@ Filiz ile küçük sohbet, hazır yerel kurallara dayanır; harici dil modeline 
 Filiz ara sıra ekranda dolaşır; el sallama, çök kalk, ip atlama, barfiks, şınav, mekik ve komik düşüp kalkma gösterileri yapabilir. Karakter panelindeki Dolaşma ve gösteriler bölümünden dolaşma, fare yaklaşınca şeffaflaşma ve her hareket ayrı ayrı açılıp kapatılır. Hareketi dene seçeneği seçilen hareketin önizlemesini başlatır. Mesaj sıklığı dolaşma aralıklarını da etkiler.
 
 Dolaşan katman her zaman tıklamaları geçirir; şeffaflaşma kapalı olsa bile arkasındaki içerik kullanılabilir. Şeffaflaşma için fare konumu yalnızca anlık olarak ekranda karşılaştırılır; kaydedilmez veya gönderilmez. Sabit Filiz düğmesi ayarlara erişmek için tıklanabilir kalır. Panel, mesaj veya hassas giriş/şifre ekranı açıkken dolaşma durur. Arka plan sekmesinde gösteri yapılmaz; azaltılmış hareket tercihinde dolaşma tamamen kapalıdır. Konumlar mevcut pencere boyutuna göre seçilir ve pencere değiştiğinde gösteri sıfırlanır.
+
+Filiz yalnızca ekranın sol veya sağ kenarında dolaşır. Her gösterinin başlangıç ve bitişi aynı kenardadır; karşı kenara giderken ortadaki içeriğin üzerinden geçmez.
+
+### Filiz’in espri molaları
+
+Uygun dolaşma gösterilerinin dönüşümlü olarak bazılarında Filiz yaklaşık beş saniye sonra kısa bir teklif balonu gösterir. Yap düğmesi yemek, spor veya hareket temalı özgün bir espri, mini fıkra ya da bilmeceyi açar. Şimdi değil teklifi, Tamam anlatılmış içeriği kapatır. İçerik seçilen üsluplara göre döner; tüm üsluplar kapalıysa çıkmaz. Espri ve fıkra balonları ayrı bir ayarla kapatılabilir; Espri balonunu dene beklemeden denemek içindir. Anlatım açıldığında karakter durur ve okuma için en fazla 20 saniye ek süre tanır. Bunlar hazır eğlence içerikleridir; sağlık iddiası, kişisel tıbbi öneri veya dışarıdan üretilmiş yapay zekâ yanıtı değildir. Dolaşan karakter tıklamaları geçirmeye devam eder; balonun kendi düğmeleri tıklanabilir.

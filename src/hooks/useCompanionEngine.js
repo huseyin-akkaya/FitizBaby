@@ -1,7 +1,7 @@
 import {useEffect,useRef,useState} from 'react';
 import {dailyNutrients,summarizeDay,savedTargets} from '../utils/todaySummary';
 import {companionMessage} from '../utils/companionMessages';
-const defaults={enabled:true,roam:true,fade:true,wave:true,squat:true,rope:true,pullup:true,pushup:true,situp:true,slip:true,sound:true,haptics:true,motion:true,personalize:true,automatic:true,fun:true,funny:false,serious:false,absurd:false};
+const defaults={enabled:true,jokes:true,roam:true,fade:true,wave:true,squat:true,rope:true,pullup:true,pushup:true,situp:true,slip:true,sound:true,haptics:true,motion:true,personalize:true,automatic:true,fun:true,funny:false,serious:false,absurd:false};
 
 export function goalReaction(before,after,goals){
  const reached=[],over=[];
