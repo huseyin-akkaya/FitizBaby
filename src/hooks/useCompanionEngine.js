@@ -1,3 +1,4 @@
+import {chooseCompanionStory} from '../utils/companionStories';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {dailyNutrients,summarizeDay,savedTargets} from '../utils/todaySummary';
 import {companionMessage} from '../utils/companionMessages';
@@ -13,6 +14,7 @@ export function useCompanionEngine(scope,name){
  const [preferences,setPreferences]=useState(()=>{try{const stored=JSON.parse(localStorage.getItem(preferenceKey))||JSON.parse(localStorage.getItem('fitizbaby.feedback.v1'));return {...Object.fromEntries(Object.entries(defaults).map(([key,value])=>[key,typeof stored?.[key]==='boolean'?stored[key]:value])),frequency:['quiet','normal','lively'].includes(stored?.frequency)?stored.frequency:'normal'};}catch{return defaults;}}),[reaction,setReaction]=useState(null);
  const audio=useRef(null),timer=useRef(null),sequence=useRef(0),lastMessage=useRef(0);
  const panelBusy=useRef(false);const setPanelBusy=useCallback(value=>{panelBusy.current=value;if(value&&channel.current.active?.reaction.kind==='chat'){clearTimeout(timer.current);channel.current.active=null;setReaction(null);}},[]);
+ const storyIndex=useRef(0);const nextStory=useCallback(options=>chooseCompanionStory(options,storyIndex.current++),[]);
  const channel=useRef({scene:null,active:null,pending:[]});
  const show=useCallback(function display(item){const state=channel.current;state.active=item;lastMessage.current=Date.now();setReaction(item.reaction);clearTimeout(timer.current);timer.current=setTimeout(()=>{state.active=null;setReaction(null);const next=state.pending.shift();if(next&&!state.scene)display(next);},item.duration);},[]);
  const enqueue=useCallback((reaction,duration)=>{const state=channel.current,item={reaction,duration};if(state.scene||state.active){if(state.pending.length>=3)state.pending.shift();state.pending.push(item);}else show(item);},[show]);
@@ -34,5 +36,5 @@ export function useCompanionEngine(scope,name){
  }
  function speak(event,force=false){if(!preferences.enabled||(!force&&panelBusy.current)||(!force&&!preferences.automatic)||document.visibilityState==='hidden')return;if(channel.current.scene||channel.current.active){if(!force)return;}const now=Date.now();const cooldown={quiet:120000,normal:45000,lively:20000}[preferences.frequency]||45000;if(!force&&now-lastMessage.current<cooldown)return;const message=companionMessage(event,preferences,preferences.personalize?name:'arkadaşım',sequence.current);if(!message)return;enqueue({id:++sequence.current,kind:'chat',message},8500);}
 
- return{scope,preferences,speak,setPreference,prepare,respond,reaction,dismiss,clearPresentation,beginScene,endScene,setPanelBusy};
+ return{scope,preferences,speak,setPreference,prepare,respond,reaction,dismiss,clearPresentation,beginScene,endScene,setPanelBusy,nextStory};
 }

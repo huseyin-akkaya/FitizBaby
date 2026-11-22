@@ -22,3 +22,12 @@ test('Story invitations honor selected styles, vary content, and remain opt-in d
  assert.ok(first.invite&&first.text);assert.ok(!first.invite.includes(first.text));
  assert.equal(chooseCompanionStory({absurd:true},5).style,'absurd');
 });
+
+test('Story bank cycles every selected style and every entry, with separate riddle answers',async()=>{
+ const {chooseCompanionStory,companionStories}=await import('../../src/utils/companionStories.js');
+ const selected={fun:true,funny:true,serious:true,absurd:true};
+ assert.equal(companionStories.length,32);
+ assert.equal(new Set(Array.from({length:32},(_,i)=>chooseCompanionStory(selected,i).text)).size,32);
+ assert.deepEqual(Array.from({length:4},(_,i)=>chooseCompanionStory(selected,i).style),['fun','funny','absurd','serious']);
+ for(const story of companionStories){assert.ok(story.text.length<400);if(story.kind==='bilmece'){assert.ok(story.answer);assert.ok(!story.text.includes(story.answer));}}
+});
