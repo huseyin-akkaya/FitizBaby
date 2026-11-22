@@ -8,7 +8,7 @@ function Categories() {
     <div className="mx-auto max-w-7xl">
       <header className="mb-8">
         <p className="text-sm font-semibold text-green-700">KATALOĞU KEŞFET</p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl">Kategoriler</h1>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl"><em>Kategoriler</em></h1>
         <p className="mt-3 text-zinc-500">İlgilendiğin kategoriyi seçerek ürünlerini incele.</p>
       </header>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

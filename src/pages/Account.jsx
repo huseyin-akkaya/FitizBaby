@@ -13,7 +13,7 @@ export default function Account() {
   if (loading) return <main className="p-10" role="status">Oturum kontrol ediliyor…</main>;
   if (!user) return error ? <main className="mx-auto max-w-xl p-8"><h1 className="text-2xl font-bold">Hesabına ulaşılamadı</h1><p role="alert" className="mt-4">{error}</p><Link to="/login" className="mt-4 inline-block text-green-700 underline">Giriş sayfasına dön</Link></main> : <Navigate to="/login" replace />;
   return <main className="min-h-screen bg-zinc-50 px-4 py-10"><section className="mx-auto max-w-2xl rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8">
-    <p className="text-sm font-semibold text-green-700">FITIZBABY HESABIN</p><h1 className="mt-2 text-3xl font-bold">Hoş geldin, {user.name}</h1><p className="mt-3 break-words text-zinc-600">{user.email}</p>
+    <p className="text-sm font-semibold text-green-700">FITIZBABY HESABIN</p><h1 className="mt-2 text-3xl font-bold">Hoş geldin, <em>{user.name}</em></h1><p className="mt-3 break-words text-zinc-600">{user.email}</p>
     <section className="mt-6 rounded-xl border border-green-200 bg-green-50 p-4">
       <h2 className="text-lg font-bold">Hesaba bağlı favoriler</h2>
       <p className="mt-2 text-sm leading-6">Favorilerin veritabanında bu hesaba kaydedilir. Giriş yaptığın diğer tarayıcıdan da erişebilirsin. Özel ürünü başka cihazda görüntülemek için ürünün kendisini de aşağıdan hesabına aktar.</p>

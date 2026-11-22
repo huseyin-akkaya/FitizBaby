@@ -1,3 +1,4 @@
+import SiteFooter from './components/SiteFooter';
 import PasswordChanged from './pages/PasswordChanged';
 import AccountDeleted from './pages/AccountDeleted';
 import Recovery from './pages/Recovery';
@@ -18,7 +19,7 @@ import { Link } from 'react-router-dom';
 
 function App() {
   return (
-    <>
+    <div className="fitiz-app">
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />}/>
@@ -40,7 +41,8 @@ function App() {
         <Route path="*" element={<main className="p-10 text-center"><h1>Sayfa bulunamadı</h1><Link to="/">Ana sayfa</Link></main>}/>
         <Route path="/nutrition" element={<NutritionAssistant />}/>
       </Routes>
-    </>
+      <SiteFooter/>
+    </div>
   )
 }
 

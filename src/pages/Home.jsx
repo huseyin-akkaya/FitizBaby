@@ -6,6 +6,6 @@ const VisitorHome=lazy(()=>import('./VisitorHome'));
 export default function Home(){
  const {user,loading}=useAuth();
  if(loading)return <main className="p-10" role="status">Oturum kontrol ediliyor…</main>;
- if(user)return <main><HeroSection/><FeatureSection/></main>;
+ if(user)return <main className="member-home"><HeroSection/><FeatureSection/></main>;
  return <Suspense fallback={<main className="min-h-[70vh] bg-[#f8f7ef] p-10" role="status">FitizBaby hazırlanıyor…</main>}><VisitorHome/></Suspense>;
 }

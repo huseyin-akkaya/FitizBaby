@@ -47,7 +47,7 @@ function Compare() {
 
   return <main className="min-h-screen bg-zinc-50/70">
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:py-10">
-      <header className="mb-8"><p className="mb-2 text-sm font-semibold text-green-700">BİRLİKTE DEĞERLENDİR</p><h1 className="text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl">Ürün karşılaştırma</h1><p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-500">2–4 ürünü besin değerleri ve kaynaklı içerik bilgileriyle yan yana incele. Değerler ürün kaydındaki referans ölçüye göredir.</p></header>
+      <header className="mb-8"><p className="mb-2 text-sm font-semibold text-green-700">BİRLİKTE DEĞERLENDİR</p><h1 className="text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl">Ürün <em>karşılaştırma</em></h1><p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-500">2–4 ürünü besin değerleri ve kaynaklı içerik bilgileriyle yan yana incele. Değerler ürün kaydındaki referans ölçüye göredir.</p></header>
 
       <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm sm:p-6" aria-labelledby="choose-title">
         <div className="flex flex-wrap items-start justify-between gap-3"><div><h2 id="choose-title" className="text-lg font-bold text-zinc-900">Ürünlerini seç</h2><p className="mt-1 text-sm text-zinc-500">En az 2, en fazla 4 ürün. {selected.length}/4 seçili</p></div><Link to="/products" className="text-sm font-semibold text-green-700 hover:text-green-800">Ürün kataloğuna git →</Link></div>

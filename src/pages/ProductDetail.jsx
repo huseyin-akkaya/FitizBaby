@@ -56,7 +56,7 @@ function ProductDetail() {
           <div className="flex flex-col justify-center p-6 sm:p-10 lg:p-12">
             <p className="text-sm font-semibold text-green-700">{product.category}</p>
             <p className="mt-5 text-sm font-medium text-zinc-500">{product.brand}</p>
-            <h1 className="mt-1 text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl">{product.name}</h1>
+            <h1 className="mt-1 text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl"><em>{product.name}</em></h1>
             <p className="mt-4 leading-7 text-zinc-600">{product.description}</p>
 
             <button type="button" disabled={favoritesLoading || favoritesBusy} onClick={() => toggleFavorite(product.id)} aria-pressed={isFavorite} className={`mt-6 inline-flex w-fit items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-semibold transition ${isFavorite ? "border-rose-200 bg-rose-50 text-rose-600" : "border-zinc-200 text-zinc-700 hover:border-rose-200 hover:text-rose-600"}`}>

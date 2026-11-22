@@ -76,7 +76,7 @@ function AuthPage({ mode = "login" }) {
 
           <p className="mt-8 text-xs font-bold uppercase tracking-[0.18em] text-green-800">Beslenme yolculuğuna eşlik eder</p>
           <h1 className="mt-3 max-w-lg text-3xl font-bold leading-tight tracking-tight text-zinc-950 sm:text-4xl">
-            {isRegister ? "Kendin için dengeli bir başlangıç yap." : "Beslenme yolculuğuna kaldığın yerden devam et."}
+            {isRegister ? <>Kendin için dengeli bir <em>başlangıç yap.</em></> : <>Beslenme yolculuğuna kaldığın yerden <em>devam et.</em></>}
           </h1>
           <p className="mt-4 max-w-lg text-sm leading-6 text-zinc-700 sm:text-base">
             Ürünleri karşılaştır, öğünlerini takip et ve hedeflerine uygun seçenekleri keşfet.
@@ -126,7 +126,7 @@ function AuthPage({ mode = "login" }) {
 
           {!isRegister&&<Link to="/forgot-password" className="mt-4 inline-block text-sm font-semibold text-green-800 underline">Parolamı unuttum</Link>}
           <p className="mt-5 rounded-xl border border-zinc-100 bg-zinc-50 px-3.5 py-3 text-xs leading-5 text-zinc-500">
-            Yerel geliştirme sürümündesin. Parolan en az 15 karakter olmalı. Şifren tarayıcıda saklanmaz; backend’e iletilir ve veritabanında Argon2id hash’i olarak tutulur. Doğrulama ve parola sıfırlama yerel deneme olarak kullanılabilir; gerçek test gönderimi özel e-posta kurulumu tamamlandığında yalnızca tanımlı deneme alıcısına açılır.
+            Parolan en az 15 karakter olmalı. Hesabınla favorilerine, kendi ürünlerine ve kaydettiğin beslenme kayıtlarına geri dönebilirsin. FitizBaby geliştirme aşamasındadır; e-posta özellikleri test modunda kullanılır.
           </p>
 
           <p className="mt-6 text-center text-sm text-zinc-600">

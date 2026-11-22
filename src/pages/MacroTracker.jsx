@@ -1,3 +1,4 @@
+import {useAuth} from '../hooks/useAuth';
 import { captureNutrition, entryProduct } from '../utils/mealSnapshots';
 import { personalStorage } from '../data/personalStorage';
 import { PersonalGate, PersonalSavePanel } from '../components/PersonalDocuments';
@@ -157,6 +158,7 @@ function MealSection({ meal, entries, totals, onAdd, onChangeEntry, onChangeMode
 }
 
 function MacroTracker({ selectedDay }) {
+  const {user}=useAuth();
   useProducts();
   const dayKey = selectedDay;
   const dailyStorageKey = `fitizbaby.daily-macro-log.${dayKey}.v1`;
@@ -239,7 +241,7 @@ function MacroTracker({ selectedDay }) {
 
   return <main className="min-h-screen bg-zinc-50/70 px-4 py-8 sm:px-6 sm:py-10">
     <div className="mx-auto max-w-7xl"><PersonalSavePanel keys={['targets', 'day:' + selectedDay]} />
-      <header className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><Link to="/" className="text-sm font-semibold text-green-800 hover:text-green-900">← Ana sayfa</Link><p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-amber-700">Günlük beslenme kaydı</p><h1 className="mt-1 text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl">Günlük Makro Takibi</h1><p className="mt-2 text-sm text-zinc-500">{dateLabel} · Hedeflerini isteğe bağlı gir; yediğin katalog ürünlerini öğünlere ekle.</p></div><div className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-xs leading-5 text-zinc-500 shadow-sm">Hesap gerekmez. Kayıtların bu tarayıcıda saklanır.</div></header>
+      <header className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><Link to="/" className="text-sm font-semibold text-green-800 hover:text-green-900">← Ana sayfa</Link><p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-amber-700">Günlük beslenme kaydı</p><h1 className="mt-1 text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl">Günlük <em>Makro Takibi</em></h1><p className="mt-2 text-sm text-zinc-500">{dateLabel} · Hedeflerini isteğe bağlı gir; yediğin katalog ürünlerini öğünlere ekle.</p></div><div className="rounded-xl border border-zinc-200 bg-white px-4 py-3 text-xs leading-5 text-zinc-500 shadow-sm">{user?'Kaydettiğin günlük kayıtlar hesabında tutulur.':'Misafir kayıtların bu tarayıcıda saklanır.'}</div></header>
 
       <div className="grid items-start gap-6 xl:grid-cols-[0.85fr_1.15fr]">
         <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm sm:p-6" aria-labelledby="targets-heading"><div className="mb-5"><p className="text-xs font-semibold uppercase tracking-wider text-amber-700">01 · İsteğe bağlı</p><h2 id="targets-heading" className="mt-1 text-xl font-bold text-zinc-900">Günlük hedeflerin</h2><p className="mt-1 text-sm leading-5 text-zinc-500">Kalori, protein, karbonhidrat ve yağ hedeflerini kendin girebilirsin. Boş bıraktığın hedefler için yalnızca tüketim toplamı gösterilir.</p></div><div className="grid grid-cols-2 gap-3">{nutrients.map(({ key, label, unit, max, step }) => <label key={key} className="block"><span className="mb-1.5 flex items-center justify-between gap-2 text-sm font-medium text-zinc-700"><span>{label}</span><span className="text-xs text-zinc-400">{unit} / gün</span></span><input type="number" min="0" max={max} step={step} value={targets[key]} onChange={(event) => updateTarget(key, event.target.value)} placeholder="İsteğe bağlı" className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-amber-500 focus:ring-4 focus:ring-amber-50" /></label>)}</div><p className="mt-4 rounded-xl bg-amber-50 p-3 text-xs leading-5 text-amber-900">Hedef bilgisi girmezsen herhangi bir hedef varsayılmaz. Beslenme ihtiyaçları kişiye göre değişir; bu ekran genel takip içindir.</p></section>

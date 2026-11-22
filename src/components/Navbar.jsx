@@ -12,13 +12,13 @@ function Navbar() {
 
     return (
         // Sayfanın üst kısmındaki ana navigasyon alanı
-        <nav className="w-full bg-zinc-950 text-white border-b border-zinc-800">
+        <nav className="member-navbar w-full bg-zinc-950 text-white border-b border-zinc-800">
 
             {/* Navbar içeriğini belirli bir genişlikte tutar ve yatay olarak ortalar */}
             <div className="max-w-7xl mx-auto flex h-20 items-center justify-between px-6">
 
                 {/* Logo ikonu ve FitizBaby yazısını birlikte tutan alan */}
-                <Link to="/" aria-label="FitizBaby ana sayfa" className="flex items-center gap-0 shrink-0">
+                <Link to="/" aria-label="FitizBaby ana sayfa" className="member-brand flex items-center gap-0 shrink-0">
 
                     {/* FitizBaby için oluşturduğumuz özel SVG logo alanı */}
                     <div className="w-10 h-10">

@@ -1,3 +1,4 @@
+import {useAuth} from '../hooks/useAuth';
 import { saveDocuments } from '../data/personalStorage';
 import { personalStorage } from '../data/personalStorage';
 import { PersonalGate, PersonalSavePanel } from '../components/PersonalDocuments';
@@ -18,6 +19,7 @@ function readProfile() {
 }
 
 function NutritionAssistant() {
+  const {user}=useAuth();
   const [profile, setProfile] = useState(readProfile);
   const [messages, setMessages] = useState([{
     role: "assistant",
@@ -60,13 +62,13 @@ function NutritionAssistant() {
   }
 
   return (
-    <main className="min-h-[calc(100vh-5rem)] bg-[#f7f9f6] px-4 py-8 sm:px-6 lg:py-12">
+    <main className="min-h-[calc(100vh-5rem)] bg-zinc-50 px-4 py-8 sm:px-6 lg:py-12">
       <div className="mx-auto max-w-7xl"><PersonalSavePanel keys={['profile']} />
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
             <Link to="/" className="text-sm font-medium text-green-700 hover:text-green-800">← Ana sayfa</Link>
             <p className="mt-5 text-xs font-semibold uppercase tracking-[0.2em] text-green-700">FitizBaby · Kişisel beslenme</p>
-            <h1 className="mt-2 text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">Beslenme Planım</h1>
+            <h1 className="mt-2 text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">Beslenme <em>Asistanı</em></h1>
             <p className="mt-2 max-w-2xl text-zinc-600">Günlük hedeflerini belirle, Akıllı Asistan’dan öğün, tarif ve ürün fikirleri al.</p>
           </div>
           <Link to="/products" className="rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-sm font-semibold text-zinc-700 shadow-sm hover:border-green-300 hover:text-green-700">Ürün kataloğunu keşfet →</Link>
@@ -88,7 +90,7 @@ function NutritionAssistant() {
               ))}
             </div>
             <button type="button" onClick={saveProfile} className="mt-5 w-full rounded-xl bg-zinc-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800">{saved ? "Hedefler kaydedildi ✓" : "Hedeflerimi kaydet"}</button>
-            <p className="mt-3 text-center text-xs leading-5 text-zinc-400">Hedefler bu cihazda saklanır. Kişisel sağlık verisi göndermiyoruz.</p>
+            <p className="mt-3 text-center text-xs leading-5 text-zinc-400">{user?'Hedeflerini Hesabıma kaydet düğmesiyle hesabında saklayabilirsin. Harici AI hizmetine veri gönderilmez.':'Misafir hedefleri bu tarayıcıda saklanır. Harici AI hizmetine veri gönderilmez.'}</p>
             <div className="mt-6 rounded-2xl bg-green-50 p-4"><p className="text-xs font-semibold uppercase tracking-wide text-green-800">Bugünkü hedef özeti</p><p className="mt-2 text-sm font-semibold text-zinc-800">{profile.calories || 0} kcal</p><p className="mt-1 text-xs text-zinc-600">P {profile.protein || 0} g · K {profile.carbs || 0} g · Y {profile.fat || 0} g</p></div>
           </aside>
 
@@ -98,7 +100,7 @@ function NutritionAssistant() {
               <div><h2 className="font-semibold text-zinc-900">Akıllı Asistan</h2><p className="mt-0.5 text-xs text-green-700">Beslenme hedeflerin ve ürün kataloğunla bağlantılı</p></div>
               <span className="ml-auto flex items-center gap-1.5 text-xs text-zinc-500"><span className="h-2 w-2 rounded-full bg-green-500"/>Hazır</span>
             </div>
-            <div className="flex min-h-[380px] max-h-[56vh] flex-col gap-4 overflow-y-auto bg-[#fcfdfb] p-5 sm:p-6" aria-live="polite">
+            <div className="flex min-h-[380px] max-h-[56vh] flex-col gap-4 overflow-y-auto bg-white p-5 sm:p-6" aria-live="polite">
               {messages.map((message, index) => <div key={`${message.role}-${index}`} className={`max-w-[92%] whitespace-pre-line rounded-2xl px-4 py-3 text-sm leading-6 ${message.role === "user" ? "ml-auto rounded-br-md bg-green-600 text-white" : "mr-auto rounded-bl-md border border-zinc-100 bg-white text-zinc-700 shadow-sm"}`}>{message.text}</div>)}
               {isResponding && <div className="mr-auto rounded-2xl bg-white px-4 py-3 text-sm text-zinc-500 shadow-sm">Önerin hazırlanıyor…</div>}
               <div ref={endRef}/>

@@ -28,10 +28,10 @@ function RangeSlider({
         style={{
           background: `linear-gradient(
     to right,
-    #22c55e 0%,
-    #22c55e ${percentage}%,
-    #d4d4d8 ${percentage}%,
-    #d4d4d8 100%
+    var(--color-green-600) 0%,
+    var(--color-green-600) ${percentage}%,
+    var(--color-zinc-200) ${percentage}%,
+    var(--color-zinc-200) 100%
   )`,
         }}
       />
