@@ -6,3 +6,12 @@
 .today-message{position:sticky;top:12px;z-index:25}.today-message p{box-shadow:0 6px 22px #254f3810}
 
 .member-navbar a[aria-current=page]{color:#d8e7b5;text-decoration:underline;text-underline-offset:7px;text-decoration-thickness:1px}.today-goals{scroll-margin-top:24px}
+
+.today-progress-bar>span,.macro-carbs .today-progress-bar>span,.macro-fat .today-progress-bar>span{background:#638451}
+.today-ring circle:last-child{transition:stroke-dashoffset .45s ease,opacity .2s}
+.today-energy-remaining{font-size:13px;font-weight:600;color:#365c3d;line-height:1.7;margin-top:8px}
+.today-macro .today-remaining{font-size:11px;color:#365c3d;font-weight:600}
+.today-taken-label{font-size:11px;color:#718166;margin-left:5px}
+.today-macro .today-missing-note,.today-energy .today-missing-note{font-size:10px;font-weight:400;color:#7a8069;line-height:1.7;margin-top:8px;max-width:340px}
+.today-energy .today-goal-status{font-size:11px;color:#56734b;line-height:1.7;margin-top:5px}
+.today-macro .today-goal-status{color:#56734b}
