@@ -26,7 +26,7 @@ Hazır ürün kataloğu proje dosyalarında bulunur. Misafir ürünleri, favoril
 - Site veya tarayıcı kapatılıp açıldığında kayıtlar normal koşullarda korunur.
 - Yerel kayıtlar farklı tarayıcılar arasında senkronize edilmez. Kaydedilmiş hesap verilerine aynı hesapla başka tarayıcıdan erişilebilir. Açık sayfadaki veriyi güncellemek için yenileme gerekir; beslenme taslakları onay alınmadan sunucu verisiyle değiştirilmez.
 - Kayıt alanı site adresine bağlıdır; alan adı, protokol veya port değişirse farklı bir kayıt alanı kullanılır.
-- Site verilerinin temizlenmesi yerel kayıtları silebilir. Kaydedilmiş hesap verileri sunucuda kalır; diğer yerel kayıtlar için otomatik yedekleme yoktur.
+- Site verilerinin temizlenmesi yerel kayıtları silebilir. Kaydedilmiş hesap verileri sunucuda kalır; diğer yerel kayıtlar için otomatik yedekleme yoktur. PostgreSQL için şifreli, elle başlatılan ve ayrı geçici veritabanında geri yüklenerek doğrulanan yedekleme aracı vardır; [yedekleme kılavuzuna](BACKUPS.md) bakın.
 
 ## Geliştirme Aşamasındaki Bölümler
 
@@ -34,7 +34,7 @@ Hazır ürün kataloğu proje dosyalarında bulunur. Misafir ürünleri, favoril
 - **Beslenme planı:** Kalori ve makro hesaplama, hedefleri özelleştirme, üç/dört/beş öğün seçimi ve örnek tarif alternatifleri vardır. Bölümün geliştirmesi tamamlanmamıştır. Hesaplanan ihtiyaçlar ve tarif değerleri yaklaşık tahminlerdir.
 - **Kullanıcı girişi ve kayıt:** Express/PostgreSQL tabanlı yerel hesap ve oturum akışı eklendi. Veritabanı kurulumu sonrasında kayıt, giriş, hesap ekranı ve çıkış kullanılabilir. E-posta doğrulama ve parola sıfırlama yerel deneme olarak çalışır. Resend Free tek alıcılı test entegrasyonu vardır; gerçek gönderim için kullanıcının özel anahtar kurulumu gerekir. Alan adı doğrulaması ve üretime açılma hazırlıkları tamamlanmadı.
 - **Katalog yönetimi:** Kendi hesap ürününü ekleme/düzenleme/silme ve tarayıcıdan aktarım çalışır. Herkese açık ortak katalog için moderasyon henüz yoktur.
-- **Sunucu ve yayımlama:** Hesap ve oturum sunucusu yerel geliştirme için hazırlandı. Genel kullanıma açık e-posta gönderimi, üretimde doğrulama zorunluluğu, yedekleme/geri yükleme ve sitenin yayımlanması sonraki aşamalardır.
+- **Sunucu ve yayımlama:** Hesap ve oturum sunucusu yerel geliştirme için hazırlandı. Şifreli yerel veritabanı yedekleme ve geçici hedefte geri yükleme doğrulaması eklendi. Genel kullanıma açık e-posta gönderimi, üretimde doğrulama zorunluluğu, zamanlanmış/uzak yedekleme, gerçek kurtarma geçişi ve sitenin yayımlanması sonraki aşamalardır.
 
 ## Kullanılan Teknolojiler
 
@@ -188,3 +188,7 @@ Tasarımı sözlü olarak tarif ederek yapay zekâdan bir görsel oluşturmasın
 Geliştirme boyunca üretilen kodları inceleyip anlamaya çalıştım. Siteyi yerel ortamda çalıştırarak sayfaları ve işlevleri test ettim. Karşılaştığım sorunları yapay zekâya tarif ederek düzelttirdim ve sonuçları yeniden kontrol ettim. Örneğin kategorilerin yanlış ayrılması, sayfanın ortalanmaması ve küçük ekranlarda banner'ın kayması gibi sorunları tespit ettim. Kategorilerin nasıl düzenlenmesi gerektiğini belirledim ve yapılan düzeltmeleri kontrol ettim.
 
 Bu nedenle projeyi, tüm kodlarını kendi başıma yazdığım bir çalışma olarak sunmuyorum. Proje; benim ürün ve tasarım kararlarım, testlerim ve geri bildirimlerim ile yapay zekânın sağladığı kodlama desteği sonucunda gelişmektedir.
+
+## Şifreli veritabanı yedeği
+
+`npm run db:backup -- --pg-bin "D:\postgare\bin"` komutu ayrı yedek parolasını gizli ister. Kayıtlar şifrelenir; yedek ayrı geçici PostgreSQL sunucusunda geri yüklenip içerik özetleri karşılaştırılmadan tamamlanmış sayılmaz. Oturumlar ve bekleyen güvenlik bağlantıları dışlanır. Arşivler proje/Git dışında tutulur. Mevcut veritabanının üzerine yazılmaz. Kurulum, tekrar doğrulama, saklama ve kurtarma sınırları için [BACKUPS.md](BACKUPS.md) dosyasını okuyun.

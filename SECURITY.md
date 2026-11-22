@@ -87,3 +87,11 @@ Yerel deneme kutusunda yalnızca üretilen dosya adları, normal dosyalar ve eş
 HTTPS ve güvenilir ters vekil topolojisi doğrulanmalı. TRUST_PROXY yalnızca API'ye doğrudan erişilemeyen, bilinen vekil arkasında açılmalı. Veritabanı bağlantısında sertifika doğrulaması kapatılmamalı. Sırlar ortam/sır yönetiminden alınmalı. Hesap sahipliği, veri yetkilendirmesi, yedekleme/geri yükleme, hata izleme ve gizlilik gereksinimleri ayrıca test edilmeli.
 
 Kaynaklar: [OWASP parola saklama](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html), [OWASP oturum yönetimi](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html), [Express güvenlik önerileri](https://expressjs.com/en/advanced/best-practice-security/).
+
+## Şifreli yerel veritabanı yedekleri
+
+Yedekler pg_dump custom biçiminden akışla AES-256-GCM ile şifrelenir; her dosyada rastgele 16 bayt salt ve 12 bayt IV, 16 bayt doğrulama etiketi kullanılır. Anahtar kullanıcı parolasından scrypt N=65536/r=8/p=1 ile türetilir. Parola komut argümanına, ayar dosyasına veya Git’e yazılmaz. Arşiv hesap parola hash’lerini ve kişisel kayıtları içerir; ayrı disk kopyası ve parola yöneticisi gerekir. Geçici plaintext dump yoktur; doğrulama sırasında kişisel veriler yalnızca erişimi kısıtlı geçici PostgreSQL veri dizininde bulunur.
+
+Snapshot altında hesaplanan sıralı satır özetleri ve kayıt sayıları, izole hedefe geri yüklenen verilerle karşılaştırılır. Tüm GCM doğrulaması SQL’den önce tamamlanır. Yalnızca yerel kaynaklar desteklenir. Hedef sunucu yeni rastgele parola ve boş klasörle, loopback üzerinde kurulur; backend/e-posta işçisi başlatılmaz. Oturum, güvenlik işlemi, kuyruk ve indirme izinleri dışlanır; anonim kota toplamları korunur. Roller/ACL taşınmaz, kısıtlı hedef sahibi kullanılır.
+
+Yedek dizini proje dışında, yönlendirme olmadan ve özel dosya izinleriyle oluşturulur. Araç otomatik yedek silmez veya zamanlayıcı kurmaz. Eski yedeklerde silinmiş hesaplar bulunabilir; üretim saklama/silme ve gerçek kurtarma geçişi ayrıca gerekir. Yalnızca güvenilir arşivler kullanılmalıdır; geri yüklenen SQL’e karşı bu süreç bir işletim sistemi güvenlik sınırı değildir. Ayrıntılar BACKUPS.md dosyasındadır.

@@ -17,7 +17,10 @@
     "mail:local": "node server/mail/read-local.js",
     "setup:mail": "node server/mail/setup-resend.js",
     "mail:check": "node server/mail/check.js",
-    "mail:status": "node server/mail/status.js"
+    "mail:status": "node server/mail/status.js",
+    "db:backup": "node server/db/backup-cli.js create",
+    "db:backup:verify": "node server/db/backup-cli.js verify",
+    "db:backup:list": "node server/db/backup-cli.js list"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",

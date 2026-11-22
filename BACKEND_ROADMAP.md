@@ -64,9 +64,13 @@ Güncel parola onayıyla, mevcut oturuma bağlı iki dakikalık tek kullanımlı
 
 Hesap silme güncel parola ve açık yazılı onay gerektirir. Parola özeti ve oturum, kullanıcı satırı kilidi altında tekrar kontrol edilir; hesapla ilişkili kayıtlar tek işlemde kaldırılır. Yerel deneme iletileri alıcı eşleşmesiyle ayrıca temizlenir. Diğer hesaplar, misafir verileri, indirilmiş dosyalar, ortak ayarlar ve anonim gönderim kotası etkilenmez. Sağlayıcı kayıtları ve varsa ayrı yedekler için saklama/temizlik süreci ayrıca gerekir.
 
+## Aşama 5: Şifreli yerel yedek ve geri yükleme doğrulaması
+
+Ayrı parolayla AES-256-GCM şifreli pg_dump yedeği, snapshot altında içerik özetleri ve ayrı geçici sunucuda geri yükleme karşılaştırması eklendi. Oturumlar, güvenlik bağlantıları ve e-posta kuyruğu dışlanır. Nihai dosya yalnızca doğrulama sonrasında yayımlanır. Proje dışında özel izinlerle saklanır; eski yedekler otomatik silinmez. Zamanlanmış/uzak kopya ve mevcut veritabanına otomatik kurtarma geçişi henüz yoktur. Kullanım ve sınırlar BACKUPS.md dosyasındadır.
+
 ## Sonraki aşama
 
-Veritabanı yedekleme ve ayrı geçici veritabanına geri yükleme doğrulaması. Ardından alan adı ve genel alıcılı gönderim, teslimat/bounce izleme, üretimde doğrulama zorunluluğu, hesap varlığı sızıntısını azaltan kayıt akışı, ortak katalog moderasyonu ve üretim hazırlıkları ele alınmalı. Gerçek AI sağlayıcısı hâlâ bağlı değildir.
+Hesapta güncel parolayla parola değiştirme ve açık oturumları yönetme; ardından alan adı ve genel alıcılı gönderim, teslimat/bounce izleme, üretimde doğrulama zorunluluğu, hesap varlığı sızıntısını azaltan kayıt akışı, ortak katalog moderasyonu ve üretim hazırlıkları ele alınmalı. Gerçek AI sağlayıcısı hâlâ bağlı değildir.
 
 ## Yayımlamadan önce
 

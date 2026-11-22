@@ -36,3 +36,7 @@ coverage/
 
 !.env.mail.example
 .private-mail-setup-*/
+
+# Encrypted database archives and incomplete backup files must stay outside Git.
+*.fitbak
+.backup-writing-*/
