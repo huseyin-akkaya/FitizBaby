@@ -1,9 +1,13 @@
+import VisitorNav from './VisitorNav';
+import {useAuth} from '../hooks/useAuth';
 import {useState} from "react";
 import {Link} from "react-router-dom";
 import AuthActions from "./AuthActions";
 
 function Navbar() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const {user}=useAuth();
+    if(!user)return <VisitorNav/>;
 
     return (
         // Sayfanın üst kısmındaki ana navigasyon alanı
@@ -13,7 +17,7 @@ function Navbar() {
             <div className="max-w-7xl mx-auto flex h-20 items-center justify-between px-6">
 
                 {/* Logo ikonu ve FitizBaby yazısını birlikte tutan alan */}
-                <div className="flex items-center gap-0 shrink-0">
+                <Link to="/" aria-label="FitizBaby ana sayfa" className="flex items-center gap-0 shrink-0">
 
                     {/* FitizBaby için oluşturduğumuz özel SVG logo alanı */}
                     <div className="w-10 h-10">
@@ -96,7 +100,7 @@ function Navbar() {
                         </span>
                     </span>
 
-                </div>
+                </Link>
 
                 {/* Navbar'ın ortasında bulunan sayfa bağlantıları */}
                 <div className="hidden xl:flex flex-1 justify-center gap-8 text-sm font-medium whitespace-nowrap">

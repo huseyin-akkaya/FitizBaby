@@ -200,3 +200,9 @@ Hesabım → **Parola ve oturum güvenliği** bölümünden güncel parola doğr
 Açık oturum listesi yalnızca bu hesaba ait, süresi dolmamış ve son 30 dakikada etkin oturumları gösterir. Bu oturum işaretlenir; açılış, son etkinlik ve en geç sona erme tarihleri tarayıcının saat dilimindedir. Cihaz/IP bilgisi tutulmadığından bunlar gösterilmez. Liste kendiliğinden sürekli yenilenmez; yenile düğmesi kullanılabilir. Güncel parolayla seçilen başka oturum veya diğer tüm oturumlar kapatılabilir; mevcut oturum açık kalır. Mevcut oturum için menüdeki çıkış düğmesi kullanılır.
 
 Kapatılan oturum sunucuda hemen geçersiz olur; başka cihazın açık ekranı bir sonraki istek/oturum yenilemesinde güncellenir. Aynı tarayıcıdaki sekmelere oturum durumu bildirimi yapılır. Başlamış bir e-posta geri çağrılamayabilir, ancak iptal edilen bağlantısı çalışmaz. Güvenlik işlemleri için otomatik bildirim e-postası ve MFA henüz eklenmedi.
+
+## Ziyaretçi ve üye ana sayfası
+
+Oturum açılmadan önce `/` adresinde FitizBaby'yi tanıtan, kaydırılabilir bir sayfa ve sade ziyaretçi menüsü gösterilir. Hareketli SVG yiyecek karakterleri, fareye tepki veren tabak görseli, katalog verileriyle protein/şeker/kalori karşılaştırma demosu, hesap faydaları ve açılır sorular vardır. Animasyonlar durdurulabilir; sistemin azaltılmış hareket tercihi uygulanır. Görseller ve yazı tipleri için harici bir hizmet kullanılmaz. Tanıtım etkileşimleri kişisel veri toplamaz veya misafir kayıtlarını değiştirmez.
+
+Kayıt veya giriş sonrası ana sayfada önceki HeroSection, ürün arama, kategori kısa yolları ve araç kartları gösterilir; tam uygulama menüsü korunur. Çıkış sonrası tanıtım görünümü geri gelir. Bu ayrım ana sayfa ve menü sunumuyla ilgilidir; mevcut misafir araçlarının adreslerine yeni bir erişim yasağı eklenmedi. Hesap kayıtlarının sunucu yetkilendirmesi aynı şekilde sürer. Karşılaştırma örneğinde yalnızca bilinen etiket değerleri kullanılır; eksik değer sıfır sayılmaz ve eksik bilgiyle sonuç üretilmez.
