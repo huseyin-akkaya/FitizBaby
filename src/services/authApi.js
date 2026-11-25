@@ -8,7 +8,7 @@ export async function authRequest(path, data, signal) {
   }
   if (response.status === 204) return {};
   const result = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(result.error?.message || 'İşlem tamamlanamadı. Lütfen yeniden dene.');
+  if (!response.ok) throw new Error(result.error?.message || ([502,503,504].includes(response.status) ? 'Hesap hizmetine şu anda ulaşılamıyor. Lütfen biraz sonra tekrar dene.' : 'İşlem tamamlanamadı. Lütfen yeniden dene.'));
   if (!Object.hasOwn(result, 'user')) throw new Error('Hesap sunucusu geçerli bir yanıt vermedi.');
   return result;
 }
