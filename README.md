@@ -315,3 +315,12 @@ Başarıya dokunmak koşulunu ve kazanım bilgisini açar; kazanılmış kart Fi
 İlerlemem açılırken veya Geçmişi yenile seçildiğinde POST /api/v1/nutrition/rhythm, yalnızca oturum sahibinin kaydedilmiş öğünlerinden kazanımları hesaplar. Tek kullanıcı kilidi ve yeniden oturum kontrolüyle aynı başarı bir kez kaydedilir. Tarayıcı başarı listesi gönderemez; genel belge okuma/yazma/içe aktarma yolları rhythm anahtarını kabul etmez. Kazanımlar user_nutrition içindeki hesaba özel rhythm belgesinde saklanır; başka tarayıcıdan da görünür. Kayıt sonradan silinse bile kazanım korunur; takvim güncel verilere göre değişir. Veriyi dışa aktarma, hesap silme ve veritabanı yedekleme bu belgeyi de kapsar.
 
 011_weekly_rhythm.sql mevcut verileri koruyarak yalnızca izin verilen belge adlarını genişletir. Yeni kurulum/güncellemede node server/db/migrate.js çalıştırılır. Yeni paket veya dış hizmet gerekmez.
+
+
+## Son kullandıklarım
+
+Bugünüm → Öğün ekle içindeki Son kullandıklarım sekmesi, son 30 takvim günündeki kaydedilmiş öğünlerden en fazla 6 farklı ve halen kullanılabilir ürün gösterir. Liste kayıt gününe göre, aynı gün içinde aperatif/akşam/öğle/sabah ve öğündeki son ürün sırasıyla hazırlanır; gerçek ekleme saatlerinin tutulduğu iddia edilmez. Kayıt yoksa mevcut favori/tüm ürünler seçicisine geçilir. Ürün/marka araması kullanılabilir.
+
+Seçim önceki porsiyonu forma önerir; kullanıcı değiştirebilir ve kaydetmeden toplamlar değişmez. Paket sayısı × paket miktarı toplam g/ml değerine çevrilir. Eski ölçü birimi bilinmiyorsa veya güncel ürünün birimi değişmişse miktar boş bırakılır. Miktar sınır dışındaysa da elle giriş gerekir. Yeni kayıt güncel sunucu ürün verisiyle oluşturulur; geçmiş besin değerleri değiştirilmez. Kaydetme anında ürün birimi değişirse işlem tamamen reddedilir. Aynı ürünü aynı öğüne tekrar ekleme, taslak, revision ve hesap sahipliği korumaları geçerlidir. Filiz yalnızca başarılı kayıttan sonra mevcut tercihleriyle tepki verir.
+
+GET /api/v1/nutrition/recent-products?end=YYYY-MM-DD yalnızca oturum sahibinin kayıtlarını okur. En fazla 3000 satır porsiyon meta verisi işlenir; ürün görselleri ve besin snapshotları sorgudan taşınmaz. Silinmiş/erişilemeyen özel ürünler listelenmez. İstek hesabı değişirse eski yanıt gösterilmez; hata halinde yeniden deneme vardır. Başka bir geçmiş/takip belgesi veya açık taslak bu istekle değiştirilmez. Yeni veritabanı göçü, yeni saklama alanı veya paket kurulumu gerekmez.

@@ -124,3 +124,6 @@ Su kayıtları: water-settings ve water:YYYY-MM-DD belgeleri yalnızca oturum sa
 
 
 Weekly rhythm awards use the existing private nutrition document table. The reserved rhythm key is excluded from generic API schemas and browser imports. POST /nutrition/rhythm accepts only a validated local day within one day of the server UTC date, derives eligibility from at most 3660 owner-scoped saved days and serializes awards with the user row lock. The session is revalidated after acquiring the lock. Repeated/concurrent refreshes preserve original award timestamps and never duplicate awards. This is a self-reported record-history feature, not proof of consumption or login activity. The document is included in existing export/deletion/encrypted backup flows.
+
+
+Recent products are a read-only, owner-scoped query with a strict end-date parameter, fixed 30-day range and at most 3000 scalar entry rows/6 results. Private catalog availability is checked against the same session owner and excludes deleted products. No browsing history, image or nutrition snapshot is returned. Quick additions may supply a strict UUID/reference-unit guard for a new day entry; the current product unit is verified inside the existing user lock/product share-lock transaction and mismatches roll back the complete save. The guard never changes historical snapshots or grants ownership.

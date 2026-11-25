@@ -1,3 +1,4 @@
+import {recentProducts} from '../nutrition/recent-products.js';
 import {refreshWeeklyRhythm} from '../nutrition/weekly-rhythm.js';
 import {waterHistory} from '../../src/utils/water.js';
 import {buildHistory,historyDates} from '../../src/utils/historySummary.js';
@@ -10,13 +11,13 @@ import { requireAccount } from '../middleware/account.js';
 import { keySchema, dateSchema, getSchema, snapshotSchema } from '../nutrition/schema.js';
 import { products } from '../../src/data/products.js';
 
-const bodySchema = z.object({ revision: z.uuid().nullable(), data: z.unknown(), refresh: z.object({ entryId:z.uuid(), preview:snapshotSchema }).strict().optional() }).strict();
+const bodySchema = z.object({ revision: z.uuid().nullable(), data: z.unknown(), reference:z.object({entryId:z.uuid(),serving:z.enum(['100 g','100 ml'])}).strict().optional(), refresh: z.object({ entryId:z.uuid(), preview:snapshotSchema }).strict().optional() }).strict();
 const importSchema = z.object({ data: z.unknown() }).strict();
 const meals = ['breakfast','lunch','dinner','snacks'];
 const fail = (res,status,code,message) => res.status(status).json({ error: { code,message } });
 const invalid = res => fail(res,400,'INVALID_NUTRITION','Kayıt alanlarını kontrol et. Gün başına en fazla 100 öğün ürünü saklanabilir.');
 const document = (key,row) => ({ key, data: row?.data ?? null, revision: row?.revision ?? null });
-async function freezeEntries(client,userId,data,previous,importing,refresh) {
+async function freezeEntries(client,userId,data,previous,importing,refresh,reference) {
   const prior = new Map(Object.values(previous || {}).flat().filter(item => item?.id).map(item => [item.id,item]));
   const ids = new Set();
   for (const meal of meals) {
@@ -41,6 +42,7 @@ async function freezeEntries(client,userId,data,previous,importing,refresh) {
         if (!importing) throw new Error('PRODUCT_MISSING');
         entry.snapshot = null; continue;
       }
+      if(reference?.entryId===entry.id&&reference.serving!==product.serving)throw new Error('UNIT_CHANGED');
       if(refresh?.entryId===entry.id){const fields=['id','name','brand','serving','calories','protein','carbs','fat'];if(fields.some(key=>String(product[key]??null)!==String(refresh.preview[key]??null)))throw new Error('LABEL_CHANGED');}
       entry.snapshot = { id: product.id, name: product.name, brand: product.brand, serving: product.serving, calories: product.calories ?? null, protein: product.protein ?? null, carbs: product.carbs ?? null, fat: product.fat ?? null, capturedAt: new Date().toISOString(), source: importing ? 'catalog-at-import' : 'catalog-at-entry' };
     }
@@ -69,6 +71,7 @@ export function createNutritionRouter(database) {
     const waters=await database.query('SELECT key,data FROM user_nutrition WHERE user_id=$1 AND key >= $2 AND key <= $3 ORDER BY key LIMIT 30',[res.locals.userId,'water:'+dates[0],'water:'+end]);
     res.json({userId:res.locals.userId,history:{...buildHistory(result.rows,end,count),water:waterHistory(waters.rows,dates)}});
   });
+  router.get('/recent-products',(req,res)=>recentProducts(database,req,res));
   router.get('/:key',async (req,res) => {
     if (!keySchema.safeParse(req.params.key).success) return invalid(res);
     const result = await database.query('SELECT data,revision FROM user_nutrition WHERE user_id=$1 AND key=$2',[res.locals.userId,req.params.key]);
@@ -99,12 +102,13 @@ export function createNutritionRouter(database) {
         if (count.rows[0].count >= 3660) { await client.query('ROLLBACK'); return fail(res,409,'DAY_LIMIT','Hesap başına 3660 günlük kayıt sınırı var.'); }
       }
       if(!old&&key.startsWith('water:')){const count=await client.query("SELECT COUNT(*)::int AS count FROM user_nutrition WHERE user_id=$1 AND key LIKE 'water:%'",[userId]);if(count.rows[0].count>=3660){await client.query('ROLLBACK');return fail(res,409,'WATER_LIMIT','Su kayıtlarında gün sınırına ulaşıldı.');}}
-      const refresh=body.data.refresh;
+      const refresh=body.data.refresh,reference=body.data.reference;
+      if(reference&&(!key.startsWith('day:')||Object.values(old?.data??{}).flat().some(entry=>entry.id===reference.entryId)||!Object.values(parsed.data).flat().some(entry=>entry.id===reference.entryId))){await client.query('ROLLBACK');return invalid(res);}
       if(refresh&&(!key.startsWith('day:')||!Object.values(old?.data??{}).flat().some(entry=>entry.id===refresh.entryId)||!Object.values(parsed.data).flat().some(entry=>entry.id===refresh.entryId))){await client.query('ROLLBACK');return invalid(res);}
       let data = parsed.data;
       if(key.startsWith('water:')){const previous=new Map((old?.data?.entries??[]).map(item=>[item.id,item]));for(const entry of data.entries)entry.at=previous.get(entry.id)?.at??new Date().toISOString();}
       if(key==='meals'){const all={breakfast:data.items.flatMap(item=>item.entries),lunch:[],dinner:[],snacks:[]},prior={breakfast:old?.data?.items?.flatMap(item=>item.entries)??[]};await freezeEntries(client,userId,all,prior,false);}
-      if (key.startsWith('day:')) data = await freezeEntries(client,userId,data,old?.data,importing,refresh);
+      if (key.startsWith('day:')) data = await freezeEntries(client,userId,data,old?.data,importing,refresh,reference);
       if (Buffer.byteLength(JSON.stringify(data),'utf8') > 140000) { await client.query('ROLLBACK'); return invalid(res); }
       const result = old
         ? await client.query('UPDATE user_nutrition SET data=$3,revision=$4,updated_at=NOW() WHERE user_id=$1 AND key=$2 RETURNING data,revision',[userId,key,JSON.stringify(data),randomUUID()])
@@ -113,6 +117,7 @@ export function createNutritionRouter(database) {
       res.json({ userId,imported:importing,document:document(key,result.rows[0]) });
     } catch (error) {
       await client.query('ROLLBACK').catch(() => {});
+      if(error.message==='UNIT_CHANGED')return fail(res,409,'UNIT_CHANGED','Ürünün ölçü birimi değişmiş. Sayfayı yenileyip ürünü yeniden seç; miktarını kontrol et.');
       if(error.message==='LABEL_CHANGED')return fail(res,409,'LABEL_CHANGED','Ürün bilgisi değişti. Sayfayı yenileyip yeni değerleri tekrar kontrol et.');
       if (['INVALID_ENTRY','PRODUCT_MISSING'].includes(error.message)) return fail(res,400,error.message,'Öğün ürünü bulunamadı veya kayıt kimliği geçersiz. Ürünü önce hesabına aktar; mevcut öğün taslağın korundu.');
       throw error;

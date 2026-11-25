@@ -1,3 +1,4 @@
+import {collectRecentProducts,recentPortion} from '../../src/utils/recentProducts.js';
 import {buildWeeklyRhythm,rhythmWeekStart,shiftRhythmDay} from '../../src/utils/weeklyRhythm.js';
 import {getSchema} from '../nutrition/schema.js';
 import {waterTotal,waterProgress,crossedWaterMilestone,waterHistory,newWaterOverflow} from '../../src/utils/water.js';
@@ -210,3 +211,37 @@ test('Real PostgreSQL: failed rhythm awards roll back and never expose database 
  const proxy={query:(...args)=>db.query(...args),connect:async()=>{const client=await db.connect();return{release:()=>client.release(),query:(sql,params)=>{if(sql.startsWith("INSERT INTO user_nutrition (user_id,key,data) VALUES ($1,'rhythm'"))throw new Error('PRIVATE_RHYTHM_DIAGNOSTIC');return client.query(sql,params);}};}};
  await api(async(request,register)=>{const a=await register(),today=new Date().toISOString().slice(0,10);await seed(a,'day:'+today,{...empty(),breakfast:[entry()]});const response=await request('nutrition/rhythm',{...a,method:'POST',data:{day:today}});assert.equal(response.status,500);assert.ok(!(await response.text()).includes('PRIVATE_RHYTHM_DIAGNOSTIC'));assert.equal((await owner.query("SELECT COUNT(*)::int AS n FROM user_nutrition WHERE user_id=$1 AND key='rhythm'",[a.account])).rows[0].n,0);},proxy);
 });
+
+
+test('Recent products deduplicate saved portions, convert packages and never assume an unknown or changed unit',()=>{
+ const catalog=Array.from({length:9},(_,i)=>({id:i+1,serving:i===0?'100 ml':'100 g'}));
+ const row=(id,amount,extra={})=>({productId:id,day:'2026-11-25',meal:'snacks',mode:'custom',amount,serving:'100 g',...extra});
+ const items=collectRecentProducts([row(99,100),row(1,200,{serving:'100 ml'}),row(1,300,{serving:'100 ml'}),row(2,0,{mode:'package',packageSize:125.5,packageCount:2}),row(3,0),row(3,15),row(4,20,{serving:null}),row(5,1,{mode:'package',packageSize:100000,packageCount:100}),row(6,50),row(7,70)],catalog);
+ assert.equal(items.length,6);assert.deepEqual(items.map(x=>x.productId),[1,2,3,4,5,6]);assert.equal(items[0].amount,200);assert.equal(items[1].amount,251);assert.equal(items[4].amount,null);
+ assert.equal(recentPortion(items[0],catalog[0]),200);assert.equal(recentPortion(items[1],catalog[1]),251);assert.equal(recentPortion(items[3],catalog[3]),null);assert.equal(recentPortion(items[0],{...catalog[0],serving:'100 g'}),null);assert.equal(recentPortion({...items[0],amount:.01},catalog[0]),null);
+});
+test('Real PostgreSQL: recent products are owner-only, bounded, ordered, private and read-only',{skip:!enabled},()=>api(async(request,register)=>{
+ const a=await register(),b=await register(),ownId='custom-'+randomUUID(),foreignId='custom-'+randomUUID(),deletedId='custom-'+randomUUID(),end='2026-11-25';
+ for(const [user,id,deleted] of [[a,ownId,false],[b,foreignId,false],[a,deletedId,true]])await owner.query('INSERT INTO user_products(user_id,id,data,deleted_at) VALUES($1,$2,$3,$4)',[user.account,id,JSON.stringify({name:'PRIVATE_PRODUCT',serving:'100 ml'}),deleted?new Date():null]);
+ const data={...empty(),breakfast:[entry(2,snapshot(2),80),entry(1,{...snapshot(1),serving:'100 ml'},200)],dinner:[entry(ownId,{...snapshot(ownId),serving:'100 g'},45),entry(foreignId,snapshot(foreignId),50),entry(deletedId,snapshot(deletedId),50)],snacks:[{...entry(2),mode:'package',packageSize:125.5,packageCount:2},entry(3,snapshot(3),10.1)]};
+ await seed(a,'day:'+end,data);await seed(a,'day:2026-11-24',{...empty(),breakfast:[entry(2,snapshot(2),20),entry(6,null,25)]});await seed(a,'day:2026-10-26',{...empty(),breakfast:[entry(8,snapshot(8),10)]});await seed(a,'day:2026-11-26',{...empty(),breakfast:[entry(9,snapshot(9),10)]});await seed(b,'day:'+end,{...empty(),breakfast:[entry(8,snapshot(8,'OTHER_ACCOUNT_SECRET'),100)]});
+ const before=(await owner.query('SELECT data,revision,updated_at FROM user_nutrition WHERE user_id=$1 AND key=$2',[a.account,'day:'+end])).rows[0],path='nutrition/recent-products?end='+end;
+ assert.equal((await request(path)).status,401);assert.equal((await request(path,{...a,account:b.account})).status,409);
+ const response=await request(path,a);assert.equal(response.status,200);const result=await response.json();assert.equal(result.userId,a.account);assert.equal(result.recent.start,'2026-10-27');assert.deepEqual(result.recent.items.map(x=>x.productId),[3,2,ownId,1,6]);assert.equal(result.recent.items[1].amount,251);assert.equal(result.recent.items[2].serving,'100 g');assert.equal(result.recent.items[4].serving,null);assert.ok(!JSON.stringify(result).includes('snapshot'));assert.ok(!JSON.stringify(result).includes('PRIVATE_PRODUCT'));assert.ok(!JSON.stringify(result).includes('OTHER_ACCOUNT_SECRET'));
+ assert.deepEqual((await owner.query('SELECT data,revision,updated_at FROM user_nutrition WHERE user_id=$1 AND key=$2',[a.account,'day:'+end])).rows[0],before);
+ assert.deepEqual((await(await request(path,b)).json()).recent.items.map(x=>x.productId),[8]);
+ for(const query of ['','?end=2026-02-30','?end=1900-01-01','?end='+end+'&userId='+b.account,'?end='+end+'&limit=999','?end='+end+'&end='+end])assert.equal((await request('nutrition/recent-products'+query,a)).status,400);
+ await owner.query('UPDATE user_nutrition SET data=$3 WHERE user_id=$1 AND key=$2',[a.account,'day:'+end,JSON.stringify({...empty(),breakfast:products.slice(0,10).map(p=>entry(p.id,{...snapshot(p.id),serving:p.serving},100))})]);
+ assert.equal((await(await request(path,a)).json()).recent.items.length,6);
+}));
+test('Real PostgreSQL: quick additions reject changed reference units atomically and preserve historical snapshots',{skip:!enabled},()=>api(async(request,register)=>{
+ const a=await register(),key='day:2026-11-25',id='custom-'+randomUUID(),oldSnapshot={...snapshot(id),serving:'100 g'};
+ await owner.query('INSERT INTO user_products(user_id,id,data) VALUES($1,$2,$3)',[a.account,id,JSON.stringify({name:'Current product',brand:'Fixture',serving:'100 ml',calories:10,protein:1,carbs:1,fat:0})]);
+ const previous={...empty(),breakfast:[entry(id,oldSnapshot,40)]};await seed(a,'day:2026-11-24',previous);const next={...empty(),breakfast:[entry(id,undefined,40)]},reference={entryId:next.breakfast[0].id,serving:'100 g'};
+ const put=body=>request('nutrition/'+key,{...a,method:'PUT',data:body});
+ let response=await put({revision:null,data:next,reference});assert.equal(response.status,409);assert.equal((await response.json()).error.code,'UNIT_CHANGED');assert.equal((await owner.query('SELECT COUNT(*)::int AS n FROM user_nutrition WHERE user_id=$1 AND key=$2',[a.account,key])).rows[0].n,0);
+ response=await put({revision:null,data:next,reference:{...reference,serving:'100 ml'}});assert.equal(response.status,200);const saved=(await response.json()).document;assert.equal(saved.data.breakfast[0].snapshot.serving,'100 ml');assert.equal(saved.data.breakfast[0].snapshot.calories,10);assert.equal(Object.hasOwn(saved.data,'reference'),false);
+ assert.deepEqual((await owner.query('SELECT data FROM user_nutrition WHERE user_id=$1 AND key=$2',[a.account,'day:2026-11-24'])).rows[0].data,previous);
+ for(const ref of [reference,{entryId:randomUUID(),serving:'100 ml'},{entryId:randomUUID(),serving:'kg'}])assert.equal((await put({revision:saved.revision,data:saved.data,reference:ref})).status,400);
+ assert.equal((await request('nutrition/targets',{...a,method:'PUT',data:{revision:null,data:{calories:2000,protein:'',carbs:'',fat:''},reference}})).status,400);
+}));

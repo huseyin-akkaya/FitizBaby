@@ -144,9 +144,9 @@ export async function importNutrition(sourceKeys) {
 
 // Dashboard actions publish saved data only after server confirmation. Existing
 // drafts are never overwritten, and the scope version guards account switches.
-export async function saveCleanDocument(key,data,expectedRevision,refresh){
+export async function saveCleanDocument(key,data,expectedRevision,refresh,reference){
  if(state.docs[key]?.revision!==expectedRevision)throw new Error("Kayıt değişti. Yenileyip yeniden kontrol et.");
- return commitSavedAction([key],()=>request('/'+encodeURIComponent(key),'PUT',{revision:state.docs[key].revision,data,...(refresh?{refresh}:{})}));
+ return commitSavedAction([key],()=>request('/'+encodeURIComponent(key),'PUT',{revision:state.docs[key].revision,data,...(refresh?{refresh}:{}),...(reference?{reference}:{})}));
 }
 export async function copySavedDay(sourceDay,targetDay,meals,sourceRevision,revision){
  const source='day:'+sourceDay,target='day:'+targetDay;
@@ -172,5 +172,13 @@ export function loadWeeklyRhythm(day){
  const key='rhythm:'+day,current=version;
  if(inFlight.has(key))return inFlight.get(key);
  const promise=request('/rhythm','POST',{day}).then(result=>result.rhythm).finally(()=>{if(current===version&&inFlight.get(key)===promise)inFlight.delete(key);});
+ inFlight.set(key,promise);return promise;
+}
+
+// Saved portion suggestions are read-only and share only currently pending requests.
+export function loadRecentProducts(end){
+ const key='recent-products:'+end,current=version;
+ if(inFlight.has(key))return inFlight.get(key);
+ const promise=request('/recent-products?end='+encodeURIComponent(end)).then(result=>result.recent).finally(()=>{if(current===version&&inFlight.get(key)===promise)inFlight.delete(key);});
  inFlight.set(key,promise);return promise;
 }
