@@ -302,3 +302,16 @@ Su köşesi ayarlarından şişeyi tutma/sallama ve taşma ayrı ayrı kapatıla
 
 
 Bugünüm ekranı Günlük özet, Öğünlerim ve Su takibim bölümlerine ayrılmıştır; aynı anda yalnızca seçilen bölüm görünür. Sekmeler klavyede oklar/Home/End ile kullanılabilir. Öğün ekleme formu gerektiğinde açılır; başlangıç rehberi ve dünden kopyalama alanı açılır başlıklar altındadır. Bölüm değiştirirken form seçimleri ve kayıtlar korunur. Su bölümü görünmüyorken şişe hareketi, taşma ve su hatırlatmaları durur.
+
+
+## Haftalık ritmim ve küçük başarılar
+
+İlerlemem sayfasındaki pazartesi–pazar takvimi, o hafta pozitif miktarlı öğün ürünü kaydedilmiş günleri işaretler. Gelecek günler ayrı gösterilir. Geçmiş grafik aralığını değiştirmek bu haftanın takvimini değiştirmez. Gün bağlantıları ilgili tarihli günlük takibi açar.
+
+Dört başarı bulunur: İlk filiz (ilk kayıtlı gün), Ritmin oluşuyor (aynı haftada 3 gün), Kök saldın (aynı haftada 5 gün), Yeniden bir adım (arada en az 2 kayıtsız gün varken yeni bir kayıt günü). Mevcut geçmiş kayıtlar da değerlendirilir. Ölçütler günlük kayıt tarihlerine dayanır; giriş sıklığını veya tüm tüketimi ölçmez. Su/kalori miktarından, tekrarlı ürün eklemeden veya başarıya tekrar dokunmaktan ek ödül kazanılmaz. Ara verilen günler cezalandırılmaz.
+
+Başarıya dokunmak koşulunu ve kazanım bilgisini açar; kazanılmış kart Filiz’in seçili üsluplarıyla ortak mesaj sırasına bir tepki ekler. Filiz kapalıysa konuşma/ses/titreşim çıkmaz. Hareket, ses, titreşim ve kişiselleştirme tercihleri ile azaltılmış hareket ayarı gözetilir. Harici yapay zekâ veya izleme servisi kullanılmaz.
+
+İlerlemem açılırken veya Geçmişi yenile seçildiğinde POST /api/v1/nutrition/rhythm, yalnızca oturum sahibinin kaydedilmiş öğünlerinden kazanımları hesaplar. Tek kullanıcı kilidi ve yeniden oturum kontrolüyle aynı başarı bir kez kaydedilir. Tarayıcı başarı listesi gönderemez; genel belge okuma/yazma/içe aktarma yolları rhythm anahtarını kabul etmez. Kazanımlar user_nutrition içindeki hesaba özel rhythm belgesinde saklanır; başka tarayıcıdan da görünür. Kayıt sonradan silinse bile kazanım korunur; takvim güncel verilere göre değişir. Veriyi dışa aktarma, hesap silme ve veritabanı yedekleme bu belgeyi de kapsar.
+
+011_weekly_rhythm.sql mevcut verileri koruyarak yalnızca izin verilen belge adlarını genişletir. Yeni kurulum/güncellemede node server/db/migrate.js çalıştırılır. Yeni paket veya dış hizmet gerekmez.

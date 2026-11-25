@@ -32,6 +32,7 @@ test('Real PostgreSQL: encrypted backup restores identical private records in an
   await client.query("INSERT INTO user_favorites(user_id,product_id) VALUES($1,'1')",[id]);
   await client.query("INSERT INTO user_products(user_id,id,data,image) VALUES($1,'custom-12345678-1234-1234-1234-123456789012',$2,$3)",[id,JSON.stringify({name:'Backup image fixture'}),Buffer.from('synthetic-image-bytes')]);
   await client.query("INSERT INTO user_nutrition(user_id,key,data) VALUES($1,'targets',$2)",[id,JSON.stringify({calories:2000})]);
+  await client.query("INSERT INTO user_nutrition(user_id,key,data) VALUES($1,'rhythm',$2)",[id,JSON.stringify({version:1,unlocked:[{id:'first-meal',earnedAt:'2026-11-25T12:00:00Z',achievedOn:'2026-11-25'}]})]);
   await client.query("INSERT INTO user_sessions(user_id,token_hash,expires_at) VALUES($1,$2,NOW()+INTERVAL '1 hour')",[id,'b'.repeat(64)]);
   const session=(await client.query('SELECT id FROM user_sessions WHERE user_id=$1',[id])).rows[0].id;
   await client.query("INSERT INTO account_export_grants(session_id,user_id,capability_hash,expires_at) VALUES($1,$2,$3,NOW()+INTERVAL '2 minutes')",[session,id,'d'.repeat(64)]);

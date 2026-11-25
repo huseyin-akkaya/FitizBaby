@@ -1,3 +1,4 @@
+import {refreshWeeklyRhythm} from '../nutrition/weekly-rhythm.js';
 import {waterHistory} from '../../src/utils/water.js';
 import {buildHistory,historyDates} from '../../src/utils/historySummary.js';
 import {sessionTokenHash} from './auth.js';
@@ -50,6 +51,7 @@ export function createNutritionRouter(database) {
   const router = Router();
   router.use(requireAccount(database));
   router.use(express.json({ limit: '256kb', strict: true }));
+  router.post('/rhythm',(req,res)=>refreshWeeklyRhythm(database,req,res));
   router.post('/copy-day',(req,res)=>copyDay(database,req,res));
   router.get('/',async (req,res) => {
     if (!dateSchema.safeParse(req.query.day).success) return invalid(res);

@@ -166,3 +166,11 @@ async function commitSavedAction(keys,action){
 export async function loadSavedHistory(end,days){return (await request('/history?end='+encodeURIComponent(end)+'&days='+days)).history;}
 
 export async function loadHistoryDay(day){return (await request('/'+encodeURIComponent('day:'+day))).document;}
+
+// Achievements are derived by the server; this never changes open nutrition drafts.
+export function loadWeeklyRhythm(day){
+ const key='rhythm:'+day,current=version;
+ if(inFlight.has(key))return inFlight.get(key);
+ const promise=request('/rhythm','POST',{day}).then(result=>result.rhythm).finally(()=>{if(current===version&&inFlight.get(key)===promise)inFlight.delete(key);});
+ inFlight.set(key,promise);return promise;
+}

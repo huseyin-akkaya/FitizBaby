@@ -38,8 +38,9 @@ export function useCompanionEngine(scope,name){
   enqueue({id:++sequence.current,kind,message,celebrate:goals.reached.length>0},kind==='over'?10000:6500);
   playCue(type,kind);
  }
+ function respondAchievement(id){if(!preferences.enabled)return;const events={'first-meal':'rhythmfirst','week-three':'rhythmthree','week-five':'rhythmfive','welcome-back':'rhythmreturn'},event=events[id];if(!event)return;const message=companionMessage(event,preferences,preferences.personalize?name:'arkadaşım',sequence.current);if(!message)return;enqueue({id:++sequence.current,kind:'achievement',message,celebrate:true},8500);playCue('add','goal');}
  function respondWater(milestone,undo=false){if(!preferences.enabled)return;const message=companionMessage(milestone?'water'+milestone:undo?'waterundo':'wateradd',preferences,preferences.personalize?name:'arkadaşım',sequence.current);if(!message)return;enqueue({id:++sequence.current,kind:'water',message,celebrate:Boolean(milestone)},6500);playCue(undo?'delete':'add',milestone?'goal':'add');}
  function speak(event,force=false){if(!preferences.enabled||(!force&&panelBusy.current)||(!force&&!preferences.automatic)||document.visibilityState==='hidden')return;if(channel.current.scene||channel.current.active){if(!force)return;}const now=Date.now();const cooldown={quiet:120000,normal:45000,lively:20000}[preferences.frequency]||45000;if(!force&&now-lastMessage.current<cooldown)return;const message=companionMessage(event,preferences,preferences.personalize?name:'arkadaşım',sequence.current);if(!message)return;enqueue({id:++sequence.current,kind:'chat',message},8500);}
 
- return{scope,preferences,speak,setPreference,prepare,respond,reaction,dismiss,clearPresentation,beginScene,endScene,setPanelBusy,nextStory,applyPreferences,respondWater};
+ return{scope,preferences,speak,setPreference,prepare,respond,reaction,dismiss,clearPresentation,beginScene,endScene,setPanelBusy,nextStory,applyPreferences,respondWater,respondAchievement};
 }

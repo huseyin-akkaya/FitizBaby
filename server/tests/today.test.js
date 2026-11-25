@@ -1,3 +1,4 @@
+import {buildWeeklyRhythm,rhythmWeekStart,shiftRhythmDay} from '../../src/utils/weeklyRhythm.js';
 import {getSchema} from '../nutrition/schema.js';
 import {waterTotal,waterProgress,crossedWaterMilestone,waterHistory,newWaterOverflow} from '../../src/utils/water.js';
 import {mealPreview,appendSavedMeal} from '../../src/utils/savedMeals.js';
@@ -168,4 +169,44 @@ test('Water overflow uses only newly saved excess, with backward-compatible stri
  assert.equal(schema.parse({...old,playful:false,overflow:false}).playful,false);
  assert.equal(schema.safeParse({...old,playful:'true'}).success,false);
  assert.equal(schema.safeParse({...old,overflow:1}).success,false);
+});
+
+
+test('Weekly rhythm counts distinct saved meal days, calendar weeks and returns without nutrition or water targets',()=>{
+ const doc=day=>({key:'day:'+day,data:{...empty(),breakfast:[entry()]}});
+ const records=['2026-12-28','2026-12-29','2026-12-30','2026-12-31','2027-01-01'].map(doc);
+ records.push(doc('2027-01-01'),doc('2027-01-10'),{key:'water:2027-01-02',data:{entries:[{ml:20000}]}},{key:'day:2027-01-02',data:{...empty(),breakfast:[entry(2,null,0)]}});
+ const result=buildWeeklyRhythm(records,'2027-01-03');
+ assert.equal(result.start,'2026-12-28');assert.equal(result.end,'2027-01-03');assert.equal(result.days.length,7);assert.equal(result.loggedDays,5);assert.equal(result.totalLoggedDays,5);
+ assert.deepEqual(result.eligible,{'first-meal':'2026-12-28','week-three':'2026-12-30','week-five':'2027-01-01'});
+ assert.equal(rhythmWeekStart('2024-02-29'),'2024-02-26');assert.equal(shiftRhythmDay('2024-02-28',1),'2024-02-29');
+ const spread=buildWeeklyRhythm(['2026-12-27','2026-12-28','2027-01-03'].map(doc),'2027-01-03');assert.equal(spread.eligible['week-three'],undefined);assert.equal(spread.eligible['welcome-back'],'2027-01-03');
+ const future=buildWeeklyRhythm([doc('2027-01-05')],'2027-01-04');assert.equal(future.totalLoggedDays,0);assert.equal(future.days.filter(d=>d.future).length,6);
+ const packaged=doc('2027-01-01');packaged.data.breakfast=[{...entry(2,null),mode:'package',packageSize:200,packageCount:.5}];assert.equal(buildWeeklyRhythm([packaged],'2027-01-01').loggedDays,1);
+});
+test('Real PostgreSQL: rhythm is private, server-earned, repeat-safe under concurrency, retained after deletion and rejects forged journals',{skip:!enabled},()=>api(async(request,register)=>{
+ const a=await register(),b=await register(),today=new Date().toISOString().slice(0,10),start=shiftRhythmDay(rhythmWeekStart(today),-7);
+ const claim=(user=a,data={day:today},extra={})=>request('nutrition/rhythm',{...user,method:'POST',data,...extra});
+ assert.equal((await request('nutrition/rhythm',{method:'POST',data:{day:today}})).status,401);
+ let response=await claim();assert.equal(response.status,200);assert.equal((await response.json()).rhythm.unlocked.length,0);
+ for(let i=0;i<5;i++)await seed(a,'day:'+shiftRhythmDay(start,i),{...empty(),breakfast:[entry(2,snapshot(2,'PRIVATE_RHYTHM_PRODUCT'),100)]});
+ await seed(a,'day:'+today,{...empty(),lunch:[entry()]});await seed(b,'water:'+today,{entries:[{id:randomUUID(),ml:2000,at:new Date().toISOString()}]});
+ const replies=await Promise.all(Array.from({length:4},()=>claim()));const results=await Promise.all(replies.map(r=>r.json()));assert.ok(replies.every(r=>r.status===200));assert.equal(results.reduce((n,r)=>n+r.rhythm.newlyUnlocked.length,0),4);assert.ok(results.every(r=>r.userId===a.account&&r.rhythm.unlocked.length===4));assert.ok(!JSON.stringify(results).includes('PRIVATE_RHYTHM_PRODUCT'));
+ const before=(await owner.query("SELECT data,revision FROM user_nutrition WHERE user_id=$1 AND key='rhythm'",[a.account])).rows[0];assert.equal(new Set(before.data.unlocked.map(x=>x.id)).size,4);assert.ok(before.data.unlocked.every(x=>x.earnedAt&&x.achievedOn<=today));
+ const other=(await(await claim(b)).json()).rhythm;assert.equal(other.unlocked.length,0);assert.equal(other.totalLoggedDays,0);
+ assert.equal((await claim({...a,account:b.account})).status,409);assert.equal((await claim(a,{day:today},{headers:{Origin:'https://untrusted.example'}})).status,403);
+ for(const data of [{day:'2026-02-30'},{day:shiftRhythmDay(today,3)},{day:today,userId:b.account},{day:today,unlocked:[{id:'week-five'}]}])assert.equal((await claim(a,data)).status,400);
+ for(const [method,path,data] of [['PUT','nutrition/rhythm',{revision:null,data:{version:1,unlocked:[{id:'week-five'}]}}],['POST','nutrition/import/rhythm',{data:{unlocked:[]}}],['GET','nutrition/rhythm',undefined]])assert.equal((await request(path,{...a,method,data})).status,400);
+ await owner.query("UPDATE user_nutrition SET data=$2 WHERE user_id=$1 AND key LIKE 'day:%'",[a.account,JSON.stringify(empty())]);
+ const after=(await(await claim()).json()).rhythm;assert.equal(after.loggedDays,0);assert.equal(after.newlyUnlocked.length,0);assert.deepEqual(after.unlocked,before.data.unlocked);
+ assert.equal((await owner.query("SELECT revision FROM user_nutrition WHERE user_id=$1 AND key='rhythm'",[a.account])).rows[0].revision,before.revision);
+}));
+test('Real PostgreSQL: a revoked session cannot earn rhythm badges after waiting for the user lock',{skip:!enabled},async()=>{
+ let reached,resume,held=false;const paused=new Promise(resolve=>{reached=resolve;}),continued=new Promise(resolve=>{resume=resolve;});
+ const proxy={query:(...args)=>db.query(...args),connect:async()=>{const client=await db.connect();return{release:()=>client.release(),query:async(sql,params)=>{const result=await client.query(sql,params);if(!held&&sql==='SELECT id FROM users WHERE id=$1 FOR UPDATE'){held=true;reached();await continued;}return result;}};}};
+ await api(async(request,register)=>{const a=await register(),today=new Date().toISOString().slice(0,10);await seed(a,'day:'+today,{...empty(),breakfast:[entry()]});const pending=request('nutrition/rhythm',{...a,method:'POST',data:{day:today}});await paused;try{await owner.query('DELETE FROM user_sessions WHERE user_id=$1',[a.account]);}finally{resume();}assert.equal((await pending).status,401);assert.equal((await owner.query("SELECT COUNT(*)::int AS n FROM user_nutrition WHERE user_id=$1 AND key='rhythm'",[a.account])).rows[0].n,0);},proxy);
+});
+test('Real PostgreSQL: failed rhythm awards roll back and never expose database diagnostics',{skip:!enabled},async()=>{
+ const proxy={query:(...args)=>db.query(...args),connect:async()=>{const client=await db.connect();return{release:()=>client.release(),query:(sql,params)=>{if(sql.startsWith("INSERT INTO user_nutrition (user_id,key,data) VALUES ($1,'rhythm'"))throw new Error('PRIVATE_RHYTHM_DIAGNOSTIC');return client.query(sql,params);}};}};
+ await api(async(request,register)=>{const a=await register(),today=new Date().toISOString().slice(0,10);await seed(a,'day:'+today,{...empty(),breakfast:[entry()]});const response=await request('nutrition/rhythm',{...a,method:'POST',data:{day:today}});assert.equal(response.status,500);assert.ok(!(await response.text()).includes('PRIVATE_RHYTHM_DIAGNOSTIC'));assert.equal((await owner.query("SELECT COUNT(*)::int AS n FROM user_nutrition WHERE user_id=$1 AND key='rhythm'",[a.account])).rows[0].n,0);},proxy);
 });
