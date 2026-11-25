@@ -1,3 +1,4 @@
+import {shouldOfferOnboarding,validateInitialTargets,validateInitialProfile} from '../../src/utils/onboarding.js';
 import {buildHistory,historyDates} from '../../src/utils/historySummary.js';
 import {products} from '../../src/data/products.js';
 import {captureNutrition} from '../../src/utils/mealSnapshots.js';
@@ -95,4 +96,22 @@ test('Real PostgreSQL: history is owner-only, bounded, strict and uses saved his
  const response=await request(path,a);assert.equal(response.status,200);const result=await response.json();assert.equal(result.userId,a.account);assert.equal(result.history.days.length,7);assert.equal(result.history.loggedDays,2);assert.equal(result.history.averages.calories.value,360);assert.equal(result.history.averages.protein.days,1);assert.equal(result.history.frequent[0].name,'Historical oats');assert.ok(!JSON.stringify(result).includes('Private other owner'));
  for(const query of ['end=2026-02-30&days=7','end=2026-11-22&days=3650','end=2026-11-22&days=7&userId='+b.account,'end=1900-01-01&days=30'])assert.equal((await request('nutrition/history?'+query,a)).status,400);
  assert.equal((await (await request('nutrition/history?end=2026-11-22&days=30',a)).json()).history.days.length,30);
+}));
+
+test('Onboarding offers only a fresh or unfinished account and validates optional targets and profiles',()=>{
+ const state={days:[],docs:{onboarding:{data:null},targets:{data:null},plan:{data:null},profile:{data:null}}};
+ assert.equal(shouldOfferOnboarding(state),true);assert.equal(shouldOfferOnboarding({...state,days:['2026-11-25']}),false);assert.equal(shouldOfferOnboarding({...state,docs:{...state.docs,targets:{data:{calories:2200}}}}),false);
+ for(const status of ['completed','skipped'])assert.equal(shouldOfferOnboarding({...state,docs:{...state.docs,onboarding:{data:{status}}}}),false);
+ assert.equal(shouldOfferOnboarding({...state,days:['2026-11-25'],docs:{...state.docs,onboarding:{data:{status:'in-progress'}}}}),true);
+ assert.ok(validateInitialTargets({calories:'',protein:'',carbs:'',fat:''}));assert.ok(validateInitialTargets({calories:Infinity}));assert.equal(validateInitialTargets({calories:2200,protein:'',carbs:0,fat:''}),'');
+ assert.ok(validateInitialProfile({age:15,height:180,weight:80,sex:'male',activity:'active',goal:'maintain'}));
+});
+test('Real PostgreSQL: onboarding is private, revision protected, schema strict, and completion survives a new session',{skip:!enabled},()=>api(async(request,register)=>{
+ const a=await register(),b=await register(),path='nutrition/onboarding';const put=(user,data,revision=null)=>request(path,{...user,method:'PUT',data:{data,revision}});
+ assert.equal((await request(path)).status,401);const initial={version:1,status:'in-progress',step:1};let response=await put(a,initial);assert.equal(response.status,200);const first=(await response.json()).document;
+ assert.equal((await request(path,{...a,account:b.account})).status,409);assert.equal((await (await request(path,b)).json()).document.data,null);assert.equal((await put(a,{...initial,step:2})).status,409);
+ for(const extra of [{step:4},{step:-1},{version:2},{status:'other'},{status:'completed',step:1},{userId:b.account}])assert.equal((await put(a,{...initial,...extra},first.revision)).status,400);
+ response=await put(a,{version:1,status:'completed',step:3},first.revision);assert.equal(response.status,200);
+ const bootstrap=await(await request('nutrition?day=2026-11-25',a)).json();assert.equal(bootstrap.documents.find(doc=>doc.key==='onboarding').data.status,'completed');assert.equal(bootstrap.documents.find(doc=>doc.key==='targets').data,null);
+ assert.equal((await request('nutrition/import/onboarding',{...a,method:'POST',data:{data:initial}})).status,400);
 }));

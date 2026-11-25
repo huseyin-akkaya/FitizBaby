@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { mealRecipes } from '../../src/data/mealRecipes.js';
 export const dateSchema = z.string().regex(/^(19|20|21)\d\d-\d\d-\d\d$/).refine(value => { const date = new Date(value + 'T12:00:00Z'); return Number.isFinite(date.getTime()) && date.toISOString().slice(0,10) === value; });
-export const keySchema = z.string().refine(value => ['profile','plan','targets'].includes(value) || value.startsWith('day:') && dateSchema.safeParse(value.slice(4)).success);
+export const keySchema = z.string().refine(value => ['profile','plan','targets','onboarding'].includes(value) || value.startsWith('day:') && dateSchema.safeParse(value.slice(4)).success);
 const numeric = (max, min = 0) => z.union([z.number(), z.string().max(20).regex(/^(?:\d+(?:\.\d*)?|\.\d+)$/)]).transform(Number).pipe(z.number().finite().min(min).max(max));
 const optionalNumber = max => z.union([numeric(max), z.literal(''), z.null()]);
 const macros = z.object({ calories: numeric(10000), protein: numeric(1000), carbs: numeric(1000), fat: numeric(1000) }).strict();
@@ -15,4 +15,5 @@ const productId = z.union([z.number().int().positive().max(999999999),z.string()
 export const snapshotSchema = z.object({ id: productId, name: z.string().min(1).max(120), brand: z.string().max(120), serving: z.enum(['100 g','100 ml']), calories: numeric(1000).nullable(), protein: numeric(100).nullable(), carbs: numeric(100).nullable(), fat: numeric(100).nullable(), capturedAt: z.iso.datetime(), source: z.enum(['catalog-at-entry','catalog-at-import','browser-import']) }).strict();
 const entry = z.object({ id: z.uuid().optional(), productId, mode: z.enum(['custom','package']), amount: optionalNumber(100000).optional().default(''), packageSize: optionalNumber(100000).optional().default(''), packageCount: optionalNumber(100).optional().default(1), snapshot: snapshotSchema.nullable().optional() }).strict();
 const day = z.object({ breakfast: z.array(entry).max(100), lunch: z.array(entry).max(100), dinner: z.array(entry).max(100), snacks: z.array(entry).max(100) }).strict().refine(value => Object.values(value).flat().length <= 100 && Object.values(value).every(entries => new Set(entries.map(item => String(item.productId))).size === entries.length));
-export const getSchema = key => ({ profile, plan, targets })[key] || day;
+const onboarding=z.object({version:z.literal(1),status:z.enum(['in-progress','skipped','completed']),step:z.number().int().min(0).max(3)}).strict().refine(value=>value.status!=='completed'||value.step===3);
+export const getSchema = key => ({ profile, plan, targets, onboarding })[key] || day;

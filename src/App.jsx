@@ -1,5 +1,7 @@
+import OnboardingGate from './components/OnboardingGate';
 import CompanionProvider from './context/CompanionProvider';
 import {lazy,Suspense} from 'react';
+const Welcome=lazy(()=>import('./pages/Welcome'));
 const History=lazy(()=>import('./pages/History'));
 const Today=lazy(()=>import('./pages/Today'));
 import SiteFooter from './components/SiteFooter';
@@ -27,8 +29,9 @@ function App() {
       <Navbar />
       <Routes>
         <Route path="/" element={<Home />}/>
+        <Route path="/welcome" element={<Suspense fallback={<main className="p-10" role="status">Başlangıç hazırlanıyor…</main>}><Welcome /></Suspense>}/>
         <Route path="/history" element={<Suspense fallback={<main className="p-10" role="status">Geçmiş hazırlanıyor…</main>}><History /></Suspense>}/>
-        <Route path="/today" element={<Suspense fallback={<main className="p-10" role="status">Bugünüm hazırlanıyor…</main>}><Today /></Suspense>}/>
+        <Route path="/today" element={<Suspense fallback={<main className="p-10" role="status">Bugünüm hazırlanıyor…</main>}><OnboardingGate><Today /></OnboardingGate></Suspense>}/>
         <Route path="/products" element={<Products />}/>
         <Route path="/login" element={<AuthPage mode="login" />}/>
         <Route path="/register" element={<AuthPage mode="register" />}/>

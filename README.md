@@ -264,3 +264,13 @@ Giriş yapan kullanıcılar /history adresinden veya İlerlemem menüsünden son
 Veriler yalnızca etkin hesabın sunucuda kaydedilmiş tarihsel öğün bilgilerinden hesaplanır. Güncel katalog eski değerlerin yerine geçmez. Kayıt olmayan ve kaydedilmiş boş günler ayrı gösterilir; sıfır tüketim varsayılmaz. Pozitif miktarlı en az bir kayıt bulunan günler kayıt tutulan gün sayılır. Her besinin ortalaması yalnızca o besin bilgisi tam kayıtlı günlerden alınır; eksik günler sayısıyla belirtilir. Gerçek sıfır besin değeri geçerlidir. Çizgili çubuklar bilinen kısmi toplamları gösterir. Kayıtlar tüm günlük tüketimi kapsıyor kabul edilmez. Tarihsel hedefler saklanmadığından geçmiş hedef başarısı veya sağlık sonucu çıkarımı yapılmaz.
 
 Geçmiş ve gün detayları salt okunur isteklerle alınır, günlük takipteki taslakları değiştirmez. Geçmişi yenile başka cihazdaki kaydedilmiş verileri tekrar okur. Hesap değişiminde eski yanıtlar gösterilmez. Yeni veritabanı göçü veya ek paket kurulumu gerekmez.
+
+## Kişisel başlangıç
+
+/welcome adresinde atlanabilir dört adım bulunur: Filiz ile tanışma, isteğe bağlı günlük hedef belirleme, Filiz tercihleri ve ilk öğüne/ürünlere geçiş. Bugünüm’e gelen, henüz hesap kaydı bulunmayan yeni kullanıcılar otomatik yönlendirilir; eski hedef/plan/profil veya gün kaydı olan kullanıcıların akışı kesilmez. Devam eden başlangıç kaldığı adımdan açılır. Şimdilik atla ve tamamlanma durumları hesaba kaydedilir; otomatik tekrar açılmaz. Bugünüm ve Hesabım üzerinden elle geri dönülebilir.
+
+Hedef hesaplama mevcut Mifflin–St Jeor hesaplayıcısını kullanır; yalnızca önizleme yapar. Ham yaş/boy/kilo formu bu akışta kaydedilmez; kullanıcı açıkça kaydederse günlük hedefler saklanır. Plan ve asistan profili değişmez. Kaydedilmemiş hedef taslağı varsa üzerine yazılmaz. Son özette sadece kaydedilmiş hedefler gösterilir. Filiz ayarları topluca uygulanır ve bu tarayıcıda hesap kimliğine göre tutulur; başka tarayıcıya eşitlenmez. Başlangıç sayfasında otomatik Filiz mesajları ve dolaşma durur.
+
+Şema: 008_onboarding.sql mevcut user_nutrition tablosuna onboarding belge adını ekler. Yeni kurulumda node server/db/migrate.js ile uygulanır. Eski migration dosyaları değiştirilmez. API belge sürümü çakışmaları, oturum ve hesap sahipliği kontrollerini kullanır; hesap silme, veri dışa aktarma ve yedekleme mevcut mekanizma üzerinden bu durumu da kapsar.
+
+Hesaplayıcı kapsamı için kaynak: [NIDDK yetişkin hesaplayıcı açıklaması](https://www.niddk.nih.gov/health-information/weight-management/body-weight-planner). Bu projenin formülü NIDDK modeliyle aynı değildir; bağlantı yetişkinlik ve özel durum sınırlamaları hakkında bilgi içindir.

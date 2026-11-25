@@ -24,6 +24,7 @@ export function useCompanionEngine(scope,name){
  const clearPresentation=useCallback(()=>{clearTimeout(timer.current);channel.current={scene:null,active:null,pending:[]};setReaction(null);},[]);
  useEffect(()=>()=>{clearTimeout(timer.current);audio.current?.close().catch(()=>{});},[]);
  function setPreference(key,value){const next={...preferences,[key]:value};setPreferences(next);try{localStorage.setItem(preferenceKey,JSON.stringify(next));}catch{/* Preferences still apply in this tab. */}if(key==='enabled'&&!value)clearPresentation();if(key==='haptics'&&!value){try{navigator.vibrate?.(0);}catch{/* Optional. */}}}
+ function applyPreferences(patch){const allowed=Object.fromEntries(Object.entries(patch).filter(([key,value])=>Object.hasOwn(defaults,key)&&typeof value==='boolean'||key==='frequency'&&['quiet','normal','lively'].includes(value)));const next={...preferences,...allowed};setPreferences(next);if(!next.enabled)clearPresentation();try{localStorage.setItem(preferenceKey,JSON.stringify(next));return true;}catch{return false;}}
  function prepare(){if(!preferences.enabled||!preferences.sound)return;try{const Context=window.AudioContext||window.webkitAudioContext;if(!Context)return;audio.current??=new Context();audio.current.resume().catch(()=>{});}catch{/* Unsupported feedback never blocks saving. */}}
  function respond(type,before,after,catalog,targets){
   if(!preferences.enabled)return;
@@ -36,5 +37,5 @@ export function useCompanionEngine(scope,name){
  }
  function speak(event,force=false){if(!preferences.enabled||(!force&&panelBusy.current)||(!force&&!preferences.automatic)||document.visibilityState==='hidden')return;if(channel.current.scene||channel.current.active){if(!force)return;}const now=Date.now();const cooldown={quiet:120000,normal:45000,lively:20000}[preferences.frequency]||45000;if(!force&&now-lastMessage.current<cooldown)return;const message=companionMessage(event,preferences,preferences.personalize?name:'arkadaşım',sequence.current);if(!message)return;enqueue({id:++sequence.current,kind:'chat',message},8500);}
 
- return{scope,preferences,speak,setPreference,prepare,respond,reaction,dismiss,clearPresentation,beginScene,endScene,setPanelBusy,nextStory};
+ return{scope,preferences,speak,setPreference,prepare,respond,reaction,dismiss,clearPresentation,beginScene,endScene,setPanelBusy,nextStory,applyPreferences};
 }

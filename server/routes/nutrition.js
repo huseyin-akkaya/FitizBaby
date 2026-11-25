@@ -52,7 +52,7 @@ export function createNutritionRouter(database) {
   router.post('/copy-day',(req,res)=>copyDay(database,req,res));
   router.get('/',async (req,res) => {
     if (!dateSchema.safeParse(req.query.day).success) return invalid(res);
-    const keys = ['profile','plan','targets','day:' + req.query.day];
+    const keys = ['profile','plan','targets','onboarding','day:' + req.query.day];
     const result = await database.query('SELECT key,data,revision FROM user_nutrition WHERE user_id=$1 AND key=ANY($2::text[])',[res.locals.userId,keys]);
     const index = await database.query("SELECT key FROM user_nutrition WHERE user_id=$1 AND key LIKE 'day:%' ORDER BY key DESC",[res.locals.userId]);
     res.json({ userId:res.locals.userId, documents:keys.map(key => document(key,result.rows.find(row => row.key === key))), days:index.rows.map(row => row.key.slice(4)) });
@@ -72,6 +72,7 @@ export function createNutritionRouter(database) {
   });
   async function save(req,res,importing) {
     const key = req.params.key;
+    if(importing&&key==='onboarding')return invalid(res);
     if (!keySchema.safeParse(key).success) return invalid(res);
     const body = (importing ? importSchema : bodySchema).safeParse(req.body);
     if (!body.success) return invalid(res);
