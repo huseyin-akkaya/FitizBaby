@@ -294,3 +294,8 @@ Hatırlatmalar başlangıçta kapalıdır. İstenirse 30/60/90 dakikalık aralı
 İlerlemem ekranındaki ayrı su tablosu 7/30 günlük kaydedilmiş miktarları ve yalnızca su kaydı olan günlerin ortalamasını gösterir. Kayıtsız günler sıfır varsayılmaz; silinip boşaltılmış gün ayrı gösterilir. Su, kalori/makro ortalamalarına veya öğün kayıt sayısına karışmaz. Tarihsel su hedefine göre başarı hesaplanmaz.
 
 010_water_tracking.sql, water-settings ve water:YYYY-MM-DD anahtarlarını mevcut hesaba özel belge tablosuna ekler. Bu bilgisayarda uygulanmıştır; yeni kurulumda node server/db/migrate.js çalıştırılır. Kayıtlar yedekleme, dışa aktarma ve hesap silme kapsamındadır. Günlük su kayıtları 3660 gün ile sınırlıdır; strict şema, etkin oturum, sahiplik, revision ve taslak koruması kullanılır. Yeni kayıt saatini sunucu belirler; düzenlemede ilk kayıt saati korunur.
+
+
+Şişe, fare/dokunma ile tutulup taşınabilir; hareket sırasında su yüzeyi eğilir ve bırakıldığında yatışır. Klavyede ok tuşları taşır, boşluk/Enter sallar, Home yerine koyar. Bu dekoratif etkileşimler su kaydı oluşturmaz. Hedef üstündeki başarılı yeni eklemelerin yalnızca aşan kısmı için miktara göre belirginleşen bir su akışı şişeden sayfa kenarına, ardından sayfanın altından dışarı ilerleyip kaybolur. Sayfa açılışı, hedef değişikliği, geri alma, düzenleme veya başarısız kayıt taşma başlatmaz. Aynı anda en fazla üç akış gösterilir; sayfadaki düğmelerin tıklanmasını engellemez.
+
+Su köşesi ayarlarından şişeyi tutma/sallama ve taşma ayrı ayrı kapatılabilir. Tercihler hesaba kaydedilir; eski ayarlar yeni alanlar için varsayılanlarla çalışır. Filiz hareket ayarı veya cihazın azaltılmış hareket tercihi animasyonları durdurur. Eski taşmalar tekrar açılmaz; yeni veritabanı göçü gerekmez.

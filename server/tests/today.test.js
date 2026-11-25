@@ -1,4 +1,5 @@
-import {waterTotal,waterProgress,crossedWaterMilestone,waterHistory} from '../../src/utils/water.js';
+import {getSchema} from '../nutrition/schema.js';
+import {waterTotal,waterProgress,crossedWaterMilestone,waterHistory,newWaterOverflow} from '../../src/utils/water.js';
 import {mealPreview,appendSavedMeal} from '../../src/utils/savedMeals.js';
 import {shouldOfferOnboarding,validateInitialTargets,validateInitialProfile} from '../../src/utils/onboarding.js';
 import {buildHistory,historyDates} from '../../src/utils/historySummary.js';
@@ -155,3 +156,16 @@ test('Real PostgreSQL: water entries and settings are account-private, revision-
  assert.equal((await request('nutrition/import/'+key,{...a,method:'POST',data:{data:{entries:[item]}}})).status,400);
  assert.equal((await put(key,{entries:[]},doc.revision)).status,200);assert.equal((await request('nutrition/water:2026-02-30',a)).status,400);
 }));
+
+test('Water overflow uses only newly saved excess, with backward-compatible strict settings',()=>{
+ assert.equal(newWaterOverflow(900,1100,1000),100);
+ assert.equal(newWaterOverflow(1100,1350,1000),250);
+ assert.equal(newWaterOverflow(1100,900,1000),0);
+ assert.equal(newWaterOverflow(0,500,null),0);
+ assert.equal(newWaterOverflow(0,1000,1000),0);
+ const schema=getSchema('water-settings'),old={targetMl:1000,color:'mint',reminders:false,interval:60};
+ assert.deepEqual(schema.parse(old),{...old,playful:true,overflow:true});
+ assert.equal(schema.parse({...old,playful:false,overflow:false}).playful,false);
+ assert.equal(schema.safeParse({...old,playful:'true'}).success,false);
+ assert.equal(schema.safeParse({...old,overflow:1}).success,false);
+});
