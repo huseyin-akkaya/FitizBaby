@@ -26,16 +26,20 @@ export function useCompanionEngine(scope,name){
  function setPreference(key,value){const next={...preferences,[key]:value};setPreferences(next);try{localStorage.setItem(preferenceKey,JSON.stringify(next));}catch{/* Preferences still apply in this tab. */}if(key==='enabled'&&!value)clearPresentation();if(key==='haptics'&&!value){try{navigator.vibrate?.(0);}catch{/* Optional. */}}}
  function applyPreferences(patch){const allowed=Object.fromEntries(Object.entries(patch).filter(([key,value])=>Object.hasOwn(defaults,key)&&typeof value==='boolean'||key==='frequency'&&['quiet','normal','lively'].includes(value)));const next={...preferences,...allowed};setPreferences(next);if(!next.enabled)clearPresentation();try{localStorage.setItem(preferenceKey,JSON.stringify(next));return true;}catch{return false;}}
  function prepare(){if(!preferences.enabled||!preferences.sound)return;try{const Context=window.AudioContext||window.webkitAudioContext;if(!Context)return;audio.current??=new Context();audio.current.resume().catch(()=>{});}catch{/* Unsupported feedback never blocks saving. */}}
+ function playCue(type,kind){
+  if(preferences.haptics){try{navigator.vibrate?.(type==='delete'?[25,45,25]:kind==='goal'?[20,35,35]:[18]);}catch{/* Optional device capability. */}}
+  if(preferences.sound&&audio.current?.state==='running'){try{const ctx=audio.current,notes=type==='delete'?[440,294]:kind==='goal'?[523,659,784]:[587,784];notes.forEach((frequency,index)=>{const oscillator=ctx.createOscillator(),gain=ctx.createGain(),start=ctx.currentTime+index*.09;oscillator.type='sine';oscillator.frequency.value=frequency;gain.gain.setValueAtTime(0,start);gain.gain.linearRampToValueAtTime(.035,start+.012);gain.gain.exponentialRampToValueAtTime(.001,start+.16);oscillator.connect(gain);gain.connect(ctx.destination);oscillator.start(start);oscillator.stop(start+.18);});}catch{/* Saving has already succeeded. */}}
+ }
  function respond(type,before,after,catalog,targets){
   if(!preferences.enabled)return;
   const goals=goalReaction(summarizeDay(before,catalog).totals,summarizeDay(after,catalog).totals,savedTargets(targets));
   const kind=goals.over.length?'over':goals.reached.length?'goal':type;
   const message=companionMessage(kind,preferences,preferences.personalize?name:'arkadaşım',sequence.current);if(!message)return;
   enqueue({id:++sequence.current,kind,message,celebrate:goals.reached.length>0},kind==='over'?10000:6500);
-  if(preferences.haptics){try{navigator.vibrate?.(type==='delete'?[25,45,25]:kind==='goal'?[20,35,35]:[18]);}catch{/* Optional device capability. */}}
-  if(preferences.sound&&audio.current?.state==='running'){try{const ctx=audio.current,notes=type==='delete'?[440,294]:kind==='goal'?[523,659,784]:[587,784];notes.forEach((frequency,index)=>{const oscillator=ctx.createOscillator(),gain=ctx.createGain(),start=ctx.currentTime+index*.09;oscillator.type='sine';oscillator.frequency.value=frequency;gain.gain.setValueAtTime(0,start);gain.gain.linearRampToValueAtTime(.035,start+.012);gain.gain.exponentialRampToValueAtTime(.001,start+.16);oscillator.connect(gain);gain.connect(ctx.destination);oscillator.start(start);oscillator.stop(start+.18);});}catch{/* Saving has already succeeded. */}}
+  playCue(type,kind);
  }
+ function respondWater(milestone,undo=false){if(!preferences.enabled)return;const message=companionMessage(milestone?'water'+milestone:undo?'waterundo':'wateradd',preferences,preferences.personalize?name:'arkadaşım',sequence.current);if(!message)return;enqueue({id:++sequence.current,kind:'water',message,celebrate:Boolean(milestone)},6500);playCue(undo?'delete':'add',milestone?'goal':'add');}
  function speak(event,force=false){if(!preferences.enabled||(!force&&panelBusy.current)||(!force&&!preferences.automatic)||document.visibilityState==='hidden')return;if(channel.current.scene||channel.current.active){if(!force)return;}const now=Date.now();const cooldown={quiet:120000,normal:45000,lively:20000}[preferences.frequency]||45000;if(!force&&now-lastMessage.current<cooldown)return;const message=companionMessage(event,preferences,preferences.personalize?name:'arkadaşım',sequence.current);if(!message)return;enqueue({id:++sequence.current,kind:'chat',message},8500);}
 
- return{scope,preferences,speak,setPreference,prepare,respond,reaction,dismiss,clearPresentation,beginScene,endScene,setPanelBusy,nextStory,applyPreferences};
+ return{scope,preferences,speak,setPreference,prepare,respond,reaction,dismiss,clearPresentation,beginScene,endScene,setPanelBusy,nextStory,applyPreferences,respondWater};
 }

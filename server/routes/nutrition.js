@@ -1,3 +1,4 @@
+import {waterHistory} from '../../src/utils/water.js';
 import {buildHistory,historyDates} from '../../src/utils/historySummary.js';
 import {sessionTokenHash} from './auth.js';
 import {copyDay} from '../nutrition/copy-day.js';
@@ -63,7 +64,8 @@ export function createNutritionRouter(database) {
     const {end,days}=parsed.data,count=Number(days),dates=historyDates(end,count);
     if(!dateSchema.safeParse(dates[0]).success)return fail(res,400,'INVALID_HISTORY','Tarih aralığı desteklenen sınırın dışında.');
     const result=await database.query('SELECT key,data FROM user_nutrition WHERE user_id=$1 AND key >= $2 AND key <= $3 ORDER BY key LIMIT 30',[res.locals.userId,'day:'+dates[0],'day:'+end]);
-    res.json({userId:res.locals.userId,history:buildHistory(result.rows,end,count)});
+    const waters=await database.query('SELECT key,data FROM user_nutrition WHERE user_id=$1 AND key >= $2 AND key <= $3 ORDER BY key LIMIT 30',[res.locals.userId,'water:'+dates[0],'water:'+end]);
+    res.json({userId:res.locals.userId,history:{...buildHistory(result.rows,end,count),water:waterHistory(waters.rows,dates)}});
   });
   router.get('/:key',async (req,res) => {
     if (!keySchema.safeParse(req.params.key).success) return invalid(res);
@@ -72,7 +74,7 @@ export function createNutritionRouter(database) {
   });
   async function save(req,res,importing) {
     const key = req.params.key;
-    if(importing&&['onboarding','meals'].includes(key))return invalid(res);
+    if(importing&&(['onboarding','meals','water-settings'].includes(key)||key.startsWith('water:')))return invalid(res);
     if (!keySchema.safeParse(key).success) return invalid(res);
     const body = (importing ? importSchema : bodySchema).safeParse(req.body);
     if (!body.success) return invalid(res);
@@ -94,9 +96,11 @@ export function createNutritionRouter(database) {
         const count = await client.query("SELECT COUNT(*)::int AS count FROM user_nutrition WHERE user_id=$1 AND key LIKE 'day:%'",[userId]);
         if (count.rows[0].count >= 3660) { await client.query('ROLLBACK'); return fail(res,409,'DAY_LIMIT','Hesap başına 3660 günlük kayıt sınırı var.'); }
       }
+      if(!old&&key.startsWith('water:')){const count=await client.query("SELECT COUNT(*)::int AS count FROM user_nutrition WHERE user_id=$1 AND key LIKE 'water:%'",[userId]);if(count.rows[0].count>=3660){await client.query('ROLLBACK');return fail(res,409,'WATER_LIMIT','Su kayıtlarında gün sınırına ulaşıldı.');}}
       const refresh=body.data.refresh;
       if(refresh&&(!key.startsWith('day:')||!Object.values(old?.data??{}).flat().some(entry=>entry.id===refresh.entryId)||!Object.values(parsed.data).flat().some(entry=>entry.id===refresh.entryId))){await client.query('ROLLBACK');return invalid(res);}
       let data = parsed.data;
+      if(key.startsWith('water:')){const previous=new Map((old?.data?.entries??[]).map(item=>[item.id,item]));for(const entry of data.entries)entry.at=previous.get(entry.id)?.at??new Date().toISOString();}
       if(key==='meals'){const all={breakfast:data.items.flatMap(item=>item.entries),lunch:[],dinner:[],snacks:[]},prior={breakfast:old?.data?.items?.flatMap(item=>item.entries)??[]};await freezeEntries(client,userId,all,prior,false);}
       if (key.startsWith('day:')) data = await freezeEntries(client,userId,data,old?.data,importing,refresh);
       if (Buffer.byteLength(JSON.stringify(data),'utf8') > 140000) { await client.query('ROLLBACK'); return invalid(res); }

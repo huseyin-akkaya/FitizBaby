@@ -1,3 +1,4 @@
+import {waterTotal,waterProgress,crossedWaterMilestone,waterHistory} from '../../src/utils/water.js';
 import {mealPreview,appendSavedMeal} from '../../src/utils/savedMeals.js';
 import {shouldOfferOnboarding,validateInitialTargets,validateInitialProfile} from '../../src/utils/onboarding.js';
 import {buildHistory,historyDates} from '../../src/utils/historySummary.js';
@@ -135,4 +136,22 @@ test('Real PostgreSQL: meal templates are private, bounded, revision-safe and sn
  const unknown='custom-'+randomUUID();assert.equal((await put({items:[{...meal,entries:[entry(unknown)]}]},doc.revision)).status,400);
  assert.equal((await request('nutrition/import/meals',{...a,method:'POST',data:{data:{items:[]}}})).status,400);
  assert.equal((await put({items:[]},doc.revision)).status,200);
+}));
+
+test('Water progress caps at the chosen target, never invents a goal, and keeps missing history separate from zero',()=>{
+ assert.equal(waterProgress(500,null),null);assert.equal(waterProgress(500,0),null);assert.equal(waterProgress(1250,1000),100);
+ const seen=new Set();assert.equal(crossedWaterMilestone(0,250,1000,seen),25);seen.add(25);assert.equal(crossedWaterMilestone(0,250,1000,seen),null);assert.equal(crossedWaterMilestone(500,250,1000,seen),null);assert.equal(crossedWaterMilestone(1000,1500,1000,seen),null);
+ const history=waterHistory([{key:'water:2026-11-25',data:{entries:[{ml:250}]}},{key:'water:2026-11-24',data:{entries:[]}}],['2026-11-23','2026-11-24','2026-11-25']);assert.equal(history.days[0].ml,null);assert.equal(history.days[1].ml,0);assert.equal(history.average,250);assert.equal(history.loggedDays,1);assert.equal(waterTotal(null),0);
+});
+test('Real PostgreSQL: water entries and settings are account-private, revision-safe, bounded and timestamped by the server',{skip:!enabled},()=>api(async(request,register)=>{
+ const a=await register(),b=await register(),key='water:2026-11-25',item={id:randomUUID(),ml:250,at:'2000-01-01T00:00:00.000Z'};
+ const put=(key,data,revision=null,user=a)=>request('nutrition/'+key,{...user,method:'PUT',data:{data,revision}});
+ assert.equal((await request('nutrition/'+key)).status,401);let response=await put(key,{entries:[item]});assert.equal(response.status,200);let doc=(await response.json()).document;assert.notEqual(doc.data.entries[0].at,item.at);const originalAt=doc.data.entries[0].at;
+ assert.equal((await(await request('nutrition/'+key,b)).json()).document.data,null);assert.equal((await request('nutrition/'+key,{...a,account:b.account})).status,409);assert.equal((await put(key,{entries:[]})).status,409);
+ for(const entries of [[{...item,ml:-1}],[{...item,ml:0}],[{...item,ml:2001}],[{...item,ml:1.5}],[item,item],Array.from({length:11},()=>({...item,id:randomUUID(),ml:2000}))])assert.equal((await put(key,{entries},doc.revision)).status,400);
+ response=await put(key,{entries:[{...item,ml:500}]},doc.revision);assert.equal(response.status,200);doc=(await response.json()).document;assert.equal(doc.data.entries[0].at,originalAt);
+ const settings={targetMl:1000,color:'sky',reminders:false,interval:60};assert.equal((await put('water-settings',settings)).status,200);assert.equal((await put('water-settings',{...settings,targetMl:10001})).status,400);
+ const history=(await(await request('nutrition/history?end=2026-11-25&days=7',a)).json()).history;assert.equal(history.water.loggedDays,1);assert.equal(history.water.average,500);assert.equal(history.loggedDays,0);
+ assert.equal((await request('nutrition/import/'+key,{...a,method:'POST',data:{data:{entries:[item]}}})).status,400);
+ assert.equal((await put(key,{entries:[]},doc.revision)).status,200);assert.equal((await request('nutrition/water:2026-02-30',a)).status,400);
 }));

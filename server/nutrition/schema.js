@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { mealRecipes } from '../../src/data/mealRecipes.js';
 export const dateSchema = z.string().regex(/^(19|20|21)\d\d-\d\d-\d\d$/).refine(value => { const date = new Date(value + 'T12:00:00Z'); return Number.isFinite(date.getTime()) && date.toISOString().slice(0,10) === value; });
-export const keySchema = z.string().refine(value => ['profile','plan','targets','onboarding','meals'].includes(value) || value.startsWith('day:') && dateSchema.safeParse(value.slice(4)).success);
+export const keySchema = z.string().refine(value => ['profile','plan','targets','onboarding','meals','water-settings'].includes(value) || (/^day:/.test(value)&&dateSchema.safeParse(value.slice(4)).success)||(/^water:/.test(value)&&dateSchema.safeParse(value.slice(6)).success));
 const numeric = (max, min = 0) => z.union([z.number(), z.string().max(20).regex(/^(?:\d+(?:\.\d*)?|\.\d+)$/)]).transform(Number).pipe(z.number().finite().min(min).max(max));
 const optionalNumber = max => z.union([numeric(max), z.literal(''), z.null()]);
 const macros = z.object({ calories: numeric(10000), protein: numeric(1000), carbs: numeric(1000), fat: numeric(1000) }).strict();
@@ -17,4 +17,6 @@ const entry = z.object({ id: z.uuid().optional(), productId, mode: z.enum(['cust
 const day = z.object({ breakfast: z.array(entry).max(100), lunch: z.array(entry).max(100), dinner: z.array(entry).max(100), snacks: z.array(entry).max(100) }).strict().refine(value => Object.values(value).flat().length <= 100 && Object.values(value).every(entries => new Set(entries.map(item => String(item.productId))).size === entries.length));
 const onboarding=z.object({version:z.literal(1),status:z.enum(['in-progress','skipped','completed']),step:z.number().int().min(0).max(3)}).strict().refine(value=>value.status!=='completed'||value.step===3);
 const meals=z.object({items:z.array(z.object({id:z.uuid(),name:z.string().trim().min(1).max(60),entries:z.array(entry).min(1).max(20).refine(items=>new Set(items.map(item=>String(item.productId))).size===items.length&&items.every(item=>item.mode==='custom'&&Number(item.amount)>0))}).strict()).max(10)}).strict().refine(value=>new Set(value.items.map(item=>item.id)).size===value.items.length&&new Set(value.items.flatMap(item=>item.entries.map(entry=>entry.id)).filter(Boolean)).size===value.items.flatMap(item=>item.entries.filter(entry=>entry.id)).length);
-export const getSchema = key => ({ profile, plan, targets, onboarding, meals })[key] || day;
+const waterSettings=z.object({targetMl:z.number().int().min(100).max(10000).nullable(),color:z.enum(['mint','sky','violet']),reminders:z.boolean(),interval:z.union([z.literal(30),z.literal(60),z.literal(90)])}).strict();
+const water=z.object({entries:z.array(z.object({id:z.uuid(),ml:z.number().int().min(1).max(2000),at:z.iso.datetime()}).strict()).max(100)}).strict().refine(value=>new Set(value.entries.map(item=>item.id)).size===value.entries.length&&value.entries.reduce((sum,item)=>sum+item.ml,0)<=20000);
+export const getSchema = key => key.startsWith('water:')?water: ({ profile, plan, targets, onboarding, meals,'water-settings':waterSettings })[key] || day;
