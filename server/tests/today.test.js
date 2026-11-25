@@ -1,3 +1,4 @@
+import {mealPreview,appendSavedMeal} from '../../src/utils/savedMeals.js';
 import {shouldOfferOnboarding,validateInitialTargets,validateInitialProfile} from '../../src/utils/onboarding.js';
 import {buildHistory,historyDates} from '../../src/utils/historySummary.js';
 import {products} from '../../src/data/products.js';
@@ -114,4 +115,24 @@ test('Real PostgreSQL: onboarding is private, revision protected, schema strict,
  response=await put(a,{version:1,status:'completed',step:3},first.revision);assert.equal(response.status,200);
  const bootstrap=await(await request('nutrition?day=2026-11-25',a)).json();assert.equal(bootstrap.documents.find(doc=>doc.key==='onboarding').data.status,'completed');assert.equal(bootstrap.documents.find(doc=>doc.key==='targets').data,null);
  assert.equal((await request('nutrition/import/onboarding',{...a,method:'POST',data:{data:initial}})).status,400);
+}));
+
+test('Saved meals preview unknowns and prevent duplicate or over-limit additions without changing originals',()=>{
+ const entries=[entry(2)],day={...empty(),breakfast:[entry(2)]},original=structuredClone(day);
+ assert.throws(()=>appendSavedMeal(day,'breakfast',entries));assert.deepEqual(day,original);
+ assert.throws(()=>appendSavedMeal({...empty(),breakfast:Array.from({length:100},(_,i)=>entry(i+1))},'lunch',[entry(101)]));
+ const next=appendSavedMeal(day,'lunch',entries);assert.equal(next.lunch.length,1);assert.notEqual(next.lunch[0].id,entries[0].id);assert.equal(next.lunch[0].snapshot,undefined);assert.deepEqual(day,original);
+ assert.equal(mealPreview(entries,[]).unavailable.length,1);assert.equal(mealPreview(entries,[]).totals.protein.missing,1);
+});
+test('Real PostgreSQL: meal templates are private, bounded, revision-safe and snapshots cannot be forged',{skip:!enabled},()=>api(async(request,register)=>{
+ const a=await register(),b=await register(),meal={id:randomUUID(),name:'My breakfast',entries:[entry(2)]};
+ const put=(data,revision=null,user=a)=>request('nutrition/meals',{...user,method:'PUT',data:{data,revision}});
+ let response=await put({items:[meal]});assert.equal(response.status,200);let doc=(await response.json()).document;assert.equal(doc.data.items[0].entries[0].snapshot.name,products.find(item=>item.id===2).name);
+ assert.equal((await(await request('nutrition/meals',b)).json()).document.data,null);assert.equal((await request('nutrition/meals',{...a,account:b.account})).status,409);
+ assert.equal((await put({items:[]})).status,409);assert.equal((await put({items:[{...meal,entries:[meal.entries[0],{...entry(2),id:randomUUID()}]}]},doc.revision)).status,400);
+ assert.equal((await put({items:[{...meal,entries:[{...entry(2),amount:0}]}]},doc.revision)).status,400);
+ response=await put({items:[{...doc.data.items[0],name:'Updated',entries:doc.data.items[0].entries.map(item=>({...item,amount:50,snapshot:{...item.snapshot,protein:99}}))}]},doc.revision);assert.equal(response.status,200);doc=(await response.json()).document;assert.notEqual(doc.data.items[0].entries[0].snapshot.protein,99);assert.equal(doc.data.items[0].entries[0].amount,50);
+ const unknown='custom-'+randomUUID();assert.equal((await put({items:[{...meal,entries:[entry(unknown)]}]},doc.revision)).status,400);
+ assert.equal((await request('nutrition/import/meals',{...a,method:'POST',data:{data:{items:[]}}})).status,400);
+ assert.equal((await put({items:[]},doc.revision)).status,200);
 }));

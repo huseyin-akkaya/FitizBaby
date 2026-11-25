@@ -24,6 +24,7 @@ export default function Account() {
       {favorites.notice && <p role="status" className="mt-3 text-sm text-green-900">{favorites.notice}</p>}
     </section>
     <p className="mt-6"><Link to="/welcome" className="font-semibold text-green-800 underline">Kişisel başlangıç adımlarını aç</Link></p>
+    <p className="mt-6"><Link to="/saved-meals" className="font-semibold text-green-800 underline">Kayıtlı öğünlerim</Link></p>
     <AccountSecurity /><EmailVerification /><ImportProducts /><ImportNutrition /><AccountDataControls />
     <p className="mt-6 rounded-xl bg-amber-50 p-4 text-sm leading-6 text-amber-900">Hesabına aktarılmamış misafir kayıtları bu tarayıcıda kalır. Giriş yapınca profil, plan ve günlük kayıtlar ayrı hesap alanından okunur; değişikliklerini ilgili sayfadaki kaydet düğmesiyle hesabına gönder. Bu yerel kayıtlar aynı tarayıcıyı kullanan kişilerce görülebilir.</p>
     <div className="mt-6 flex flex-wrap gap-3"><Link to="/nutrition-plan" className="rounded-xl bg-green-600 px-4 py-3 font-semibold text-white">Beslenme planım</Link><Link to="/products" className="rounded-xl border border-zinc-200 px-4 py-3 font-semibold">Ürünleri keşfet</Link></div>

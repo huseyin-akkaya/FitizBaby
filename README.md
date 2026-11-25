@@ -274,3 +274,11 @@ Hedef hesaplama mevcut Mifflin–St Jeor hesaplayıcısını kullanır; yalnızc
 Şema: 008_onboarding.sql mevcut user_nutrition tablosuna onboarding belge adını ekler. Yeni kurulumda node server/db/migrate.js ile uygulanır. Eski migration dosyaları değiştirilmez. API belge sürümü çakışmaları, oturum ve hesap sahipliği kontrollerini kullanır; hesap silme, veri dışa aktarma ve yedekleme mevcut mekanizma üzerinden bu durumu da kapsar.
 
 Hesaplayıcı kapsamı için kaynak: [NIDDK yetişkin hesaplayıcı açıklaması](https://www.niddk.nih.gov/health-information/weight-management/body-weight-planner). Bu projenin formülü NIDDK modeliyle aynı değildir; bağlantı yetişkinlik ve özel durum sınırlamaları hakkında bilgi içindir.
+
+## Kayıtlı öğünlerim
+
+/saved-meals adresi, Bugünüm ve Hesabım bağlantılarından açılır. Kullanıcı en fazla 10 adlandırılmış öğün (her birinde 20 farklı ürün) kaydeder; ürünleri ve g/ml miktarlarını düzenleyebilir. Seçilen tarih/öğünün yalnızca kaydedilmiş ürünlerinden de yeni bir şablon hazırlanabilir. Taslaklar kaynağa alınmaz. Öğünü silmek eski günlük kayıtları değiştirmez.
+
+Güne ekleme öncesinde ürünler, miktarlar ve güncel katalogla hesaplanan yaklaşık kalori/makro toplamları gösterilir. Eksik besin değerleri belirtilir. Katalogdan kaldırılmış ürün varsa önce şablon düzenlenmelidir. Aynı ürün seçilen öğünde varsa hiçbir ürün eklenmez; mevcut miktarları değiştirmek için günlük takibe yönlendirilir. Günlük 100 ürün sınırı, revision çakışmaları, hesap sahipliği ve kaydedilmemiş taslak koruması geçerlidir. Yeni günlük kayıtta sunucu kendi etiket verilerini alır; eski günleri değiştirmez. Etiketler önizleme ile kaydetme arasında güncellenmişse kayıtta sunucunun o andaki değeri kullanılır.
+
+009_saved_meals.sql yalnızca izin verilen belge anahtarına meals ekler; mevcut verileri korur. Güncelleme komutu: node server/db/migrate.js. Şablonlar user_nutrition içinde hesaba bağlı tutulur, veri dışa aktarma/hesap silme/yedekleme kapsamına girer. Tarayıcıdan şablon içe aktarımı kapalıdır. Başarılı günlük ekleme sonrası Filiz kayıtlı sunucu sonucuna tepki verir.

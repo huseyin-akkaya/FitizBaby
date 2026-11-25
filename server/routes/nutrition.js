@@ -72,7 +72,7 @@ export function createNutritionRouter(database) {
   });
   async function save(req,res,importing) {
     const key = req.params.key;
-    if(importing&&key==='onboarding')return invalid(res);
+    if(importing&&['onboarding','meals'].includes(key))return invalid(res);
     if (!keySchema.safeParse(key).success) return invalid(res);
     const body = (importing ? importSchema : bodySchema).safeParse(req.body);
     if (!body.success) return invalid(res);
@@ -97,6 +97,7 @@ export function createNutritionRouter(database) {
       const refresh=body.data.refresh;
       if(refresh&&(!key.startsWith('day:')||!Object.values(old?.data??{}).flat().some(entry=>entry.id===refresh.entryId)||!Object.values(parsed.data).flat().some(entry=>entry.id===refresh.entryId))){await client.query('ROLLBACK');return invalid(res);}
       let data = parsed.data;
+      if(key==='meals'){const all={breakfast:data.items.flatMap(item=>item.entries),lunch:[],dinner:[],snacks:[]},prior={breakfast:old?.data?.items?.flatMap(item=>item.entries)??[]};await freezeEntries(client,userId,all,prior,false);}
       if (key.startsWith('day:')) data = await freezeEntries(client,userId,data,old?.data,importing,refresh);
       if (Buffer.byteLength(JSON.stringify(data),'utf8') > 140000) { await client.query('ROLLBACK'); return invalid(res); }
       const result = old

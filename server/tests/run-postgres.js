@@ -61,7 +61,7 @@ try {
     const browserEnv = { ...process.env, ...env, API_PORT: String(apiPort), APP_PUBLIC_URL:browserBase,FRONTEND_ORIGINS: browserBase, FITIZBABY_BROWSER_BASE: browserBase, FITIZBABY_TEST_WEB_PORT: String(webPort) };
     for (const script of ['server/index.js', 'server/tests/serve-browser.js']) children.push(spawn(process.execPath, [script], { env: browserEnv, stdio: 'inherit', windowsHide: true }));
     let ready = false;
-    for (let attempt = 0; attempt < 40; attempt += 1) {
+    for (let attempt = 0; attempt < 120; attempt += 1) {
       try { const results = await Promise.all([fetch(apiBase + '/api/health'), fetch(browserBase)]); if (results.every(response => response.ok)) { ready = true; break; } } catch { /* Servers are starting. */ }
       await new Promise(resolveDelay => setTimeout(resolveDelay, 250));
     }
